@@ -1,5 +1,7 @@
-A small syslog server for receiving syslog off the network
-Copyright (C) 2004 David McCullough <davidm@snapgear.com>
+A small userspace watchdog daemon
+
+Copyright (C) 2008 Michele d'Amico <michele.damico@fitre.it>
+Copyright (C) 2008 Mike Frysinger <vapier@gentoo.org>
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
