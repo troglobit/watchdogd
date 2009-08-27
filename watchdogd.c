@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 		if (strcmp(*av, "-w") == 0) {
 			if (--ac) {
 				wd_count = atoi(*++av);
-				printf("-w switch: set watchdog counter to %d sec.\n", wd_count);
+				/* printf("-w switch: set watchdog counter to %d sec.\n", wd_count); */
 			} else {
 				fprintf(stderr, "-w switch must be followed to seconds of watchdog counter.\n");
 				fflush(stderr);
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 		} else if (strcmp(*av, "-k") == 0) {
 			if (--ac) {
 				wd_keep_alive = atoi(*++av);
-				printf("-k switch: set the heartbeat of keepalives in %d sec.\n", wd_keep_alive);
+				/* printf("-k switch: set the heartbeat of keepalives in %d sec.\n", wd_keep_alive); */
 			} else {
 				fprintf(stderr, "-k switch must be followed to seconds of heartbeat of keepalives.\n");
 				fflush(stderr);
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 			sigaction(SIGTERM, &sa, NULL);
 		} else if (strcmp(*av, FOREGROUND_FLAG) == 0) {
 			background = 0;
-			printf("Start in foreground mode.\n");
+			/* printf("Start in foreground mode.\n"); */
 		} else if ((strcmp(*av, "-h") == 0) || (strcmp(*av, "--help") == 0)) {
 			usage(argv);
 			exit(0);
