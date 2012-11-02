@@ -15,29 +15,68 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.PHONY: all clean romfs
+.PHONY: all install clean distclean dist
+
+# Top directory for building complete system, fall back to this directory
+ROOTDIR      ?= $(shell pwd)
 
 # VERSION      ?= $(shell git tag -l | tail -1)
 VERSION      ?= 1.3
-EXEC          = watchdogd
+NAME          = watchdogd
+PKG           = $(NAME)-$(VERSION)
+ARCHIVE       = $(PKG).tar.xz
+EXEC          = $(NAME)
+DISTFILES     = LICENSE README
 OBJS          = watchdogd.o daemonize.o pidfile.o
+SRCS          = $(OBJS:.o=.c)
+DEPS          = $(addprefix .,$(SRCS:.c=.d))
 CFLAGS       += -W -Wall -Werror
 CPPFLAGS     += -D_GNU_SOURCE -DVERSION=\"$(VERSION)\"
+
+# Installation paths, always prepended with DESTDIR if set
+prefix     ?= /usr
+sbindir    ?= /sbin
+datadir     = $(prefix)/share/doc/$(NAME)
+
+include common.mk
 
 all: $(EXEC)
 
 $(EXEC): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS$(LDLIBS_$@))
 
-romfs: all
-	$(ROMFSINST) /bin/$(EXEC)
+install: all
+	@$(INSTALL) -d $(DESTDIR)$(datadir)
+	@$(INSTALL) -d $(DESTDIR)$(sbindir)
+	@for file in $(DISTFILES); do	                                \
+		printf "  INSTALL $(DESTDIR)$(datadir)/$$file\n";	\
+		$(INSTALL) -m 0644 $$file $(DESTDIR)$(datadir)/$$file;	\
+	done
+	@printf "  INSTALL $(DESTDIR)$(sbindir)/$(EXEC)\n"
+	$(STRIPINST) $(EXEC) $(DESTDIR)$(sbindir)/$(EXEC)
+
+uninstall:
+	-@for file in $(DISTFILES); do	                                \
+		printf "  REMOVE  $(DESTDIR)$(datadir)/$$file\n";	\
+		rm $(DESTDIR)$(datadir)/$$file 2>/dev/null;		\
+	done
+	@printf "  REMOVE  $(DESTDIR)$(sbindir)/$(EXEC)\n"
+	-@$(RM) $(DESTDIR)$(sbindir)/$(EXEC) 2>/dev/null
+	-@rmdir $(DESTDIR)$(datadir) 2>/dev/null
+	-@rmdir $(DESTDIR)$(sbindir) 2>/dev/null
 
 clean:
-	-@$(RM) $(EXEC) *.elf *.gdb *.o
+	-@$(RM) $(OBJS) $(DEPS) $(EXEC)
 
 distclean: clean
+	-@$(RM) $(JUNK) unittest *.elf *.gdb *.o .*.d
 
-legal:
-	-@printf "%-40s %s\n" $(PKG) "ISC License" >> $(LEGALDIR)/summary
-	-@$(CP) LICENSE $(LEGALDIR)/$(PKG)
+dist:
+	@echo "Building xz tarball of $(PKG) in parent dir..."
+	git archive --format=tar --prefix=$(PKG)/ $(VERSION) | xz >../$(ARCHIVE)
+	@(cd ..; md5sum $(ARCHIVE) | tee $(ARCHIVE).md5)
 
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),distclean)
+-include $(DEPS)
+endif
+endif

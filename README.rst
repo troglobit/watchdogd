@@ -2,15 +2,31 @@
                     watchdogd - A Small Watchdog Daemon
 ==============================================================================
 
-This is the watchdogd from uClinux-dist, originally by Michele d'Amico
-and later adapted to uClinux-dist by Mike Frysinger.
+This is a slightly refactored and improved version of the original
+watchdogd from uClinux-dist_.  It was written by Michele d'Amico and
+later adapted to uClinux-dist by Mike Frysinger.
 
-	http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
+The `original code`_ has no license and is available in the public
+domain, whereas this version is distributed under the ISC license.
+See the file LICENSE for more on this.
 
-The original code has no license and is available in the public domain
-from the following location.  See the file LICENSE for more on this.
+Usage
+-----
 
-	http://www.uclinux.org/pub/uClinux/dist/
+  watchdogd [-fVL] [-w <sec>] [-k <sec>] [-s] [-x [NUM]]
+
+  --foreground, -f         Start in foreground (background is default)
+  --external-kick, -x [N]  Force external watchdog kick using SIGUSR1
+                           A 'N x <interval>' delay for startup is given
+  --logfile, -l <file>     Log to <file> when backgrounding, otherwise silent
+  --syslog, -L             Use syslog, even if in foreground
+  --timeout, -w <sec>      Set the HW watchdog timeout to <sec> seconds
+  --interval, -k <sec>     Set watchdog kick interval to <sec> seconds
+  --safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM
+  --verbose, -V            Verbose operation, noisy output suitable for debugging
+  --version, -v            Display version and exit
+  --help, -h               Display this help message and exit
+
 
 Features
 --------
@@ -56,11 +72,13 @@ or ``--foreground`` to get debug output to the terminal.
 Contact
 -------
 
-This project is maintained at http://github.com/troglobit/watchdogd —
-please file a bug report, clone it, or send pull requests for bug fixes
-and proposed extensions, or become a co-maintainer by contacting the
-main author.
+This project is maintained collaboratively at GitHub_ — please file a
+bug report, clone it, or send pull requests for bug fixes and proposed
+extensions, or become a co-maintainer by contacting the main author.
 
 Regards
  /Joachim Nilsson <troglobit@gmail.com>
 
+.. _uClinux-dist: http://www.uclinux.org/pub/uClinux/dist/
+.. _`original code`: http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
+.. _GitHub: http://github.com/troglobit/watchdogd
