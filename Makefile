@@ -17,9 +17,9 @@
 .PHONY: all clean romfs
 
 # VERSION      ?= $(shell git tag -l | tail -1)
-VERSION      ?= 1.1
+VERSION      ?= 1.2
 EXEC          = watchdogd
-OBJS          = watchdogd.o
+OBJS          = watchdogd.o daemonize.o
 CFLAGS       += -W -Wall -Werror
 CPPFLAGS     += -DVERSION=\"$(VERSION)\"
 
