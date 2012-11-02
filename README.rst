@@ -13,15 +13,15 @@ See the file LICENSE for more on this.
 Usage
 -----
 
-``watchdogd [-fVL] [-w <sec>] [-k <sec>] [-s] [-x [NUM]]``
+watchdogd [-fVL] [-w <sec>] [-k <sec>] [-s] [-x [NUM]]
 
---foreground, -f         Start in foreground (background is default)
---external-kick, -x [N]  Force external watchdog kick using SIGUSR1
-                         A 'N x <interval>' delay for startup is given
---logfile, -l <file>     Log to <file> when backgrounding, otherwise silent
+--foreground, -f         Start in foreground, background is default
+--external-kick, -x NUM  Force external watchdog kick using SIGUSR1
+                         A 'NUM x INTERVAL' delay for startup is given
+--logfile, -l FILE       Log to FILE when backgrounding, otherwise silent
 --syslog, -L             Use syslog, even if in foreground
---timeout, -w <sec>      Set the HW watchdog timeout to <sec> seconds
---interval, -k <sec>     Set watchdog kick interval to <sec> seconds
+--timeout, -w NUM        Set the HW watchdog timeout to NUM seconds
+--interval, -k NUM       Set watchdog kick interval to NUM seconds
 --safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM
 --verbose, -V            Verbose operation, noisy output suitable for debugging
 --version, -v            Display version and exit
