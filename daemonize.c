@@ -1,6 +1,6 @@
 /* Daemonize by double-forking and detaching from the session context.
  *
- * Copyright (C) 2003,2004,2008  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2003, 2004, 2008, 2012  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
