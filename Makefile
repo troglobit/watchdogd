@@ -19,9 +19,9 @@
 # VERSION      ?= $(shell git tag -l | tail -1)
 VERSION      ?= 1.2
 EXEC          = watchdogd
-OBJS          = watchdogd.o daemonize.o
+OBJS          = watchdogd.o daemonize.o pidfile.o
 CFLAGS       += -W -Wall -Werror
-CPPFLAGS     += -DVERSION=\"$(VERSION)\"
+CPPFLAGS     += -D_GNU_SOURCE -DVERSION=\"$(VERSION)\"
 
 all: $(EXEC)
 
