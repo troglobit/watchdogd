@@ -16,6 +16,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,49 +29,79 @@
 #include <signal.h>
 #include <paths.h>
 
+#define WDT_DEVNODE          "/dev/watchdog"
+#define WDT_TIMEOUT_DEFAULT  20
+#define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
+
+#define UNUSED(arg) arg __attribute__((unused))
+#define ERROR(fmt, args...)              fprintf(stderr, "%s: " fmt, __progname, ##args)
+#define PERROR(fmt, args...)             fprintf(stderr, "%s: " fmt ": %s\n", __progname, ##args, strerror(errno))
+#define PRINT(fmt, args...) if (verbose) fprintf(stderr, "%s: " fmt, __progname, ##args)
+
 int fd = -1;
+int verbose = 0;
+extern char *__progname;
+
 
 /*
  * This function simply sends an IOCTL to the driver, which in turn ticks
  * the PC Watchdog card to reset its internal timer so it doesn't trigger
  * a computer reset.
  */
-void keep_alive(void)
+static void wdt_kick(void)
 {
 	int dummy;
 
+	PRINT("Kicking watchdog.\n");
 	ioctl(fd, WDIOC_KEEPALIVE, &dummy);
 }
 
-void safe_exit()
+static void wdt_set_timeout(int count)
+{
+	int arg = count;
+
+	PRINT("Setting watchdog timeout to %d sec.\n", count);
+	if (ioctl(fd, WDIOC_SETTIMEOUT, &arg))
+		PERROR("Failed setting HW watchdog timeout");
+	else
+		PRINT("Previous timeout was %d sec\n", arg);
+}
+
+static int wdt_get_timeout(void)
+{
+	int count;
+	int err;
+
+	if ((err = ioctl(fd, WDIOC_GETTIMEOUT, &count)))
+		count = err;
+
+	PRINT("Watchdog timeout is set to %d sec.\n", count);
+
+	return count;
+}
+
+static void wdt_magic_close(int UNUSED(signo))
 {
 	if (fd != -1) {
+		PRINT("Safe exit, disabling HW watchdog.\n");
 		write(fd, "V", 1);
 		close(fd);
 	}
 	exit(0);
 }
 
-int set_wd_counter(int count)
+static void setup_magic_close(void)
 {
-	return ioctl(fd, WDIOC_SETTIMEOUT, &count);
+	struct sigaction sa;
+
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = wdt_magic_close;
+	sigemptyset(&sa.sa_mask);
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGTERM, &sa, NULL);
 }
 
-int get_wd_counter()
-{
-	int count;
-	int err;
-	if ((err = ioctl(fd, WDIOC_GETTIMEOUT, &count))) {
-		count = err;
-	}
-	return count;
-}
-
-#define FOREGROUND_FLAG "-f"
-
-#define _PATH_DEVNULL "/dev/null"
-
-void vfork_daemon_rexec(int nochdir, int noclose, int argc, char **argv, char *foreground_opt)
+static void daemonize(int nochdir, int noclose, int argc, char **argv)
 {
 	int f;
 	char **vfork_args;
@@ -80,7 +112,7 @@ void vfork_daemon_rexec(int nochdir, int noclose, int argc, char **argv, char *f
 	if (!nochdir)
 		chdir("/");
 
-	if (!noclose && (f = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
+	if (!noclose && (f = open("/dev/null", O_RDWR, 0)) != -1) {
 		dup2(f, STDIN_FILENO);
 		dup2(f, STDOUT_FILENO);
 		dup2(f, STDERR_FILENO);
@@ -93,7 +125,7 @@ void vfork_daemon_rexec(int nochdir, int noclose, int argc, char **argv, char *f
 		vfork_args[a++] = *argv;
 		argv++;
 	}
-	vfork_args[a++] = foreground_opt;
+	vfork_args[a++] = "-f";
 	vfork_args[a++] = NULL;
 	switch (vfork()) {
 	case 0:		/* child */
@@ -102,117 +134,135 @@ void vfork_daemon_rexec(int nochdir, int noclose, int argc, char **argv, char *f
 		if (vfork())
 			_exit(0);
 		execvp(vfork_args[0], vfork_args);
-		perror("execv");
-		exit(-1);
-	case -1:		/* error */
-		perror("vfork");
-		exit(-1);
-	default:		/* parent */
+		PERROR("execv");
+		exit(1);
+
+	case -1:	/* error */
+		PERROR("vfork");
+		exit(1);
+
+	default:	/* parent */
 		exit(0);
 	}
 }
 
-static void usage(char *argv[])
+static void usage(void)
 {
-	printf(
-		"%s [-f] [-w <sec>] [-k <sec>] [-s] [-h|--help]\n"
-		"A simple watchdog deamon that send WDIOC_KEEPALIVE ioctl every some\n"
-		"\"heartbeat of keepalives\" seconds.\n"
-		"Options:\n"
-		"\t-f        start in foreground (background is default)\n"
-		"\t-w <sec>  set the watchdog counter to <sec> in seconds\n"
-		"\t-k <sec>  set the \"heartbeat of keepalives\" to <sec> in seconds\n"
-		"\t-s        safe exit (disable Watchdog) for CTRL-c and kill -SIGTERM signals\n"
-		"\t--help|-h write this help message and exit\n",
-		argv[0]);
+	printf("Usage: %s [-f] [-w <sec>] [-k <sec>] [-s] [-h|--help]\n"
+               "A simple watchdog deamon that kicks /dev/watchdog every %d sec, by default.\n"
+               "Options:\n"
+               "  --foreground, -f       Start in foreground (background is default)\n"
+               "  --timeout, -w <sec>    Set the HW watchdog timeout to <sec> seconds\n"
+               "  --period, -k <sec>     Set watchdog kick period to <sec> seconds\n"
+               "  --safe-exit, -s        Disable watchdog on exit from SIGINT/SIGTERM\n"
+	       "  --verbose, -V          Verbose operation, noisy output suitable for debugging\n"
+	       "  --version, -v          Display daemon version and exit\n"
+               "  --help, -h             Display this help message and exit\n",
+               __progname, WDT_TIMEOUT_DEFAULT);
 }
 
-/*
- * The main program.
- */
 int main(int argc, char *argv[])
 {
-	int wd_count = 20;
-	int real_wd_count = 0;
-	int wd_keep_alive = wd_count / 2;
-	struct sigaction sa;
+	int timeout = WDT_TIMEOUT_DEFAULT;
+	int real_timeout = 0;
+	int period = -1;
 	int background = 1;
-	int ac = argc;
-	char **av = argv;
+	int c;
+	struct option long_options[] = {
+		{"foreground", 0, 0, 'f'},
+		{"period",     1, 0, 'w'},
+		{"heartbeat",  1, 0, 'k'},
+		{"safe-exit",  0, 0, 's'},
+		{"verbose",    0, 0, 'V'},
+		{"version",    0, 0, 'v'},
+		{"help",       0, 0, 'h'},
+		{NULL, 0, 0, 0}
+	};
 
-	memset(&sa, 0, sizeof(sa));
-
-	/* TODO: rewrite this to use getopt() */
-	while (--ac) {
-		++av;
-		if (strcmp(*av, "-w") == 0) {
-			if (--ac) {
-				wd_count = atoi(*++av);
-				/* printf("-w switch: set watchdog counter to %d sec.\n", wd_count); */
-			} else {
-				fprintf(stderr, "-w switch must be followed to seconds of watchdog counter.\n");
-				fflush(stderr);
-				break;
-			}
-		} else if (strcmp(*av, "-k") == 0) {
-			if (--ac) {
-				wd_keep_alive = atoi(*++av);
-				/* printf("-k switch: set the heartbeat of keepalives in %d sec.\n", wd_keep_alive); */
-			} else {
-				fprintf(stderr, "-k switch must be followed to seconds of heartbeat of keepalives.\n");
-				fflush(stderr);
-				break;
-			}
-		} else if (strcmp(*av, "-s") == 0) {
-			printf("-s switch: safe exit (CTRL-C and kill).\n");
-			sa.sa_handler = safe_exit;
-			sigaction(SIGINT, &sa, NULL);
-			sigaction(SIGTERM, &sa, NULL);
-		} else if (strcmp(*av, FOREGROUND_FLAG) == 0) {
+	while ((c = getopt_long(argc, argv, "fw:k:svVh?", long_options, NULL)) != EOF) {
+		switch (c) {
+		case 'f':
 			background = 0;
-			/* printf("Start in foreground mode.\n"); */
-		} else if ((strcmp(*av, "-h") == 0) || (strcmp(*av, "--help") == 0)) {
-			usage(argv);
+			break;
+
+		case 'w':
+			timeout = atoi(optarg);
+			break;
+
+		case 'k':
+			period = atoi(optarg);
+			PRINT("Watchdog kick interval set to %d sec.\n", period);
+			break;
+
+		case 's':
+			setup_magic_close();
+			break;
+
+		case 'v':
+			PRINT("v%s\n", VERSION);
 			exit(0);
-		} else {
-			fprintf(stderr, "Unrecognized option \"%s\".\n", *av);
-			usage(argv);
+			break;
+
+		case 'V':
+			verbose = 1;
+			break;
+
+		case 'h':
+			usage();
+			exit(0);
+			break;
+
+		default:
+			PRINT("Unrecognized option \"-%c\".\n", c);
+			usage();
 			exit(1);
+			break;
 		}
 	}
 
 	if (background) {
-		printf("Start in deamon mode.\n");
-		vfork_daemon_rexec(1, 0, argc, argv, FOREGROUND_FLAG);
+		PRINT("Starting in deamon mode.\n");
+		daemonize(1, 0, argc, argv);
 	}
 
-	fd = open("/dev/watchdog", O_WRONLY);
-
+	fd = open(WDT_DEVNODE, O_WRONLY);
 	if (fd == -1) {
-		perror("Watchdog device not enabled");
-		fflush(stderr);
-		exit(-1);
+		PERROR("Failed opening watchdog device, %s", WDT_DEVNODE);
+		exit(1);
 	}
 
-	if (set_wd_counter(wd_count)) {
-		fprintf(stderr, "-w switch: wrong value. Please look at kernel log for more dettails.\n Continue with the old value\n");
-		fflush(stderr);
-	}
+	wdt_set_timeout(timeout);
 
-	real_wd_count = get_wd_counter();
-	if (real_wd_count < 0) {
-		perror("Error while issue IOCTL WDIOC_GETTIMEOUT");
+	real_timeout = wdt_get_timeout();
+	if (real_timeout < 0) {
+		PERROR("Failed reading current watchdog timeout");
 	} else {
-		if (real_wd_count <= wd_keep_alive) {
-			fprintf(stderr,
-				"Warning watchdog counter less or equal to the heartbeat of keepalives: %d <= %d\n",
-				real_wd_count, wd_keep_alive);
-			fflush(stderr);
+		if (real_timeout <= period) {
+			ERROR("Warning, watchdog timeout <= kick interval: %d <= %d\n",
+			      real_timeout, period);
 		}
 	}
 
+	/* If user did not provide '-k' argument, set to half actual timeout */
+	if (-1 == period) {
+		if (real_timeout < 0)
+			period = WDT_KICK_DEFAULT;
+		else
+			period = real_timeout / 2;
+
+		PRINT("Watchdog kick interval set to %d sec.\n", period);
+	}
+
 	while (1) {
-		keep_alive();
-		sleep(wd_keep_alive);
+		wdt_kick();
+		sleep(period);
 	}
 }
+
+/**
+ * Local Variables:
+ *  c-file-style: "linux"
+ *  indent-tabs-mode: t
+ *  version-control: t
+ * End:
+ */

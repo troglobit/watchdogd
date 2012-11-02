@@ -16,9 +16,12 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .PHONY: all clean romfs
 
-EXEC	= watchdogd
-OBJS	= watchdogd.o
-CFLAGS += -W -Wall -Werror
+# VERSION      ?= $(shell git tag -l | tail -1)
+VERSION      ?= 1.1
+EXEC          = watchdogd
+OBJS          = watchdogd.o
+CFLAGS       += -W -Wall -Werror
+CPPFLAGS     += -DVERSION=\"$(VERSION)\"
 
 all: $(EXEC)
 
