@@ -92,6 +92,28 @@ static int wdt_get_timeout(void)
 	return count;
 }
 
+static int wdt_get_bootstatus(void)
+{
+	int status = 0;
+	int err;
+
+	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
+		status = err;
+
+	if (!err && status) {
+		if (status & WDIOF_POWERUNDER)
+			INFO("Reset cause: POWER-ON");
+		if (status & WDIOF_FANFAULT)
+			INFO("Reset cause: FAN-FAULT");
+		if (status & WDIOF_OVERHEAT)
+			INFO("Reset cause: CPU-OVERHEAT");
+		if (status & WDIOF_CARDRESET)
+			INFO("Reset cause: WATCHDOG");
+	}
+
+	return status;
+}
+
 static void wdt_close(int UNUSED(signo))
 {
 	if (fd != -1) {
@@ -142,6 +164,30 @@ static void setup_signals(void)
 	/* Handle graceful exit by external supervisor */
 	sa.sa_handler = wdt_external_kick_exit;
 	sigaction(SIGUSR2, &sa, NULL);
+}
+
+static void create_bootstatus(int timeout, int interval)
+{
+	int err;
+	char *status;
+
+	err = asprintf(&status, "%s%s.status", _PATH_VARRUN, __progname);
+	if (-1 != err && status) {
+		FILE *fp;
+
+		fp = fopen(status, "w");
+		if (fp) {
+			int cause = wdt_get_bootstatus();
+
+			fprintf(fp, "Reset cause   : 0x%04x\n", cause >= 0 ? cause : 0);
+			fprintf(fp, "Timeout (sec) : %d\n", timeout);
+			fprintf(fp, "Kick interval : %d\n", interval);
+
+			fclose(fp);
+		}
+
+		free(status);
+	}
 }
 
 static int usage(int status)
@@ -294,8 +340,14 @@ int main(int argc, char *argv[])
 			period = WDT_KICK_DEFAULT;
 		else
 			period = real_timeout / 2;
+
+		if (!period)
+			period = 1;
 	}
 	DEBUG("Watchdog kick interval set to %d sec.", period);
+
+	/* Read boot cause from watchdog and save in /var/run/watchdogd.status */
+	create_bootstatus(real_timeout, period);
 
 	while (1) {
 		int rem;
