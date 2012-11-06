@@ -21,7 +21,7 @@
 ROOTDIR      ?= $(shell pwd)
 
 # VERSION      ?= $(shell git tag -l | tail -1)
-VERSION      ?= 1.4
+VERSION      ?= 1.5
 NAME          = watchdogd
 PKG           = $(NAME)-$(VERSION)
 ARCHIVE       = $(PKG).tar.xz
