@@ -30,6 +30,7 @@
 #include <signal.h>
 #include <paths.h>
 #include <syslog.h>
+#include <sched.h>
 
 #define WDT_DEVNODE          "/dev/watchdog"
 #define WDT_TIMEOUT_DEFAULT  20
@@ -129,6 +130,19 @@ static void wdt_close(int UNUSED(signo))
 	exit(0);
 }
 
+static void wdt_reboot(int UNUSED(signo))
+{
+	if (fd != -1) {
+		INFO("Forced watchdog reboot.");
+		wdt_set_timeout(1);
+		close(fd);
+
+		while (1)
+			sched_yield();
+	}
+	exit(0);
+}
+
 static void wdt_external_kick(int UNUSED(signo))
 {
 	if (!extkick) {
@@ -156,6 +170,10 @@ static void setup_signals(void)
 	sa.sa_handler = wdt_close;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
+
+	/* Watchdog reboot support */
+	sa.sa_handler = wdt_reboot;
+	sigaction(SIGPWR, &sa, NULL);
 
 	/* Kick from external process supervisor */
 	sa.sa_handler = wdt_external_kick;

@@ -7,8 +7,6 @@ Monitor the health of the system and its processes.
 General
 -------
 
-* SIGUSR1 "ping" from external supervisor
-* SIGPWR set wdt interval 1 sec and yield CPU until wdt reboots
 * Support enable/disable watchdog features in a `/etc/watchdogd.conf`
   - Supervise processes,
   - CPU loadavg,

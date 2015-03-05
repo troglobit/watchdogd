@@ -43,7 +43,7 @@ Features
 
 The watchdogd can be used stand-alone to kick a kernel watchdog at
 /dev/watchdog, or with an external supervisor.  The latter must use
-SIGUSR1 to activate external kicks.  To force an external supervisor
+`SIGUSR1` to activate external kicks.  To force an external supervisor
 daemon, use `--external-kick[=NUM]`, where NUM is an optional delay
 which can be quite useful at system startup.  E.g., with `NUM=3`
 watchdogd will delay the handover three built-in kicks, providing the
@@ -53,12 +53,16 @@ An external supervisor often need to lookup the PID to be able to send
 signals, watchdogd stores its PID in `/var/run/watchdogd.pid` like any
 other daemon.
 
+To force a kernel watchdog reboot, watchdogd supports `SIGPWR`.  What
+it does is to set the WDT timer to the lowest possible value (1 sec),
+close the connection to `/dev/watchdog`, and wait for WDT reboot.
+
 
 Operation
 ---------
 
 Without any arguments watchdogd forks off a daemon in the background,
-opens the `/dev/watchdog device`, attempts to set the default watchdog
+opens the `/dev/watchdog` device, attempts to set the default watchdog
 timeout to 20 seconds and then goes into an endless loop where it kicks
 the watchdog every 10 seconds.
 
