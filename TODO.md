@@ -1,19 +1,14 @@
 Goal of watchdogd
 =================
 
-Support for monitoring the health of the system and its processes.
+Monitor the health of the system and its processes.
 
 
 General
 -------
 
-* Add support for pidfile in /var/run/watchdogd.pid
 * SIGUSR1 "ping" from external supervisor
 * SIGPWR set wdt interval 1 sec and yield CPU until wdt reboots
-* getopt()
-* safe-exit vs regular exit
-* document
-* status report
 * Support enable/disable watchdog features in a `/etc/watchdogd.conf`
   - Supervise processes,
   - CPU loadavg,
