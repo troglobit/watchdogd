@@ -43,6 +43,7 @@
 #define PERROR(fmt, args...)                  print(LOG_DAEMON | LOG_ERR,   fmt ": %s", ##args, strerror(errno))
 #define DEBUG(fmt, args...) do { if (verbose) print(LOG_DAEMON | LOG_DEBUG, fmt, ##args); } while(0)
 #define INFO(fmt, args...)                    print(LOG_DAEMON | LOG_INFO,  fmt, ##args)
+#define WARN(fmt, args...)                    print(LOG_DAEMON | LOG_WARNING, fmt, ##args)
 
 int fd      = -1;
 int magic   = 0;
@@ -54,6 +55,8 @@ extern char *__progname;
 
 int daemonize(char *output);
 int pidfile(const char *basename);
+double check_loadavg(void);
+int get_cpu_count(void);
 
 
 /*
@@ -221,6 +224,7 @@ static int usage(int status)
                "  --timeout, -w <sec>      Set the HW watchdog timeout to <sec> seconds\n"
                "  --interval, -k <sec>     Set watchdog kick interval to <sec> seconds\n"
                "  --safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM\n"
+	       "  --load-average, -a <val> Adjust load average check, default: 0.7, reboot at 0.8\n"
 	       "  --verbose, -V            Verbose operation, noisy output suitable for debugging\n"
 	       "  --version, -v            Display version and exit\n"
                "  --help, -h               Display this help message and exit\n",
@@ -231,6 +235,7 @@ static int usage(int status)
 
 int main(int argc, char *argv[])
 {
+	double load, load_warn = .7, load_reboot =.8; /* defaults are a bit low */
 	int timeout = WDT_TIMEOUT_DEFAULT;
 	int real_timeout = 0;
 	int period = -1;
@@ -240,19 +245,30 @@ int main(int argc, char *argv[])
 	struct option long_options[] = {
 		{"foreground",    0, 0, 'f'},
 		{"external-kick", 2, 0, 'x'},
+		{"interval",      1, 0, 'k'},
+		{"load-average",  1, 0, 'a'},
 		{"logfile",       1, 0, 'l'},
+		{"safe-exit",     0, 0, 's'},
 		{"syslog",        0, 0, 'L'},
 		{"timeout",       1, 0, 'w'},
-		{"interval",      1, 0, 'k'},
-		{"safe-exit",     0, 0, 's'},
 		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
 		{"help",          0, 0, 'h'},
 		{NULL, 0, 0, 0}
 	};
 
-	while ((c = getopt_long(argc, argv, "fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
 		switch (c) {
+		case 'a':
+			load = strtod(optarg, NULL);
+			if (load <= 0) {
+				ERROR("Load average argument must be greater than zero.");
+				return usage(1);
+			}
+			load_warn   = load;
+			load_reboot = load + 0.1;
+			break;
+
 		case 'f':	/* Run in foreground */
 			background = 0;
 			break;
@@ -381,6 +397,15 @@ int main(int argc, char *argv[])
 			DEBUG("Pending external kick in %d sec ...", extdelay * period);
 			if (!--extdelay)
 				extkick = 1;
+		}
+
+		/* Check CPU load average */
+		load = check_loadavg();
+		if (load > load_warn && load < load_reboot) {
+			WARN("System load average very high!");
+		} else if (load > load_reboot) {
+			ERROR("System load too high, rebooting system ...");
+			wdt_reboot(0);
 		}
 
 		/* Check remaining time, if awaken by signal */
