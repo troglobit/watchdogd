@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
 		double load = check_loadavg();
 		if (load > load_warn && load < load_reboot) {
 			INFO("System load average too high");
-		} else if (load < load_reboot) {
+		} else if (load > load_reboot) {
 			ERROR("System load too high rebooting system.");
 			wdt_reboot(0);
 		}
