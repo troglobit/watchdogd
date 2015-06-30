@@ -54,6 +54,8 @@ extern char *__progname;
 
 int daemonize(char *output);
 int pidfile(const char *basename);
+double check_loadavg(void);
+int get_cpu_count(void);
 
 
 /*
@@ -231,6 +233,7 @@ static int usage(int status)
 
 int main(int argc, char *argv[])
 {
+	double load_warn = .7, load_reboot =.8; //defaults are a bit low.
 	int timeout = WDT_TIMEOUT_DEFAULT;
 	int real_timeout = 0;
 	int period = -1;
@@ -248,11 +251,23 @@ int main(int argc, char *argv[])
 		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
 		{"help",          0, 0, 'h'},
+		{"load-average", required_argument, 0, 'a'},
 		{NULL, 0, 0, 0}
 	};
 
-	while ((c = getopt_long(argc, argv, "fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
 		switch (c) {
+		case 'a':
+			{
+				double arg = strtod(optarg, NULL);
+				if (arg <= 0) {
+					ERROR("Argument must be greater than or equal to one.");
+					return usage(1);	
+				}
+				load_warn = arg;
+				load_reboot = arg + 1;
+			}
+		break;
 		case 'f':	/* Run in foreground */
 			background = 0;
 			break;
@@ -381,6 +396,14 @@ int main(int argc, char *argv[])
 			DEBUG("Pending external kick in %d sec ...", extdelay * period);
 			if (!--extdelay)
 				extkick = 1;
+		}
+
+		double load = check_loadavg();
+		if (load > load_warn && load < load_reboot) {
+			INFO("System load average too high");
+		} else if (load < load_reboot) {
+			ERROR("System load too high rebooting system.");
+			wdt_reboot(0);
 		}
 
 		/* Check remaining time, if awaken by signal */

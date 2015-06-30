@@ -27,7 +27,7 @@ PKG           = $(NAME)-$(VERSION)
 ARCHIVE       = $(PKG).tar.xz
 EXEC          = $(NAME)
 DISTFILES     = LICENSE README
-OBJS          = watchdogd.o daemonize.o pidfile.o
+OBJS          = watchdogd.o daemonize.o pidfile.o loadavg.o
 SRCS          = $(OBJS:.o=.c)
 DEPS          = $(addprefix .,$(SRCS:.c=.d))
 CFLAGS       += -W -Wall -Werror
