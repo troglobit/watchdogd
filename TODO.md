@@ -54,3 +54,11 @@ process stops responding, or when a respawn limit has been reached,
   ensure that system monitoring goes before anything else in the system.
 * Use UNIX domain sockets for communication between daemon and clients
 
+[libwdt]:                http://www.wehavemorefun.de/fritzbox/Libwdt.so
+[Fritz!Box source dump]: ftp://ftp.avm.de/fritz.box/fritzbox.fon_wlan_7170/x_misc/opensrc/
+
+<!--
+  -- Local Variables:
+  -- mode: markdown
+  -- End:
+  -->

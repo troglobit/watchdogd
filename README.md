@@ -42,7 +42,7 @@ Features
 --------
 
 The watchdogd can be used stand-alone to kick a kernel watchdog at
-/dev/watchdog, or with an external supervisor.  The latter must use
+`/dev/watchdog`, or with an external supervisor.  The latter must use
 `SIGUSR1` to activate external kicks.  To force an external supervisor
 daemon, use `--external-kick[=NUM]`, where NUM is an optional delay
 which can be quite useful at system startup.  E.g., with `NUM=3`
