@@ -330,16 +330,16 @@ int main(int argc, char *argv[])
 	}
 
 	if (background) {
-		pid_t pid;
+		DEBUG("Daemonizing ...");
 
 		/* If backgrounding and no logfile is given, use syslog */
 		if (!logfile)
 			sys_log = 1;
 
-		/* Exit on parent or error. */
-		pid = daemonize(logfile);
-		if (pid)
-			return pid < 0 ? 1 : 0;
+		if (-1 == daemon(0, 0)) {
+			PERROR("Failed daemonizing");
+			return 1;
+		}
 	}
 
 	INFO("Userspace watchdog daemon v%s starting ...", VERSION);
