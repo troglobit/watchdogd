@@ -18,20 +18,20 @@
 .PHONY: all install clean distclean dist
 
 # Top directory for building complete system, fall back to this directory
-ROOTDIR      ?= $(shell pwd)
+ROOTDIR    ?= $(shell pwd)
 
 # VERSION      ?= $(shell git tag -l | tail -1)
-VERSION      ?= 1.5
-NAME          = watchdogd
-PKG           = $(NAME)-$(VERSION)
-ARCHIVE       = $(PKG).tar.xz
-EXEC          = $(NAME)
-DISTFILES     = LICENSE README
-OBJS          = watchdogd.o pidfile.o loadavg.o
-SRCS          = $(OBJS:.o=.c)
-DEPS          = $(addprefix .,$(SRCS:.c=.d))
-CFLAGS       += -W -Wall -Werror
-CPPFLAGS     += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
+VERSION    ?= 1.6-dev
+NAME        = watchdogd
+PKG         = $(NAME)-$(VERSION)
+ARCHIVE     = $(PKG).tar.xz
+EXEC        = $(NAME)
+DISTFILES   = LICENSE README
+OBJS        = watchdogd.o pidfile.o loadavg.o
+SRCS        = $(OBJS:.o=.c)
+DEPS        = $(SRCS:.c=.d)
+CFLAGS     += -W -Wall -Werror
+CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
 
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr
@@ -75,8 +75,4 @@ dist:
 	git archive --format=tar --prefix=$(PKG)/ $(VERSION) | xz >../$(ARCHIVE)
 	@(cd ..; md5sum $(ARCHIVE) | tee $(ARCHIVE).md5)
 
-ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(MAKECMDGOALS),distclean)
 -include $(DEPS)
-endif
-endif
