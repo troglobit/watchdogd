@@ -187,9 +187,9 @@ static void setup_signals(void)
 	sigaction(SIGUSR2, &sa, NULL);
 }
 
-static void create_bootstatus(int timeout, int interval)
+static int create_bootstatus(int timeout, int interval)
 {
-	int err;
+	int err, cause = 0;
 	char *status;
 
 	err = asprintf(&status, "%s%s.status", _PATH_VARRUN, __progname);
@@ -200,15 +200,17 @@ static void create_bootstatus(int timeout, int interval)
 		if (fp) {
 			int cause = wdt_get_bootstatus();
 
-			fprintf(fp, "Reset cause   : 0x%04x\n", cause >= 0 ? cause : 0);
-			fprintf(fp, "Timeout (sec) : %d\n", timeout);
-			fprintf(fp, "Kick interval : %d\n", interval);
+			fprintf(fp, "Reset cause (WDIOF) : 0x%04x\n", cause >= 0 ? cause : 0);
+			fprintf(fp, "Timeout (sec)       : %d\n", timeout);
+			fprintf(fp, "Kick interval       : %d\n", interval);
 
 			fclose(fp);
 		}
 
 		free(status);
 	}
+
+	return cause;
 }
 
 static int usage(int status)
