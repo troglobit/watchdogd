@@ -344,6 +344,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (sys_log)
+		openlog(__progname, LOG_NDELAY | LOG_NOWAIT | LOG_PID, LOG_DAEMON);
+
 	INFO("Userspace watchdog daemon v%s starting ...", VERSION);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
