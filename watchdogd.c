@@ -139,19 +139,18 @@ static int wdt_get_bootstatus(void)
 static void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
 	if (fd != -1) {
-		/* When --safe-exit is selected */
 		if (magic) {
-			INFO("Safe exit, disabling HW watchdog.");
+			INFO("Disabling HW watchdog timer before (safe) exit.");
 			if (-1 == write(fd, "V", 1))
 				PERROR("Failed disabling HW watchdog, system will likely reboot now");
-		} else
-			INFO("Exiting, watchdog still active.");
+		} else {
+			INFO("Exiting, watchdog still active.  Expect reboot!");
+			/* Be nice, sync any buffered data to disk first. */
+			sync();
+		}
 
 		close(fd);
 	}
-
-	/* Be nice to system and sync any buffered data to disk first. */
-	sync();
 
 	/* Leave main loop. */
 	uev_exit(w->ctx);
@@ -159,7 +158,7 @@ static void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 static void wdt_reboot(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
-	/* Be nice to system and sync any buffered data to disk first. */
+	/* Be nice, sync any buffered data to disk first. */
 	sync();
 
 	if (fd != -1) {
@@ -188,7 +187,7 @@ static void wdt_ext_kick(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events)
 
 static void wdt_ext_kick_exit(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
 {
-	INFO("External supervisor requested safe exit. Reverting to built-in kick.");
+	INFO("External supervisor requested safe exit.  Reverting to built-in kick.");
 	extkick = 0;
 }
 
@@ -251,11 +250,12 @@ static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 	}
 }
 
-/* Check CPU load average */
+/* XXX: Move to loadavg.c */
 static void loadavg_cb(uev_t *w, void *arg, int events)
 {
 	double load = check_loadavg();
 
+	DEBUG("Current loadavg %f", load);
 	if (load > load_warn && load < load_reboot) {
 		WARN("System load average very high!");
 	} else if (load > load_reboot) {
