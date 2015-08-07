@@ -32,9 +32,9 @@ OBJS        = watchdogd.o loadavg.o
 SRCS        = $(OBJS:.o=.c)
 DEPS        = $(SRCS:.c=.d)
 
-CFLAGS     += -W -Wall -Werror
+CFLAGS     += -O2 -W -Wall -Werror -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
-LDLIBS     += libite/libite.a
+LDLIBS     += libuev/libuev.a libite/libite.a
 
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr

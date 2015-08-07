@@ -33,6 +33,7 @@
 #include <sched.h>
 
 #include "libite/lite.h"
+#include "libuev/uev.h"
 
 #define WDT_DEVNODE          "/dev/watchdog"
 #define WDT_TIMEOUT_DEFAULT  20
@@ -46,14 +47,31 @@
 #define INFO(fmt, args...)                    print(LOG_DAEMON | LOG_INFO,  fmt, ##args)
 #define WARN(fmt, args...)                    print(LOG_DAEMON | LOG_WARNING, fmt, ##args)
 
-int fd      = -1;
+/* Global daemon settings */
 int magic   = 0;
 int verbose = 0;
 int sys_log = 0;
 int extkick = 0;
 int extdelay = 0;
+
+int period = -1;
+double load_warn = .7, load_reboot =.8; /* defaults are a bit low */
+
+/* Local variables */
+static int fd = -1;
 extern char *__progname;
 
+/* Event contexts */
+static uev_t period_watcher;
+static uev_t loadavg_watcher;
+static uev_t sigterm_watcher;
+static uev_t sigint_watcher;
+static uev_t sigquit_watcher;
+static uev_t sigpwr_watcher;
+static uev_t sigusr1_watcher;
+static uev_t sigusr2_watcher;
+
+/* XXX: Move to watchdog.h, or private.h */
 double check_loadavg(void);
 int get_cpu_count(void);
 
@@ -87,7 +105,8 @@ static int wdt_get_timeout(void)
 	int count;
 	int err;
 
-	if ((err = ioctl(fd, WDIOC_GETTIMEOUT, &count)))
+	err = ioctl(fd, WDIOC_GETTIMEOUT, &count);
+	if (err)
 		count = err;
 
 	DEBUG("Watchdog timeout is set to %d sec.", count);
@@ -117,23 +136,32 @@ static int wdt_get_bootstatus(void)
 	return status;
 }
 
-static void wdt_close(int UNUSED(signo))
+static void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
 	if (fd != -1) {
 		/* When --safe-exit is selected */
 		if (magic) {
 			INFO("Safe exit, disabling HW watchdog.");
-			write(fd, "V", 1);
+			if (-1 == write(fd, "V", 1))
+				PERROR("Failed disabling HW watchdog, system will likely reboot now");
 		} else
 			INFO("Exiting, watchdog still active.");
 
 		close(fd);
 	}
-	exit(0);
+
+	/* Be nice to system and sync any buffered data to disk first. */
+	sync();
+
+	/* Leave main loop. */
+	uev_exit(w->ctx);
 }
 
-static void wdt_reboot(int UNUSED(signo))
+static void wdt_reboot(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
+	/* Be nice to system and sync any buffered data to disk first. */
+	sync();
+
 	if (fd != -1) {
 		INFO("Forced watchdog reboot.");
 		wdt_set_timeout(1);
@@ -142,10 +170,12 @@ static void wdt_reboot(int UNUSED(signo))
 		while (1)
 			sched_yield();
 	}
-	exit(0);
+
+	/* Leave main loop. */
+	uev_exit(w->ctx);
 }
 
-static void wdt_external_kick(int UNUSED(signo))
+static void wdt_ext_kick(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
 {
 	if (!extkick) {
 		extdelay = 0;
@@ -156,34 +186,27 @@ static void wdt_external_kick(int UNUSED(signo))
 	wdt_kick("External kick.");
 }
 
-static void wdt_external_kick_exit(int UNUSED(signo))
+static void wdt_ext_kick_exit(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
 {
 	INFO("External supervisor requested safe exit. Reverting to built-in kick.");
 	extkick = 0;
 }
 
-static void setup_signals(void)
+static void setup_signals(uev_ctx_t *ctx)
 {
-	struct sigaction sa;
-
-	memset(&sa, 0, sizeof(sa));
-	sigemptyset(&sa.sa_mask);
-
-	sa.sa_handler = wdt_close;
-	sigaction(SIGINT, &sa, NULL);
-	sigaction(SIGTERM, &sa, NULL);
+	/* Signals to stop watchdogd */
+	uev_signal_init(ctx, &sigterm_watcher, wdt_close, NULL, SIGTERM);
+	uev_signal_init(ctx, &sigint_watcher,  wdt_close, NULL, SIGINT);
+	uev_signal_init(ctx, &sigquit_watcher, wdt_close, NULL, SIGQUIT);
 
 	/* Watchdog reboot support */
-	sa.sa_handler = wdt_reboot;
-	sigaction(SIGPWR, &sa, NULL);
+	uev_signal_init(ctx, &sigpwr_watcher, wdt_reboot, NULL, SIGPWR);
 
 	/* Kick from external process supervisor */
-	sa.sa_handler = wdt_external_kick;
-	sigaction(SIGUSR1, &sa, NULL);
+	uev_signal_init(ctx, &sigusr1_watcher, wdt_ext_kick, NULL, SIGUSR1);
 
 	/* Handle graceful exit by external supervisor */
-	sa.sa_handler = wdt_external_kick_exit;
-	sigaction(SIGUSR2, &sa, NULL);
+	uev_signal_init(ctx, &sigusr2_watcher, wdt_ext_kick_exit, NULL, SIGUSR2);
 }
 
 static int create_bootstatus(int timeout, int interval)
@@ -212,6 +235,37 @@ static int create_bootstatus(int timeout, int interval)
 	return cause;
 }
 
+static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
+{
+	/* When an external supervisor once has started sending SIGUSR1
+	 * it fully assumes responsibility for kicking. No magic here. */
+	if (!extkick)
+		wdt_kick("Kicking watchdog.");
+
+	/* Startup delay before handing over to external kick.
+	 * Wait MAX:@extdelay number of built-in kicks, MIN:1 */
+	if (extdelay) {
+		DEBUG("Pending external kick in %d sec ...", extdelay * period);
+		if (!--extdelay)
+			extkick = 1;
+	}
+}
+
+/* Check CPU load average */
+static void loadavg_cb(uev_t *w, void *arg, int events)
+{
+	double load = check_loadavg();
+
+	if (load > load_warn && load < load_reboot) {
+		WARN("System load average very high!");
+	} else if (load > load_reboot) {
+		ERROR("System load too high, rebooting system ...");
+		wdt_reboot(w, arg, events);
+	}
+}
+
+
+
 static int usage(int status)
 {
 	printf("Usage: %s [-f] [-w <sec>] [-k <sec>] [-s] [-h|--help]\n"
@@ -236,10 +290,10 @@ static int usage(int status)
 
 int main(int argc, char *argv[])
 {
-	double load, load_warn = .7, load_reboot =.8; /* defaults are a bit low */
+	double load;
 	int timeout = WDT_TIMEOUT_DEFAULT;
 	int real_timeout = 0;
-	int period = -1;
+	int T;
 	int background = 1;
 	int c;
 	char *logfile = NULL;
@@ -257,6 +311,7 @@ int main(int argc, char *argv[])
 		{"help",          0, 0, 'h'},
 		{NULL, 0, 0, 0}
 	};
+	uev_ctx_t ctx;
 
 	while ((c = getopt_long(argc, argv, "a:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
 		switch (c) {
@@ -347,12 +402,10 @@ int main(int argc, char *argv[])
 		openlog(__progname, LOG_NDELAY | LOG_NOWAIT | LOG_PID, LOG_DAEMON);
 
 	INFO("Userspace watchdog daemon v%s starting ...", VERSION);
+	uev_init(&ctx);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
-	setup_signals();
-
-	if (pidfile(NULL))
-		PERROR("Cannot create pidfile");
+	setup_signals(&ctx);
 
 	fd = open(WDT_DEVNODE, O_WRONLY);
 	if (fd == -1) {
@@ -360,8 +413,10 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	/* Set requested WDT timeout right before we enter the event loop. */
 	wdt_set_timeout(timeout);
 
+	/* Sanity check with driver that setting actually took. */
 	real_timeout = wdt_get_timeout();
 	if (real_timeout < 0) {
 		PERROR("Failed reading current watchdog timeout");
@@ -382,42 +437,23 @@ int main(int argc, char *argv[])
 		if (!period)
 			period = 1;
 	}
+	T = period * 1000;
 	DEBUG("Watchdog kick interval set to %d sec.", period);
 
 	/* Read boot cause from watchdog and save in /var/run/watchdogd.status */
 	create_bootstatus(real_timeout, period);
 
-	while (1) {
-		int rem;
+	/* Every period seconds we kick the wdt */
+	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
-		/* When an external supervisor once has started sending SIGUSR1
-		 * it fully assumes responsibility for kicking. No magic here. */
-		if (!extkick)
-			wdt_kick("Kicking watchdog.");
+	/* Every ... seconds we check loadavg */
+	uev_timer_init(&ctx, &loadavg_watcher, loadavg_cb, NULL, 2 * T, 2 * T);
 
-		/* Startup delay before handing over to external kick.
-		 * Wait MAX:@extdelay number of built-in kicks, MIN:1 */
-		if (extdelay) {
-			DEBUG("Pending external kick in %d sec ...", extdelay * period);
-			if (!--extdelay)
-				extkick = 1;
-		}
+	/* Only create pidfile when we're done with all set up. */
+	if (pidfile(NULL))
+		PERROR("Cannot create pidfile");
 
-		/* Check CPU load average */
-		load = check_loadavg();
-		if (load > load_warn && load < load_reboot) {
-			WARN("System load average very high!");
-		} else if (load > load_reboot) {
-			ERROR("System load too high, rebooting system ...");
-			wdt_reboot(0);
-		}
-
-		/* Check remaining time, if awaken by signal */
-		rem = period;
-		do {
-			rem = sleep(rem);
-		} while (rem > 0);
-	}
+	return uev_run(&ctx, 0);
 }
 
 /**
