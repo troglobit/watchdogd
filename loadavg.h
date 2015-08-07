@@ -16,57 +16,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "wdt.h"
+#ifndef WDOG_LOADAVG_H_
+#define WDOG_LOADAVG_H_
 
-/* Defaults are a bit low */
-double load_warn   = .7;
-double load_reboot = .8;
+extern double load_warn;
+extern double load_reboot;
 
-/* Local variables */
-static uev_t watcher;
+int loadavg_init      (uev_ctx_t *ctx, int T);
+int loadavg_set_level (double load);
 
-
-static double check(void)
-{
-	double load[3] = { 0 };
-
-	if (getloadavg(load, 3) == -1)
-		return -1;
-
-	return (load[0] + load[1]) / 2.0;
-}
-
-static void cb(uev_t *w, void *arg, int events)
-{
-	double load = check();
-
-	DEBUG("Current loadavg %f", load);
-	if (load > load_warn && load < load_reboot) {
-		WARN("System load average very high!");
-	} else if (load > load_reboot) {
-		ERROR("System load too high, rebooting system ...");
-		wdt_reboot(w, arg, events);
-	}
-}
-
-/* Every 2T seconds we check loadavg */
-int loadavg_init(uev_ctx_t *ctx, int T)
-{
-	return uev_timer_init(ctx, &watcher, cb, NULL, 2 * T, 2 * T);
-}
-
-int loadavg_set_level(double load)
-{
-	if (load <= 0) {
-		ERROR("Load average argument must be greater than zero.");
-		return 1;
-	}
-
-	load_warn   = load;
-	load_reboot = load + 0.1;
-
-	return 0;
-}
+#endif /* WDOG_LOADAVG_H_ */
 
 /**
  * Local Variables:

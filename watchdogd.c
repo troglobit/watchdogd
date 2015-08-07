@@ -1,8 +1,8 @@
 /* A small userspace watchdog daemon
  *
- * Copyright (C) 2008 Michele d'Amico <michele.damico@fitre.it>
- * Copyright (C) 2008 Mike Frysinger <vapier@gentoo.org>
- * Copyright (C) 2012 Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2008       Michele d'Amico <michele.damico@fitre.it>
+ * Copyright (C) 2008       Mike Frysinger <vapier@gentoo.org>
+ * Copyright (C) 2012-2015  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,35 +17,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <errno.h>
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <linux/types.h>
-#include <linux/watchdog.h>
-#include <signal.h>
-#include <paths.h>
-#include <syslog.h>
-#include <sched.h>
-
-#include "libite/lite.h"
-#include "libuev/uev.h"
-
-#define WDT_DEVNODE          "/dev/watchdog"
-#define WDT_TIMEOUT_DEFAULT  20
-#define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
-
-#define print(prio, fmt, args...)  (sys_log ? syslog(prio, fmt, ##args) \
-                                            : fprintf(stderr, "%s: " fmt "\n", __progname, ##args))
-#define ERROR(fmt, args...)                   print(LOG_DAEMON | LOG_ERR,   fmt, ##args)
-#define PERROR(fmt, args...)                  print(LOG_DAEMON | LOG_ERR,   fmt ": %s", ##args, strerror(errno))
-#define DEBUG(fmt, args...) do { if (verbose) print(LOG_DAEMON | LOG_DEBUG, fmt, ##args); } while(0)
-#define INFO(fmt, args...)                    print(LOG_DAEMON | LOG_INFO,  fmt, ##args)
-#define WARN(fmt, args...)                    print(LOG_DAEMON | LOG_WARNING, fmt, ##args)
+#include "wdt.h"
+#include "loadavg.h"
 
 /* Global daemon settings */
 int magic   = 0;
@@ -55,15 +28,12 @@ int extkick = 0;
 int extdelay = 0;
 
 int period = -1;
-double load_warn = .7, load_reboot =.8; /* defaults are a bit low */
 
 /* Local variables */
 static int fd = -1;
-extern char *__progname;
 
 /* Event contexts */
 static uev_t period_watcher;
-static uev_t loadavg_watcher;
 static uev_t sigterm_watcher;
 static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
@@ -71,17 +41,13 @@ static uev_t sigpwr_watcher;
 static uev_t sigusr1_watcher;
 static uev_t sigusr2_watcher;
 
-/* XXX: Move to watchdog.h, or private.h */
-double check_loadavg(void);
-int get_cpu_count(void);
-
 
 /*
  * This function simply sends an IOCTL to the driver, which in turn ticks
  * the PC Watchdog card to reset its internal timer so it doesn't trigger
  * a computer reset.
  */
-static void wdt_kick(char *msg)
+void wdt_kick(char *msg)
 {
 	int dummy;
 
@@ -89,7 +55,7 @@ static void wdt_kick(char *msg)
 	ioctl(fd, WDIOC_KEEPALIVE, &dummy);
 }
 
-static void wdt_set_timeout(int count)
+void wdt_set_timeout(int count)
 {
 	int arg = count;
 
@@ -100,7 +66,7 @@ static void wdt_set_timeout(int count)
 		DEBUG("Previous timeout was %d sec", arg);
 }
 
-static int wdt_get_timeout(void)
+int wdt_get_timeout(void)
 {
 	int count;
 	int err;
@@ -114,7 +80,7 @@ static int wdt_get_timeout(void)
 	return count;
 }
 
-static int wdt_get_bootstatus(void)
+int wdt_get_bootstatus(void)
 {
 	int status = 0;
 	int err;
@@ -136,7 +102,7 @@ static int wdt_get_bootstatus(void)
 	return status;
 }
 
-static void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
 	if (fd != -1) {
 		if (magic) {
@@ -156,7 +122,7 @@ static void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	uev_exit(w->ctx);
 }
 
-static void wdt_reboot(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+void wdt_reboot(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
 	/* Be nice, sync any buffered data to disk first. */
 	sync();
@@ -250,22 +216,6 @@ static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 	}
 }
 
-/* XXX: Move to loadavg.c */
-static void loadavg_cb(uev_t *w, void *arg, int events)
-{
-	double load = check_loadavg();
-
-	DEBUG("Current loadavg %f", load);
-	if (load > load_warn && load < load_reboot) {
-		WARN("System load average very high!");
-	} else if (load > load_reboot) {
-		ERROR("System load too high, rebooting system ...");
-		wdt_reboot(w, arg, events);
-	}
-}
-
-
-
 static int usage(int status)
 {
 	printf("Usage: %s [-f] [-w <sec>] [-k <sec>] [-s] [-h|--help]\n"
@@ -290,7 +240,6 @@ static int usage(int status)
 
 int main(int argc, char *argv[])
 {
-	double load;
 	int timeout = WDT_TIMEOUT_DEFAULT;
 	int real_timeout = 0;
 	int T;
@@ -316,13 +265,8 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, "a:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
-			load = strtod(optarg, NULL);
-			if (load <= 0) {
-				ERROR("Load average argument must be greater than zero.");
-				return usage(1);
-			}
-			load_warn   = load;
-			load_reboot = load + 0.1;
+			if (loadavg_set_level(strtod(optarg, NULL)))
+			    return usage(1);
 			break;
 
 		case 'f':	/* Run in foreground */
@@ -437,17 +381,19 @@ int main(int argc, char *argv[])
 		if (!period)
 			period = 1;
 	}
+
+	/* Calculate period (T) in milliseconds for libuEv */
 	T = period * 1000;
 	DEBUG("Watchdog kick interval set to %d sec.", period);
 
 	/* Read boot cause from watchdog and save in /var/run/watchdogd.status */
 	create_bootstatus(real_timeout, period);
 
-	/* Every period seconds we kick the wdt */
+	/* Every period (T) seconds we kick the wdt */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
-	/* Every ... seconds we check loadavg */
-	uev_timer_init(&ctx, &loadavg_watcher, loadavg_cb, NULL, 2 * T, 2 * T);
+	/* Set up load average control */
+	loadavg_init(&ctx, T);
 
 	/* Only create pidfile when we're done with all set up. */
 	if (pidfile(NULL))
