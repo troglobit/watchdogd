@@ -25,17 +25,17 @@ Usage
 
     watchdogd [-fVL] [-w <sec>] [-k <sec>] [-s] [-x [NUM]]
 	
-	--foreground, -f         Start in foreground, background is default
-	--external-kick, -x NUM  Force external watchdog kick using SIGUSR1
+    --foreground, -f         Start in foreground, background is default
+    --external-kick, -x NUM  Force external watchdog kick using SIGUSR1
                              A 'NUM x INTERVAL' delay for startup is given
-	--logfile, -l FILE       Log to FILE when backgrounding, otherwise silent
-	--syslog, -L             Use syslog, even if in foreground
-	--timeout, -w NUM        Set the HW watchdog timeout to NUM seconds
-	--interval, -k NUM       Set watchdog kick interval to NUM seconds
-	--safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM
-	--verbose, -V            Verbose operation, noisy output suitable for debugging
-	--version, -v            Display version and exit
-	--help, -h               Display this help message and exit
+    --logfile, -l FILE       Log to FILE when backgrounding, otherwise silent
+    --syslog, -L             Use syslog, even if in foreground
+    --timeout, -w NUM        Set the HW watchdog timeout to NUM seconds
+    --interval, -k NUM       Set watchdog kick interval to NUM seconds
+    --safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM
+    --verbose, -V            Verbose operation, noisy output suitable for debugging
+    --version, -v            Display version and exit
+    --help, -h               Display this help message and exit
 
 
 Features
