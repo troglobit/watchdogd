@@ -24,14 +24,17 @@ ROOTDIR    ?= $(shell pwd)
 VERSION    ?= 1.6-dev
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
-ARCHIVE     = $(PKG).tar.xz
+ARCHIVE     = $(PKG).tar
+ARCHIVEZ    = ../$(ARCHIVE).xz
 EXEC        = $(NAME)
 DISTFILES   = LICENSE README
-OBJS        = watchdogd.o pidfile.o loadavg.o
+OBJS        = watchdogd.o loadavg.o
 SRCS        = $(OBJS:.o=.c)
 DEPS        = $(SRCS:.c=.d)
+
 CFLAGS     += -W -Wall -Werror
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
+LDLIBS     += libite/libite.a
 
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr
@@ -40,9 +43,12 @@ datadir     = $(prefix)/share/doc/$(NAME)
 
 include common.mk
 
-all: $(EXEC)
+all: $(LDLIBS) $(EXEC)
 
-$(EXEC): $(OBJS)
+$(LDLIBS): Makefile
+	+@$(MAKE) STATIC=1 -C `dirname $@` all
+
+$(EXEC): $(OBJS) $(LDLIBS)
 
 install: all
 	@$(INSTALL) -d $(DESTDIR)$(datadir)
@@ -65,14 +71,33 @@ uninstall:
 	-@rmdir $(DESTDIR)$(sbindir) 2>/dev/null
 
 clean:
+	+@$(MAKE) -C libite $@
 	-@$(RM) $(OBJS) $(DEPS) $(EXEC)
 
 distclean: clean
+	+@$(MAKE) -C libite $@
 	-@$(RM) $(JUNK) unittest *.elf *.gdb *.o .*.d
 
 dist:
+	@if [ x"$(ARCHTOOL)" = x"" ]; then \
+		echo "Missing git-archive-all from https://github.com/Kentzo/git-archive-all"; \
+		exit 1; \
+	fi
+	@if [ -e $(ARCHIVEZ) ]; then \
+		echo "Distribution already exists."; \
+		exit 1; \
+	fi
 	@echo "Building xz tarball of $(PKG) in parent dir..."
-	git archive --format=tar --prefix=$(PKG)/ $(VERSION) | xz >../$(ARCHIVE)
-	@(cd ..; md5sum $(ARCHIVE) | tee $(ARCHIVE).md5)
+	@$(ARCHTOOL) ../$(ARCHIVE)
+	@xz ../$(ARCHIVE)
+	@md5sum $(ARCHIVEZ) | tee $(ARCHIVEZ).md5
+
+dev: distclean
+	@echo "Building unstable xz $(DEV) in parent dir..."
+	-@$(RM) -f ../$(DEV).tar.xz*
+	@(dir=`mktemp -d`; mkdir $$dir/$(DEV); cp -a . $$dir/$(DEV); \
+	  cd $$dir; tar --exclude=.git -c -J -f $(DEV).tar.xz $(DEV);\
+	  cd - >/dev/null; mv $$dir/$(DEV).tar.xz ../; cd ..;        \
+	  rm -rf $$dir; md5sum $(DEV).tar.xz | tee $(DEV).tar.xz.md5)
 
 -include $(DEPS)

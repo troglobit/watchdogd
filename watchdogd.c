@@ -32,11 +32,12 @@
 #include <syslog.h>
 #include <sched.h>
 
+#include "libite/lite.h"
+
 #define WDT_DEVNODE          "/dev/watchdog"
 #define WDT_TIMEOUT_DEFAULT  20
 #define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
 
-#define UNUSED(arg) arg __attribute__((unused))
 #define print(prio, fmt, args...)  (sys_log ? syslog(prio, fmt, ##args) \
                                             : fprintf(stderr, "%s: " fmt "\n", __progname, ##args))
 #define ERROR(fmt, args...)                   print(LOG_DAEMON | LOG_ERR,   fmt, ##args)
@@ -53,8 +54,6 @@ int extkick = 0;
 int extdelay = 0;
 extern char *__progname;
 
-int daemonize(char *output);
-int pidfile(const char *basename);
 double check_loadavg(void);
 int get_cpu_count(void);
 
