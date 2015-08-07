@@ -34,7 +34,7 @@ DEPS        = $(SRCS:.c=.d)
 
 CFLAGS     += -O2 -W -Wall -Werror -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
-LDLIBS     += libuev/libuev.a libite/libite.a
+LDLIBS     += libuev/libuev.a libite/pidfile.o
 
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr
@@ -46,7 +46,7 @@ include common.mk
 all: $(LDLIBS) $(EXEC)
 
 $(LDLIBS): Makefile
-	+@$(MAKE) STATIC=1 -C `dirname $@` all
+	+@$(MAKE) STATIC=1 -C `dirname $@` `basename $@`
 
 $(EXEC): $(OBJS) $(LDLIBS)
 
@@ -72,10 +72,12 @@ uninstall:
 
 clean:
 	+@$(MAKE) -C libite $@
+	+@$(MAKE) -C libuev $@
 	-@$(RM) $(OBJS) $(DEPS) $(EXEC)
 
 distclean: clean
 	+@$(MAKE) -C libite $@
+	+@$(MAKE) -C libuev $@
 	-@$(RM) $(JUNK) unittest *.elf *.gdb *.o .*.d
 
 dist:
