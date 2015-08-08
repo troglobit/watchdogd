@@ -34,7 +34,7 @@ DEPS        = $(SRCS:.c=.d)
 
 CFLAGS     += -O2 -W -Wall -Werror -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
-LDLIBS     += libuev/libuev.a libite/pidfile.o
+LDLIBS     += libuev/libuev.a libite/pidfile.o libite/strlcpy.o
 
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr

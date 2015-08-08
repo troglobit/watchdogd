@@ -229,7 +229,7 @@ static int usage(int status)
                "  --timeout, -w <sec>      Set the HW watchdog timeout to <sec> seconds\n"
                "  --interval, -k <sec>     Set watchdog kick interval to <sec> seconds\n"
                "  --safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM\n"
-	       "  --load-average, -a <val> Adjust load average check, default: 0.7, reboot at 0.8\n"
+	       "  --load-average, -a <val> Enable load average check <WARN,REBOOT>\n"
 	       "  --verbose, -V            Verbose operation, noisy output suitable for debugging\n"
 	       "  --version, -v            Display version and exit\n"
                "  --help, -h               Display this help message and exit\n",
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, "a:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
-			if (loadavg_set_level(strtod(optarg, NULL)))
+			if (loadavg_set(optarg))
 			    return usage(1);
 			break;
 
@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
 	/* Every period (T) seconds we kick the wdt */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
-	/* Set up load average control */
+	/* Start load average monitor, if enabled */
 	loadavg_init(&ctx, T);
 
 	/* Only create pidfile when we're done with all set up. */

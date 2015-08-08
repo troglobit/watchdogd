@@ -22,8 +22,8 @@
 extern double load_warn;
 extern double load_reboot;
 
-int loadavg_init      (uev_ctx_t *ctx, int T);
-int loadavg_set_level (double load);
+int loadavg_init (uev_ctx_t *ctx, int T);
+int loadavg_set  (char *arg);
 
 #endif /* WDOG_LOADAVG_H_ */
 
