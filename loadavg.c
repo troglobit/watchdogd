@@ -35,10 +35,10 @@ static double num_cores(void)
 	return (double)num;
 }
 
-static void cb(uev_t *w, void *arg, int events)
+static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
 	double num = num_cores();
-	double load[3];
+	double avg, load[3];
 
 	memset(load, 0, sizeof(load));
 	if (getloadavg(load, 3) == -1) {
@@ -53,20 +53,25 @@ static void cb(uev_t *w, void *arg, int events)
 	load[0] /= num;
 	load[1] /= num;
 	load[2] /= num;
+	avg = (load[0] + load[1]) / 2.0;
 
-	DEBUG("Adjusted: %f, %f, %f (1, 5, 15 min)", load[0], load[1], load[2]);
+	DEBUG("Adjusted: %.2f, %.2f, %.2f (1, 5, 15 min), avg: %.2f (1 + 5), warn: %.2f, reboot: %.2f",
+	      load[0], load[1], load[2], avg, load_warn, load_reboot);
 
-	if (load[1] > load_warn || load[0] > load_warn) {
-		if (load[1] > load_reboot && load[0] > load_reboot) {
+	if (avg > load_warn) {
+		if (avg > load_reboot) {
 			ERROR("System load too high, rebooting system ...");
-			wdt_reboot(w, arg, events);
+			wdt_reboot(w->ctx);
+			return;
 		}
 
 		WARN("System load average very high!");
 	}
 }
 
-/* Every T seconds we check loadavg */
+/*
+ * Every T seconds we check loadavg
+ */
 int loadavg_init(uev_ctx_t *ctx, int T)
 {
 	if (load_warn > 0.0 && load_reboot > 0.0) {
@@ -80,6 +85,9 @@ int loadavg_init(uev_ctx_t *ctx, int T)
 	return 1;
 }
 
+/*
+ * Parse '-a warn[,reboot]' argument
+ */
 int loadavg_set(char *arg)
 {
 	char buf[16], *ptr;

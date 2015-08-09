@@ -26,7 +26,7 @@ int verbose = 0;
 int sys_log = 0;
 int extkick = 0;
 int extdelay = 0;
-
+int wait_reboot = 0;
 int period = -1;
 
 /* Local variables */
@@ -47,23 +47,27 @@ static uev_t sigusr2_watcher;
  * the PC Watchdog card to reset its internal timer so it doesn't trigger
  * a computer reset.
  */
-void wdt_kick(char *msg)
+int wdt_kick(char *msg)
 {
 	int dummy;
 
 	DEBUG("%s", msg);
-	ioctl(fd, WDIOC_KEEPALIVE, &dummy);
+
+	return ioctl(fd, WDIOC_KEEPALIVE, &dummy);
 }
 
-void wdt_set_timeout(int count)
+/* FYI: The most common lowest setting is 120 sec. */
+int wdt_set_timeout(int count)
 {
 	int arg = count;
 
 	DEBUG("Setting watchdog timeout to %d sec.", count);
 	if (ioctl(fd, WDIOC_SETTIMEOUT, &arg))
-		PERROR("Failed setting HW watchdog timeout");
-	else
-		DEBUG("Previous timeout was %d sec", arg);
+		return 1;
+
+	DEBUG("Previous timeout was %d sec", arg);
+
+	return 0;
 }
 
 int wdt_get_timeout(void)
@@ -102,7 +106,7 @@ int wdt_get_bootstatus(void)
 	return status;
 }
 
-void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+int wdt_close(uev_ctx_t *ctx)
 {
 	if (fd != -1) {
 		if (magic) {
@@ -119,10 +123,15 @@ void wdt_close(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	}
 
 	/* Leave main loop. */
-	uev_exit(w->ctx);
+	return uev_exit(ctx);
 }
 
-void wdt_reboot(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+{
+	wdt_close(w->ctx);
+}
+
+int wdt_reboot(uev_ctx_t *ctx)
 {
 	/* Be nice, sync any buffered data to disk first. */
 	sync();
@@ -131,16 +140,21 @@ void wdt_reboot(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		INFO("Forced watchdog reboot.");
 		wdt_set_timeout(1);
 		close(fd);
-
-		while (1)
-			sched_yield();
 	}
 
+	/* Tell main() to loop until reboot ... */
+	wait_reboot = 1;
+
 	/* Leave main loop. */
-	uev_exit(w->ctx);
+	return uev_exit(ctx);
 }
 
-static void wdt_ext_kick(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
+void reboot_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+{
+	wdt_reboot(w->ctx);
+}
+
+static void ext_kick_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
 {
 	if (!extkick) {
 		extdelay = 0;
@@ -151,7 +165,7 @@ static void wdt_ext_kick(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events)
 	wdt_kick("External kick.");
 }
 
-static void wdt_ext_kick_exit(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
+static void ext_kick_exit_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
 {
 	INFO("External supervisor requested safe exit.  Reverting to built-in kick.");
 	extkick = 0;
@@ -160,18 +174,18 @@ static void wdt_ext_kick_exit(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(ev
 static void setup_signals(uev_ctx_t *ctx)
 {
 	/* Signals to stop watchdogd */
-	uev_signal_init(ctx, &sigterm_watcher, wdt_close, NULL, SIGTERM);
-	uev_signal_init(ctx, &sigint_watcher,  wdt_close, NULL, SIGINT);
-	uev_signal_init(ctx, &sigquit_watcher, wdt_close, NULL, SIGQUIT);
+	uev_signal_init(ctx, &sigterm_watcher, exit_cb, NULL, SIGTERM);
+	uev_signal_init(ctx, &sigint_watcher,  exit_cb, NULL, SIGINT);
+	uev_signal_init(ctx, &sigquit_watcher, exit_cb, NULL, SIGQUIT);
 
 	/* Watchdog reboot support */
-	uev_signal_init(ctx, &sigpwr_watcher, wdt_reboot, NULL, SIGPWR);
+	uev_signal_init(ctx, &sigpwr_watcher, reboot_cb, NULL, SIGPWR);
 
 	/* Kick from external process supervisor */
-	uev_signal_init(ctx, &sigusr1_watcher, wdt_ext_kick, NULL, SIGUSR1);
+	uev_signal_init(ctx, &sigusr1_watcher, ext_kick_cb, NULL, SIGUSR1);
 
 	/* Handle graceful exit by external supervisor */
-	uev_signal_init(ctx, &sigusr2_watcher, wdt_ext_kick_exit, NULL, SIGUSR2);
+	uev_signal_init(ctx, &sigusr2_watcher, ext_kick_exit_cb, NULL, SIGUSR2);
 }
 
 static int create_bootstatus(int timeout, int interval)
@@ -218,9 +232,10 @@ static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 
 static int usage(int status)
 {
-	printf("Usage: %s [-f] [-w <sec>] [-k <sec>] [-s] [-h|--help]\n"
+	printf("Usage: %s [-d <dev>] [-f] [-w <sec>] [-k <sec>] [-s] [-h|--help]\n"
                "A simple watchdog deamon that kicks /dev/watchdog every %d sec, by default.\n"
                "Options:\n"
+	       "  --device, -d <dev>       Device to use, default: " WDT_DEVNODE "\n"
                "  --foreground, -f         Start in foreground (background is default)\n"
 	       "  --external-kick, -x [N]  Force external watchdog kick using SIGUSR1\n"
 	       "                           A 'N x <interval>' delay for startup is given\n"
@@ -244,9 +259,11 @@ int main(int argc, char *argv[])
 	int real_timeout = 0;
 	int T;
 	int background = 1;
-	int c;
+	int c, status;
 	char *logfile = NULL;
+	char devnode[42] = WDT_DEVNODE;
 	struct option long_options[] = {
+		{"device",        1, 0, 'd'},
 		{"foreground",    0, 0, 'f'},
 		{"external-kick", 2, 0, 'x'},
 		{"interval",      1, 0, 'k'},
@@ -262,11 +279,15 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:d:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
 			    return usage(1);
+			break;
+
+		case 'd':
+			strlcpy(devnode, optarg, sizeof(devnode));
 			break;
 
 		case 'f':	/* Run in foreground */
@@ -351,14 +372,15 @@ int main(int argc, char *argv[])
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
 	setup_signals(&ctx);
 
-	fd = open(WDT_DEVNODE, O_WRONLY);
+	fd = open(devnode, O_WRONLY);
 	if (fd == -1) {
-		PERROR("Failed opening watchdog device, %s", WDT_DEVNODE);
+		PERROR("Failed opening watchdog device %s", devnode);
 		return 1;
 	}
 
 	/* Set requested WDT timeout right before we enter the event loop. */
-	wdt_set_timeout(timeout);
+	if (wdt_set_timeout(timeout))
+		PERROR("Failed setting HW watchdog timeout: %d", timeout);
 
 	/* Sanity check with driver that setting actually took. */
 	real_timeout = wdt_get_timeout();
@@ -399,7 +421,13 @@ int main(int argc, char *argv[])
 	if (pidfile(NULL))
 		PERROR("Cannot create pidfile");
 
-	return uev_run(&ctx, 0);
+	status = uev_run(&ctx, 0);
+	while (wait_reboot) {
+		INFO("Waiting for HW WDT reboot ...");
+		sleep(period);
+	}
+
+	return status;
 }
 
 /**

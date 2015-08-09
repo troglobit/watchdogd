@@ -59,12 +59,12 @@ extern int   extdelay;
 extern int   period;
 extern char *__progname;
 
-void wdt_kick           (char *msg);
-void wdt_set_timeout    (int count);
-int  wdt_get_timeout    (void);
-int  wdt_get_bootstatus (void);
-void wdt_close          (uev_t *w, void *UNUSED(arg), int UNUSED(events));
-void wdt_reboot         (uev_t *w, void *UNUSED(arg), int UNUSED(events));
+int wdt_kick           (char *msg);
+int wdt_set_timeout    (int count);
+int wdt_get_timeout    (void);
+int wdt_get_bootstatus (void);
+int wdt_close          (uev_ctx_t *ctx);
+int wdt_reboot         (uev_ctx_t *ctx);
 
 #endif /* WDT_H_ */
 
