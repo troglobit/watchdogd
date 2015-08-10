@@ -21,9 +21,10 @@
 ROOTDIR    ?= $(shell pwd)
 
 # VERSION      ?= $(shell git tag -l | tail -1)
-VERSION    ?= 1.6-dev
+VERSION    ?= 1.6
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
+ARCHTOOL    = `which git-archive-all`
 ARCHIVE     = $(PKG).tar
 ARCHIVEZ    = ../$(ARCHIVE).xz
 EXEC        = $(NAME)

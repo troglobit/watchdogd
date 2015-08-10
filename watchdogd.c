@@ -232,23 +232,30 @@ static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 
 static int usage(int status)
 {
-	printf("Usage: %s [-d <dev>] [-f] [-w <sec>] [-k <sec>] [-s] [-h|--help]\n"
-               "A simple watchdog deamon that kicks /dev/watchdog every %d sec, by default.\n"
+	printf("Usage:\n"
+	       "  %s [-fxLsVvh] [-d /dev/watchdog] [-a WARN,REBOOT] [-w SEC] [-k SEC]\n\n"
+	       "Example:\n"
+	       "  %s -d /dev/watchdog2 -a 0.8,0.9 -w 120 -k 30\n\n"
                "Options:\n"
-	       "  --device, -d <dev>       Device to use, default: " WDT_DEVNODE "\n"
-               "  --foreground, -f         Start in foreground (background is default)\n"
-	       "  --external-kick, -x [N]  Force external watchdog kick using SIGUSR1\n"
+	       "  -d, --device=<dev>       Device to use, default: %s\n"
+               "  -f, --foreground         Start in foreground (background is default)\n"
+	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
 	       "                           A 'N x <interval>' delay for startup is given\n"
-	       "  --logfile, -l <file>     Log to <file> when backgrounding, otherwise silent\n"
-	       "  --syslog, -L             Use syslog, even if in foreground\n"
-               "  --timeout, -w <sec>      Set the HW watchdog timeout to <sec> seconds\n"
-               "  --interval, -k <sec>     Set watchdog kick interval to <sec> seconds\n"
-               "  --safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM\n"
-	       "  --load-average, -a <val> Enable load average check <WARN,REBOOT>\n"
-	       "  --verbose, -V            Verbose operation, noisy output suitable for debugging\n"
-	       "  --version, -v            Display version and exit\n"
-               "  --help, -h               Display this help message and exit\n",
-               __progname, WDT_TIMEOUT_DEFAULT);
+	       "  -l, --logfile=<file>     Log to <file> in background, otherwise silent\n"
+	       "  -L, --syslog             Use syslog, even if in foreground\n"
+               "  -w, --timeout=<sec>      Set the HW watchdog timeout to <sec> seconds\n"
+               "  -k, --interval=<sec>     Set watchdog kick interval to <sec> seconds\n"
+               "  -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM\n"
+	       "  -a, --load-average=<val> Enable load average check <WARN,REBOOT>\n"
+	       "  -V, --verbose            Verbose, noisy output suitable for debugging\n"
+	       "  -v, --version            Display version and exit\n"
+               "  -h, --help               Display this help message and exit\n\n"
+               "Kicks %s every %d sec, loadavg monitor disabled, by default\n\n"
+	       "Most WDT drivers only support 120 sec as lowest timeout, but %s\n"
+	       "tries to set %d sec timeout.  Example values above are recommendations\n\n",
+               __progname, __progname,
+	       WDT_DEVNODE, WDT_DEVNODE, WDT_TIMEOUT_DEFAULT / 2,
+	       __progname, WDT_TIMEOUT_DEFAULT);
 
 	return status;
 }

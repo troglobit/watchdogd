@@ -16,38 +16,54 @@ Introduction
 ------------
 
 This is a slightly refactored and improved version of the original
-watchdogd from [uClinux-dist].  It was written by Michele d'Amico and
+watchdogd from [uClinux-dist][].  It was written by Michele d'Amico and
 later adapted to uClinux-dist by Mike Frysinger.
+
+
+**Example**
+
+    watchdogd -d /dev/watchdog2 -a 0.8,0.9 -w 120 -k 30
+
+Most WDT drivers only support 120 sec as lowest timeout, but watchdogd
+tries to set 20 sec timeout.  Example values above are recommendations
+
+watchdogd runs at the default UNIX priority (nice) level.
 
 
 Usage
 -----
 
-    watchdogd [-fVL] [-w <sec>] [-k <sec>] [-s] [-x [NUM]]
-	
-    --foreground, -f         Start in foreground, background is default
-    --external-kick, -x NUM  Force external watchdog kick using SIGUSR1
-                             A 'NUM x INTERVAL' delay for startup is given
-    --logfile, -l FILE       Log to FILE when backgrounding, otherwise silent
-    --syslog, -L             Use syslog, even if in foreground
-    --timeout, -w NUM        Set the HW watchdog timeout to NUM seconds
-    --interval, -k NUM       Set watchdog kick interval to NUM seconds
-    --safe-exit, -s          Disable watchdog on exit from SIGINT/SIGTERM
-    --verbose, -V            Verbose operation, noisy output suitable for debugging
-    --version, -v            Display version and exit
-    --help, -h               Display this help message and exit
+    watchdogd [-fxLsVvh] [-d /dev/watchdog] [-a WARN,REBOOT] [-w SEC] [-k SEC]
+    
+    Options:
+      -d, --device=<dev>       Device to use, default: /dev/watchdog
+      -f, --foreground         Start in foreground (background is default)
+      -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
+                               A 'N x <interval>' delay for startup is given
+      -l, --logfile=<file>     Log to <file> in background, otherwise silent
+      -L, --syslog             Use syslog, even if in foreground
+      -w, --timeout=<sec>      Set the HW watchdog timeout to <sec> seconds
+      -k, --interval=<sec>     Set watchdog kick interval to <sec> seconds
+      -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
+      -a, --load-average=<val> Enable load average check <WARN,REBOOT>
+      -V, --verbose            Verbose, noisy output suitable for debugging
+      -v, --version            Display version and exit
+      -h, --help               Display this help message and exit
+    
+By default, watchdogd opens `/dev/watchdog`, attempts to set 20 sec WDT
+timeout and then kicks, in the background, every 10 sec.
 
 
 Features
 --------
 
-The watchdogd can be used stand-alone to kick a kernel watchdog at
-`/dev/watchdog`, or with an external supervisor.  The latter must use
-`SIGUSR1` to activate external kicks.  To force an external supervisor
-daemon, use `--external-kick[=NUM]`, where NUM is an optional delay
-which can be quite useful at system startup.  E.g., with `NUM=3`
-watchdogd will delay the handover three built-in kicks, providing the
-external supervisor enough time to start.
+watchdogd can be used stand-alone to kick a kernel `/dev/watchdog`, or
+with an external supervisor.  The latter must use `SIGUSR1` to activate
+external kicks.  Use `--external-kick[=NUM]` to force an external
+supervisor daemon, where NUM is an optional delay which can be quite
+useful at system startup.  E.g., with `NUM=3` watchdogd will delay the
+handover three built-in kicks, providing the external supervisor enough
+time to start.
 
 An external supervisor often need to lookup the PID to be able to send
 signals, watchdogd stores its PID in `/var/run/watchdogd.pid` like any
@@ -56,6 +72,15 @@ other daemon.
 To force a kernel watchdog reboot, watchdogd supports `SIGPWR`.  What
 it does is to set the WDT timer to the lowest possible value (1 sec),
 close the connection to `/dev/watchdog`, and wait for WDT reboot.
+
+System load average monitoring can be enabeled with the `-a 0.8,0.9`
+command line argument.  The two values, separated by a comma, is the
+normalized load level for logging a warning message and issuing a
+reboot, respectively.  Normalized means watchdogd does not care how many
+CPU cores your system as online.  If the Linux kernel `/proc/loadavg`
+file shows `3.9 3.0 2.5` on a four-core CPU, watchdogd will consider
+this as a load of `0.98 0.75 0.63`, i.e. divided by four.  Only the one
+(1) and five (5) minute average values are used.
 
 
 Operation
@@ -87,17 +112,23 @@ everywhere.  Enable `--verbose` and use `--syslog` a logfile or
 Origin & References
 -------------------
 
-The [original code] in uClinux-dist has no license and is available in
+The [original code][] in uClinux-dist has no license and is available in
 the public domain, whereas this version is distributed under the ISC
-license.  See the file [LICENSE] for more on this.
+license.  See the file [LICENSE][] for more on this.
 
-This project is maintained by [Joachim Nilsson] collaboratively at
-[GitHub].  Please file a bug reports, clone it, or send pull requests
+This project is maintained by [Joachim Nilsson][] collaboratively at
+[GitHub][].  Please file a bug reports, clone it, or send pull requests
 for bug fixes and proposed extensions, or become a co-maintainer by
-contacting the main author.
+contacting the maintainer.
 
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
 [GitHub]:          http://github.com/troglobit/watchdogd
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [Joachim Nilsson]: http://troglobit.com
+
+<!--
+  -- Local Variables:
+  -- mode: markdown
+  -- End:
+  -->
