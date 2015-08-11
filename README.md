@@ -5,11 +5,13 @@ Table of Contents
 -----------------
 
 * [Introduction](#introduction)
+* [Download](#download)
 * [Usage](#usage)
 * [Features](#features)
 * [Operation](#operation)
 * [Debugging](#debugging)
 * [Origin & References](#origin--references)
+* [Contributing](#contributing)
 
 
 Introduction
@@ -136,6 +138,7 @@ Origin & References
 The [original code][] in uClinux-dist has no license and is available in
 the public domain, whereas this version is distributed under the ISC
 license.  See the file [LICENSE][] for more on this.
+
 
 Contributing
 ------------
