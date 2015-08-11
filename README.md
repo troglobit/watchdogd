@@ -1,5 +1,5 @@
-watchdogd | A small watchdog daemon
-===================================
+Watchdog with loadavg monitoring
+================================
 
 Table of Contents
 -----------------
@@ -15,10 +15,9 @@ Table of Contents
 Introduction
 ------------
 
-This is a slightly refactored and improved version of the original
-watchdogd from [uClinux-dist][].  It was written by Michele d'Amico and
-later adapted to uClinux-dist by Mike Frysinger.
-
+This is a refactored and improved version of the original watchdogd from
+[uClinux-dist][].  It was written by Michele d'Amico and later adapted
+to uClinux-dist by Mike Frysinger.
 
 **Example**
 
@@ -28,6 +27,28 @@ Most WDT drivers only support 120 sec as lowest timeout, but watchdogd
 tries to set 20 sec timeout.  Example values above are recommendations
 
 watchdogd runs at the default UNIX priority (nice) level.
+
+
+Download
+--------
+
+Although the project makes heavy use of GitHub, do *not* use the ZIP
+file links GitHub provides.  Instead, use the FTP or releases page to
+download tarballs:
+
+- http://ftp.troglobit.com/watchdogd/
+
+If you want to [contribute][[contrib]], check out the code from GitHub
+like this, including the submodules.  Remember to update the submodules
+whenever you do a `git pull`.
+
+	git clone https://github.com/troglobit/watchdogd
+	cd watchdogd
+	git submodule update --init
+
+The GitHub download links, including the ZIP files on the releases page,
+do not include the files from the GIT submodules, unfortunately.  This
+has been reported to GitHub but has not been fixed by them yet.
 
 
 Usage
@@ -116,15 +137,19 @@ The [original code][] in uClinux-dist has no license and is available in
 the public domain, whereas this version is distributed under the ISC
 license.  See the file [LICENSE][] for more on this.
 
+Contributing
+------------
+
 This project is maintained by [Joachim Nilsson][] collaboratively at
-[GitHub][].  Please file a bug reports, clone it, or send pull requests
-for bug fixes and proposed extensions, or become a co-maintainer by
-contacting the maintainer.
+[GitHub][].  If you find bugs or want to contribute fixes or features,
+see the file [CONTRIBUTING.md][contrib] for details.
+
 
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
 [GitHub]:          http://github.com/troglobit/watchdogd
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
+[contrib]:         https://github.com/troglobit/watchdogd/blob/master/CONTRIBUTING.md
 [Joachim Nilsson]: http://troglobit.com
 
 <!--
