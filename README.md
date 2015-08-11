@@ -38,7 +38,7 @@ download tarballs:
 
 - http://ftp.troglobit.com/watchdogd/
 
-If you want to [contribute][[contrib]], check out the code from GitHub
+If you want to [contribute][contrib], check out the code from GitHub
 like this, including the submodules.  Remember to update the submodules
 whenever you do a `git pull`.
 
