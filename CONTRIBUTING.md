@@ -74,7 +74,7 @@ Bill & Ted; [be excellent to each other][conduct].
 [KNF]:      https://en.wikipedia.org/wiki/Kernel_Normal_Form
 [gitbook]:  https://git-scm.com/book/ch5-2.html
 [rambling]: http://stopwritingramblingcommitmessages.com/
-[conduct]:  https://github.com/troglobit/watchdogd/blob/dev/CODE-OF-CONDUCT.md
+[conduct]:  https://github.com/troglobit/watchdogd/blob/master/CODE-OF-CONDUCT.md
 [libuEv]:   https://github.com/troglobit/libuev
 [libite]:   https://github.com/troglobit/libite
 
