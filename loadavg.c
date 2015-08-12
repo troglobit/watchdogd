@@ -1,4 +1,4 @@
-/* CPU load average functions
+/* CPU load average monitor
  *
  * Copyright (C) 2015  Christian Lockley <clockley1@gmail.com>
  * Copyright (C) 2015  Joachim Nilsson <troglobit@gmail.com>
@@ -18,12 +18,12 @@
 
 #include "wdt.h"
 
-/* Default: disabled -- recommended 0.8, 0.9 */
-double load_warn   = 0;
-double load_reboot = 0;
-
-/* Local variables */
 static uev_t watcher;
+
+/* Default: disabled -- recommended 0.8, 0.9 */
+static double warning  = 0;
+static double critical = 0;
+
 
 static double num_cores(void)
 {
@@ -55,11 +55,11 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	load[2] /= num;
 	avg = (load[0] + load[1]) / 2.0;
 
-	DEBUG("Adjusted: %.2f, %.2f, %.2f (1, 5, 15 min), avg: %.2f (1 + 5), warn: %.2f, reboot: %.2f",
-	      load[0], load[1], load[2], avg, load_warn, load_reboot);
+	DEBUG("Adjusted: %.2f, %.2f, %.2f (1, 5, 15 min), avg: %.2f (1 + 5), warning: %.2f, reboot: %.2f",
+	      load[0], load[1], load[2], avg, warning, critical);
 
-	if (avg > load_warn) {
-		if (avg > load_reboot) {
+	if (avg > warning) {
+		if (avg > critical) {
 			ERROR("System load too high, rebooting system ...");
 			wdt_reboot(w->ctx);
 			return;
@@ -74,19 +74,19 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
  */
 int loadavg_init(uev_ctx_t *ctx, int T)
 {
-	if (load_warn > 0.0 && load_reboot > 0.0) {
-		INFO("Starting load average monitor, warn: %.2f, reboot: %.2f",
-		     load_warn, load_reboot);
-		return uev_timer_init(ctx, &watcher, cb, NULL, T, T);
+	if (warning == 0.0 && critical == 0.0) {
+		INFO("Load average monitoring disabled.");
+		return 1;
 	}
 
-	INFO("Load average monitoring disabled.");
+	INFO("Starting load average monitor, warning: %.2f, reboot: %.2f",
+	     warning, critical);
 
-	return 1;
+	return uev_timer_init(ctx, &watcher, cb, NULL, T, T);
 }
 
 /*
- * Parse '-a warn[,reboot]' argument
+ * Parse '-a warning[,critical]' argument
  */
 int loadavg_set(char *arg)
 {
@@ -105,27 +105,27 @@ int loadavg_set(char *arg)
 		DEBUG("Found second arg: %s", ptr);
 	}
 
-	/* First argument is load_warn */
+	/* First argument is warning */
 	load = strtod(buf, NULL);
 	if (load <= 0) {
 	error:
 		ERROR("Load average argument invalid or too small.");
 		return 1;
 	}
-	load_warn = load;
+	warning = load;
 
-	/* Second argument, if given, is load_warn */
+	/* Second argument, if given, is warning */
 	if (ptr) {
 		load = strtod(ptr, NULL);
 		if (load <= 0)
 			goto error;
 	} else {
-		/* Backwards compat, when only warn is given */
+		/* Backwards compat, when only warning is given */
 		load += 0.1;
 	}
-	load_reboot = load;
+	critical = load;
 
-	DEBUG("Enabling loadavg check: %.2f, %.2f", load_warn, load_reboot);
+	DEBUG("Enabling loadavg check: %.2f, %.2f", warning, critical);
 
 	return 0;
 }
