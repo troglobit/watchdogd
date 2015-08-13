@@ -46,7 +46,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		return;
 	}
 
-	DEBUG("Load avg: %f, %f, %f (1, 5, 15 min) | Num CPU cores: %d",
+	DEBUG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
 	      load[0], load[1], load[2], (int)num);
 
 	/* Compensate for number of CPU cores */
@@ -60,12 +60,12 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 	if (avg > warning) {
 		if (avg > critical) {
-			ERROR("System load too high, rebooting system ...");
+			ERROR("System load too high, %.2f > %0.2f, rebooting system ...", avg, critical);
 			wdt_reboot(w->ctx);
 			return;
 		}
 
-		WARN("System load average very high!");
+		WARN("System load average very high, %.2f > %0.2f!", avg, warning);
 	}
 }
 
