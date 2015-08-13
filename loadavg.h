@@ -1,4 +1,4 @@
-/* CPU load average functions
+/* CPU load average monitor
  *
  * Copyright (C) 2015  Christian Lockley <clockley1@gmail.com>
  * Copyright (C) 2015  Joachim Nilsson <troglobit@gmail.com>
@@ -18,9 +18,6 @@
 
 #ifndef WDOG_LOADAVG_H_
 #define WDOG_LOADAVG_H_
-
-extern double load_warn;
-extern double load_reboot;
 
 int loadavg_init (uev_ctx_t *ctx, int T);
 int loadavg_set  (char *arg);
