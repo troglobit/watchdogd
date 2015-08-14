@@ -29,7 +29,7 @@ ARCHIVE     = $(PKG).tar
 ARCHIVEZ    = ../$(ARCHIVE).xz
 EXEC        = $(NAME)
 DISTFILES   = LICENSE README.md
-OBJS        = watchdogd.o loadavg.o
+OBJS        = watchdogd.o loadavg.o filenr.o
 SRCS        = $(OBJS:.o=.c)
 DEPS        = $(SRCS:.c=.d)
 

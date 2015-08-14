@@ -25,11 +25,6 @@ System Health Monitor
 
 Add system health monitor with capabilities to monitor:
 
-* CPU loadavg.  For details on UNIX loadavg, see
-  <http://stackoverflow.com/questions/11987495/linux-proc-loadavg>
-* Default to loadavg 0.7 as MAX recommended load before warning and 0.9
-  reboot, with one core.
-* File descriptor leaks, warn and reboot
 * RAM usage
 * RAM disks used for logfiles
 

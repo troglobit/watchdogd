@@ -18,6 +18,7 @@
  */
 
 #include "wdt.h"
+#include "filenr.h"
 #include "loadavg.h"
 
 /* Global daemon settings */
@@ -420,6 +421,9 @@ int main(int argc, char *argv[])
 
 	/* Every period (T) seconds we kick the wdt */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
+
+	/* Start file descriptor monitor */
+	filenr_init(&ctx, T);
 
 	/* Start load average monitor, if enabled */
 	loadavg_init(&ctx, T);
