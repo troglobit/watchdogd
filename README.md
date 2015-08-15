@@ -106,11 +106,15 @@ this as a load of `0.98 0.75 0.63`, i.e. divided by four.  Only the one
 (1) and five (5) minute average values are used.  For more information
 on the UNIX load average, see this [StackOverflow question][loadavg].
 
-watchdogd also monitors file descriptor usage.  This is currently not
-possible to disable.  (Support for that will be in watchdogd 2.0 which
+watchdogd also monitors both file descriptor and RAM usage.  These are
+currently not possible to disable.  (Thsi will be in watchdogd 2.0 which
 also will use a configuration file.)  The default is to issue a warning
-at 80% usage of all available file descriptors, and reboot at 95%.  For
-more details on the underlying mechanisms, see [this article][filenr].
+at 80% usage of all available file descriptors, 90% for RAM, and reboot
+at 95%.  The RAM usage monitor only triggers on systems without swap.
+This is detected by reading the file `/proc/meminfo`, looking for the
+`SwapTotal:` value.  For more details on the underlying mechanisms of
+file descriptor usage, see [this article][filenr].  For more info on the
+details of memory usage, see [this article][meminfo].
 
 
 Operation
@@ -158,6 +162,7 @@ see the file [CONTRIBUTING.md][contrib] for details.
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
 [loadavg]:         http://stackoverflow.com/questions/11987495/linux-proc-loadavg
 [filenr]:          http://www.cyberciti.biz/tips/linux-procfs-file-descriptors.html
+[meminfo]:         http://www.cyberciti.biz/faq/linux-check-memory-usage/
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
 [GitHub]:          http://github.com/troglobit/watchdogd
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE

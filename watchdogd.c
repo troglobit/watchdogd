@@ -20,6 +20,7 @@
 #include "wdt.h"
 #include "filenr.h"
 #include "loadavg.h"
+#include "meminfo.h"
 
 /* Global daemon settings */
 int magic   = 0;
@@ -427,6 +428,9 @@ int main(int argc, char *argv[])
 
 	/* Start load average monitor, if enabled */
 	loadavg_init(&ctx, T);
+
+	/* Start memory leak monitor */
+	meminfo_init(&ctx, T);
 
 	/* Only create pidfile when we're done with all set up. */
 	if (pidfile(NULL))
