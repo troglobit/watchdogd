@@ -58,12 +58,12 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 	if (level > warning) {
 		if (level > critical) {
-			ERROR("File descriptor usage too high, rebooting system ...");
+			ERROR("File descriptor usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
 			wdt_reboot(w->ctx);
 			return;
 		}
 
-		WARN("File descriptor use very high, possible leak!");
+		WARN("File descriptor use very high, %.2f > %0.2f, possible leak!", level, warning);
 	}
 }
 
