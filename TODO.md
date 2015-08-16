@@ -50,16 +50,16 @@ process stops responding, or when a respawn limit has been reached,
         #define  id pcode[0]   /* Saved to RTC alarm */
     } pmon_t;
     
-    wdog_pmon_ping()            /* Check if pmon/watchdogd is running. */
-    wdog_pmon_subscribe()       /* Register process with pmon */
-    wdog_pmon_unsubscribe()     /* Deregister, used on ordered exit() */
-    wdog_pmon_kick()            /* Periodic kick, may change ptimeout */
-    wdog_pmon_reboot()          /* Watchdog reboot from process */
+    wdt_pmon_ping()            /* Check if pmon/watchdogd is running. */
+    wdt_pmon_subscribe()       /* Register process with pmon */
+    wdt_pmon_unsubscribe()     /* Deregister, used on ordered exit() */
+    wdt_pmon_kick()            /* Periodic kick, may change ptimeout */
+    wdt_pmon_reboot()          /* Watchdog reboot from process */
     
     /* pause pmon as well on wdog pause, reset pmon timers on resume! */
-    wdog_pause()
+    wdt_pause()
 
-* The pmon API must by non-blocking!  Only the two (un)subscribe API's
+* The pmon API must be non-blocking!  Only the two (un)subscribe API's
   may block for a short period of time to ascertain connectivitiy.
 * The pmon API must handle the case when pmon has been stopped, or
   not started yet.  Possibly use 3x 2 sec sleep before timing out
@@ -67,7 +67,7 @@ process stops responding, or when a respawn limit has been reached,
   * In the case of subscribe we can assume pmon has not yet started,
     but may start soon -- since the process is set to use pmon.
   * In the case of unsubscribe pmon may suddenly have terminated.  The
-    wdog API must check if someone has done `wdog_pause()` before it
+    wdog API must check if someone has done `wdt_pause()` before it
     returns an error code to the process.
   * The kick API must not block!  It should use the public ping API
     to check connetivity with pmon before returning error.	
