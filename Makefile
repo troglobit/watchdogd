@@ -15,7 +15,7 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-.PHONY: all install clean distclean dist
+.PHONY: all install clean distclean dist submodules
 
 # Top directory for building complete system, fall back to this directory
 ROOTDIR    ?= $(shell pwd)
@@ -36,6 +36,8 @@ ALLOBJS    := $(OBJS) $(LIBOBJS)
 DEPS        = $(ALLOBJS:.o=.d)
 EXAMPLES   := examples/ex1
 
+SUBMODULES := libuev/Makefile libite/Makefile
+
 CFLAGS     += -O2 -W -Wall -Werror -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
 #CPPFLAGS   += -DEXPERIMENTAL
@@ -50,11 +52,20 @@ include common.mk
 
 all: $(LDLIBS) $(EXEC) $(LIB) $(EXAMPLES)
 
+$(ALLOBJS): $(SUBMODULES)
+
 $(LIB): $(LIBOBJS)
 	@printf "  ARCHIVE $(subst $(ROOTDIR)/,,$(shell pwd)/$@)\n"
 	@$(AR) $(ARFLAGS) $@ $^
 
-$(LDLIBS): Makefile
+$(SUBMODULES): submodules
+
+submodules:
+	@if [ ! -e libuev/Makefile -o ! -e libite/Makefile ]; then	\
+		git submodule update --init;				\
+	fi
+
+$(LDLIBS): $(SUBMODULES) Makefile
 	+@$(MAKE) STATIC=1 -C `dirname $@` `basename $@`
 
 $(EXEC): $(OBJS) $(LDLIBS) $(LIB)
