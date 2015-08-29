@@ -2,6 +2,7 @@
 JUNK       = *~ *.bak *.map .*.d DEADJOE semantic.cache *.gdb *.elf core core.*
 MAKE      := @$(MAKE)
 MAKEFLAGS  = --no-print-directory --silent
+ARFLAGS   := crus
 INSTALL   := install --backup=off
 STRIPINST := $(INSTALL) -s --strip-program=$(CROSS)strip -m 0755
 

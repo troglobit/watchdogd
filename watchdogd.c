@@ -21,6 +21,7 @@
 #include "filenr.h"
 #include "loadavg.h"
 #include "meminfo.h"
+#include "pmon.h"
 
 /* Global daemon settings */
 int magic   = 0;
@@ -30,9 +31,12 @@ int extkick = 0;
 int extdelay = 0;
 int wait_reboot = 0;
 int period = -1;
+int testmode = 0;
 
 /* Local variables */
 static int fd = -1;
+static char devnode[42] = WDT_DEVNODE;
+
 
 /* Event contexts */
 static uev_t period_watcher;
@@ -45,6 +49,23 @@ static uev_t sigusr2_watcher;
 
 
 /*
+ * Connect to kernel wdt driver
+ */
+int wdt_init(void)
+{
+	if (testmode)
+		return 0;
+
+	fd = open(devnode, O_WRONLY);
+	if (fd == -1) {
+		DEBUG("Failed opening watchdog device %s: %s", devnode, strerror(errno));
+		return 1;
+	}
+
+	return 0;
+}
+
+/*
  * This function simply sends an IOCTL to the driver, which in turn ticks
  * the PC Watchdog card to reset its internal timer so it doesn't trigger
  * a computer reset.
@@ -54,6 +75,8 @@ int wdt_kick(char *msg)
 	int dummy;
 
 	DEBUG("%s", msg);
+	if (testmode)
+		return 0;
 
 	return ioctl(fd, WDIOC_KEEPALIVE, &dummy);
 }
@@ -62,6 +85,9 @@ int wdt_kick(char *msg)
 int wdt_set_timeout(int count)
 {
 	int arg = count;
+
+	if (testmode)
+		return 0;
 
 	DEBUG("Setting watchdog timeout to %d sec.", count);
 	if (ioctl(fd, WDIOC_SETTIMEOUT, &arg))
@@ -77,6 +103,9 @@ int wdt_get_timeout(void)
 	int count;
 	int err;
 
+	if (testmode)
+		return 0;
+
 	err = ioctl(fd, WDIOC_GETTIMEOUT, &count);
 	if (err)
 		count = err;
@@ -90,6 +119,9 @@ int wdt_get_bootstatus(void)
 {
 	int status = 0;
 	int err;
+
+	if (testmode)
+		return status;
 
 	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
 		status = err;
@@ -270,7 +302,6 @@ int main(int argc, char *argv[])
 	int background = 1;
 	int c, status;
 	char *logfile = NULL;
-	char devnode[42] = WDT_DEVNODE;
 	struct option long_options[] = {
 		{"device",        1, 0, 'd'},
 		{"foreground",    0, 0, 'f'},
@@ -280,6 +311,7 @@ int main(int argc, char *argv[])
 		{"logfile",       1, 0, 'l'},
 		{"safe-exit",     0, 0, 's'},
 		{"syslog",        0, 0, 'L'},
+		{"test-mode",     0, 0, 't'},
 		{"timeout",       1, 0, 'w'},
 		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
@@ -288,7 +320,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:d:fx::l:Lw:k:sVvh?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:d:fx::l:Lw:k:stVvh?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -303,12 +335,8 @@ int main(int argc, char *argv[])
 			background = 0;
 			break;
 
-		case 'x':
-			if (!optarg)
-				extdelay = 1; /* Default is 1 x period */
-			else
-				extdelay = atoi(optarg);
-			break;
+		case 'h':
+			return usage(0);
 
 		case 'l':	/* Log to file */
 			if (!optarg) {
@@ -320,14 +348,6 @@ int main(int argc, char *argv[])
 
 		case 'L':	/* Force use of syslog, regardless */
 			sys_log = 1;
-			break;
-
-		case 'w':	/* Watchdog timeout */
-			if (!optarg) {
-				ERROR("Missing timeout argument.");
-				return usage(1);
-			}
-			timeout = atoi(optarg);
 			break;
 
 		case 'k':	/* Watchdog kick interval */
@@ -342,6 +362,10 @@ int main(int argc, char *argv[])
 			magic = 1;
 			break;
 
+		case 't':	/* Enable test mode, no interaction with kernel, for testing pmon */
+			testmode = 1;
+			break;
+
 		case 'v':
 			printf("v%s\n", VERSION);
 			return 0;
@@ -350,8 +374,20 @@ int main(int argc, char *argv[])
 			verbose = 1;
 			break;
 
-		case 'h':
-			return usage(0);
+		case 'w':	/* Watchdog timeout */
+			if (!optarg) {
+				ERROR("Missing timeout argument.");
+				return usage(1);
+			}
+			timeout = atoi(optarg);
+			break;
+
+		case 'x':
+			if (!optarg)
+				extdelay = 1; /* Default is 1 x period */
+			else
+				extdelay = atoi(optarg);
+			break;
 
 		default:
 			printf("Unrecognized option \"-%c\".\n", c);
@@ -381,11 +417,8 @@ int main(int argc, char *argv[])
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
 	setup_signals(&ctx);
 
-	fd = open(devnode, O_WRONLY);
-	if (fd == -1) {
-		PERROR("Failed opening watchdog device %s", devnode);
-		return 1;
-	}
+	if (wdt_init())
+		errx(1, "Failed connecting to kernel watchdog driver, exiting!");
 
 	/* Set requested WDT timeout right before we enter the event loop. */
 	if (wdt_set_timeout(timeout))
@@ -432,12 +465,17 @@ int main(int argc, char *argv[])
 	/* Start memory leak monitor */
 	meminfo_init(&ctx, T);
 
+#ifdef EXPERIMENTAL
+	/* Start process monitor */
+	pmon_init(&ctx, T);
+#endif
+
 	/* Only create pidfile when we're done with all set up. */
 	if (pidfile(NULL))
 		PERROR("Cannot create pidfile");
 
 	status = uev_run(&ctx, 0);
-	while (wait_reboot) {
+	while (!testmode && wait_reboot) {
 		INFO("Waiting for HW WDT reboot ...");
 		sleep(period);
 	}

@@ -21,7 +21,7 @@
 ROOTDIR    ?= $(shell pwd)
 
 # VERSION      ?= $(shell git tag -l | tail -1)
-VERSION    ?= 1.6
+VERSION    ?= 2.0-pre
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
 ARCHTOOL    = `which git-archive-all`
@@ -29,12 +29,16 @@ ARCHIVE     = $(PKG).tar
 ARCHIVEZ    = ../$(ARCHIVE).xz
 EXEC        = $(NAME)
 DISTFILES   = LICENSE README.md
-OBJS        = watchdogd.o loadavg.o filenr.o meminfo.o
-SRCS        = $(OBJS:.o=.c)
-DEPS        = $(SRCS:.c=.d)
+OBJS        = watchdogd.o loadavg.o filenr.o meminfo.o pmon.o
+LIB        := libwdog.a
+LIBOBJS    := api.o
+ALLOBJS    := $(OBJS) $(LIBOBJS)
+DEPS        = $(ALLOBJS:.o=.d)
+EXAMPLES   := examples/ex1
 
 CFLAGS     += -O2 -W -Wall -Werror -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
+#CPPFLAGS   += -DEXPERIMENTAL
 LDLIBS     += libuev/libuev.a libite/pidfile.o libite/strlcpy.o
 
 # Installation paths, always prepended with DESTDIR if set
@@ -44,12 +48,18 @@ datadir     = $(prefix)/share/doc/$(NAME)
 
 include common.mk
 
-all: $(LDLIBS) $(EXEC)
+all: $(LDLIBS) $(EXEC) $(LIB) $(EXAMPLES)
+
+$(LIB): $(LIBOBJS)
+	@printf "  ARCHIVE $(subst $(ROOTDIR)/,,$(shell pwd)/$@)\n"
+	@$(AR) $(ARFLAGS) $@ $^
 
 $(LDLIBS): Makefile
 	+@$(MAKE) STATIC=1 -C `dirname $@` `basename $@`
 
-$(EXEC): $(OBJS) $(LDLIBS)
+$(EXEC): $(OBJS) $(LDLIBS) $(LIB)
+
+examples/ex1: examples/ex1.o $(LIB)
 
 install: all
 	@$(INSTALL) -d $(DESTDIR)$(datadir)
@@ -74,7 +84,7 @@ uninstall:
 clean:
 	+@$(MAKE) -C libite $@
 	+@$(MAKE) -C libuev $@
-	-@$(RM) $(OBJS) $(DEPS) $(EXEC)
+	-@$(RM) $(OBJS) $(DEPS) $(EXEC) $(LIB) $(LIBOBJS)
 
 distclean: clean
 	+@$(MAKE) -C libite $@
