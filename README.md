@@ -1,5 +1,6 @@
 Watchdog with loadavg monitoring
 ================================
+[![Travis Status][]][Travis]
 
 Table of Contents
 -----------------
@@ -164,6 +165,8 @@ for details.
 [filenr]:          http://www.cyberciti.biz/tips/linux-procfs-file-descriptors.html
 [meminfo]:         http://www.cyberciti.biz/faq/linux-check-memory-usage/
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
+[Travis]:          https://travis-ci.org/troglobit/watchdogd
+[Travis Status]:   https://travis-ci.org/troglobit/watchdogd.png?branch=master
 [GitHub]:          http://github.com/troglobit/watchdogd
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [contrib]:         https://github.com/troglobit/watchdogd/blob/master/CONTRIBUTING.md
