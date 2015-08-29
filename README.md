@@ -34,23 +34,15 @@ watchdogd runs at the default UNIX priority (nice) level.
 Download
 --------
 
-Although the project makes heavy use of GitHub, do *not* use the ZIP
-file links GitHub provides.  Instead, use the FTP or releases page to
-download tarballs:
+Although the project makes heavy use of GitHub, it is *not* recommended
+to use the ZIP file links GitHub provides.  Instead, we recommend using
+proper tarball releases from [the FTP][], or the [releases page][].
 
-- http://ftp.troglobit.com/watchdogd/
+The GitHub *Download ZIP* links, and ZIP files on the [releases page][],
+do not include files from the GIT submodules.  The Makefile makes up for
+this, but is not 100% foolproof.
 
-If you want to [contribute][contrib], check out the code from GitHub
-like this, including the submodules.  Remember to update the submodules
-whenever you do a `git pull`.
-
-	git clone https://github.com/troglobit/watchdogd
-	cd watchdogd
-	git submodule update --init
-
-The GitHub download links, including the ZIP files on the releases page,
-do not include the files from the GIT submodules, unfortunately.  This
-has been reported to GitHub but has not been fixed by them yet.
+See below if you want to contribute.
 
 
 Usage
@@ -156,7 +148,15 @@ Contributing
 
 This project is maintained by [Joachim Nilsson][] collaboratively at
 [GitHub][].  If you find bugs or want to contribute fixes or features,
-see the file [CONTRIBUTING.md][contrib] for details.
+check out the code from GitHub, including the submodules:
+
+	git clone https://github.com/troglobit/uftpd
+	cd uftpd
+	make submodules
+
+When you pull from upstream, remember to also update the submodules
+using `git submodule update`, see the file [CONTRIBUTING.md][contrib]
+for details.
 
 
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
@@ -168,6 +168,8 @@ see the file [CONTRIBUTING.md][contrib] for details.
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [contrib]:         https://github.com/troglobit/watchdogd/blob/master/CONTRIBUTING.md
 [Joachim Nilsson]: http://troglobit.com
+[the FTP]:         http://ftp.troglobit.com/watchdogd/
+[releases page]:   https://github.com/troglobit/watchdogd/releases
 
 <!--
   -- Local Variables:
