@@ -142,6 +142,9 @@ int wdt_get_bootstatus(void)
 
 int wdt_close(uev_ctx_t *ctx)
 {
+	/* Let plugins exit before we leave main loop */
+	pmon_exit(ctx);
+
 	if (fd != -1) {
 		if (magic) {
 			INFO("Disabling HW watchdog timer before (safe) exit.");
@@ -167,6 +170,9 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 int wdt_reboot(uev_ctx_t *ctx)
 {
+	/* Let plugins exit before we leave main loop */
+	pmon_exit(ctx);
+
 	/* Be nice, sync any buffered data to disk first. */
 	sync();
 
@@ -475,6 +481,7 @@ int main(int argc, char *argv[])
 		PERROR("Cannot create pidfile");
 
 	status = uev_run(&ctx, 0);
+
 	while (!testmode && wait_reboot) {
 		INFO("Waiting for HW WDT reboot ...");
 		sleep(period);

@@ -30,10 +30,20 @@ typedef struct {
 	int   ack;		/* Next expected ACK from process */
 } pmon_t;
 
+static int     sd = -1;
 static uev_t   watcher;
 static pmon_t  process[256];	/* Max ID 0-255 */
 
 
+/*
+ * Create new &pmon_t for client process
+ *
+ * Returns:
+ * A &pmon_t object, with @pid, @label and @timeout filled in, or
+ * %NULL on error, with @errno set to one of:
+ * - %EINVAL when no label was given, or @timeout < %WDOG_PMON_MIN_TIMEOUT
+ * - %ENOMEM when MAX number of monitored processes has been reached
+ */
 static pmon_t *allocate(pid_t pid, char *label, int timeout)
 {
 	size_t i;
@@ -68,7 +78,16 @@ static void release(pmon_t *p)
 	p->id = -1;
 }
 
-/* Validate user's kick/unsubscribe against our records */
+/*
+ * Validate user's kick/unsubscribe against our records
+ *
+ * Returns:
+ * Pointer to &pmon_t object, or %NULL on error, with errno set to one of:
+ * - %EINVAL when the given ID is out of bounds
+ * - %EIDRM when daemon was restarted or client disconnected but keeps kicking
+ * - %EBADE when someone else tries to kick on behalf of client
+ * - %EBADRQC when client uses the wrong ack code
+ */
 static pmon_t *get(int id, pid_t pid, int ack)
 {
 	pmon_t *p;
@@ -80,8 +99,11 @@ static pmon_t *get(int id, pid_t pid, int ack)
 
 	p = &process[id];
 	if (p->pid != pid) {
-		INFO("Invalid pid %d for registered pid %d", pid, p->pid);
-		errno = EBADE;
+		if (!p->pid)
+			errno = EIDRM;
+		else
+			errno = EBADE;
+
 		return NULL;
 	}
 
@@ -145,7 +167,10 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		/* Start timer, return ID from allocated timer. */
 		INFO("Hello %s, registering pid %d ...", req.label, req.pid);
 		p = allocate(req.pid, req.label, req.timeout);
-		if (p) {
+		if (!p) {
+			req.cmd   = WDOG_PMON_CMD_ERROR;
+			req.error = errno;
+		} else {
 			next_ack(p, &req);
 			INFO("pid %d next ack => %d", req.pid, req.next_ack);
 			uev_timer_init(w->ctx, &p->watcher, timeout, p, p->timeout, p->timeout);
@@ -157,7 +182,8 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		p = get(req.id, req.pid, req.ack);
 		if (!p) {
 			PERROR("Process %d tried to unsubscribe using invalid credentials", req.pid);
-			req.cmd = WDOG_PMON_CMD_ERROR;
+			req.cmd   = WDOG_PMON_CMD_ERROR;
+			req.error = errno;
 		} else {
 			uev_timer_stop(&p->watcher);
 			release(p);
@@ -170,7 +196,8 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		p = get(req.id, req.pid, req.ack);
 		if (!p) {
 			PERROR("Process %d tried to kick using invalid credentials", req.pid);
-			req.cmd = WDOG_PMON_CMD_ERROR;
+			req.cmd   = WDOG_PMON_CMD_ERROR;
+			req.error = errno;
 		} else {
 			INFO("How do you do %s (pid %d), id:%d -- ACK should be %d, is %d",
 			      req.label, req.pid, req.id, p->ack, req.ack);
@@ -181,12 +208,15 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 	default:
 		ERROR("pmon: Invalid command %d", req.cmd);
+		req.cmd   = WDOG_PMON_CMD_ERROR;
+		req.error = EBADMSG;
 		break;
 	}
 
 	if (write(sd, &req, sizeof(req)) != sizeof(req))
 		WARN("Failed sending reply to client %s, id:%d", req.label, req.id);
 
+	shutdown(sd, SHUT_RDWR);
 	close(sd);
 }
 
@@ -195,8 +225,12 @@ extern int wdog_pmon_api_init(int server);
 
 int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 {
-	int sd;
 	size_t i;
+
+	if (sd != -1) {
+		ERROR("Plugin pmon already started.");
+		return 1;
+	}
 
 	INFO("Starting process heartbeat monitor, waiting for process subscribe ...");
 
@@ -213,6 +247,28 @@ int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 	}
 		
 	return uev_io_init(ctx, &watcher, cb, NULL, sd, UEV_READ);
+}
+
+int pmon_exit(uev_ctx_t *UNUSED(ctx))
+{
+	size_t i;
+
+	uev_io_stop(&watcher);
+	shutdown(sd, SHUT_RDWR);
+	remove(WDOG_PMON_PATH);
+	close(sd);
+	sd = -1;
+
+	for (i = 0; i < NELEMS(process); i++) {
+		if (process[i].id != -1) {
+			uev_timer_stop(&process[i].watcher);
+
+			memset(&process[i], 0, sizeof(pmon_t));
+			process[i].id = -1;
+		}
+	}
+
+	return 0;
 }
 
 /**

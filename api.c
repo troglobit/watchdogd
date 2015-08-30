@@ -105,8 +105,11 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 	};
 
 	sd = wdog_pmon_api_init(0);
-	if (-1 == sd)
+	if (-1 == sd) {
+		if (errno == ENOENT)
+			errno = EAGAIN;
 		return -errno;
+	}
 
 	if (!label || !label[0])
 		label = __progname;
@@ -128,7 +131,7 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 	}
 
 	if (req.cmd == WDOG_PMON_CMD_ERROR) {
-		errno = EINVAL;
+		errno = req.error;
 		goto error;
 	}
 

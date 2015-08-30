@@ -28,6 +28,7 @@
 
 typedef struct {
 	int    cmd;
+	int    error;		/* Set on WDOG_PMON_CMD_ERROR */
 	int    id;		/* Registered ID */
 	pid_t  pid;		/* Process ID */
 	char   label[16];	/* process name or label */

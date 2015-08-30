@@ -35,7 +35,8 @@ int main(void)
 
 	for (i = 0; i < 20; i++) {
 		printf("%s: Kicking ...\n", __progname);
-		wdog_pmon_kick(id, &ack);
+		if (wdog_pmon_kick(id, &ack))
+			perror("Failed kicking");
 		sleep(2);
 	}
 
