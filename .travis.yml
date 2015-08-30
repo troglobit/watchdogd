@@ -1,0 +1,11 @@
+# Travis CI integration
+# Defaults to GNU GCC and autotools: ./configure && make && make test
+language: c
+
+# We don't need to install packages, use dockerized build, quicker
+sudo: false
+
+# We (currently) don't use GNU Configure & Build System, only a simple
+# Makefile, for the time being.
+script:
+  - make
