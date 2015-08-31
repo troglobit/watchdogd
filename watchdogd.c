@@ -49,6 +49,35 @@ static uev_t sigusr2_watcher;
 
 
 /*
+ *
+ */
+static void plugins_init(uev_ctx_t *ctx, int T)
+{
+	/* Start file descriptor monitor */
+	filenr_init(ctx, T);
+
+	/* Start load average monitor, if enabled */
+	loadavg_init(ctx, T);
+
+	/* Start memory leak monitor */
+	meminfo_init(ctx, T);
+
+#ifdef EXPERIMENTAL
+	/* Start process monitor */
+	pmon_init(ctx, T);
+#endif
+}
+
+/*
+ *
+ */
+static void plugins_exit(uev_ctx_t *ctx)
+{
+	pmon_exit(ctx);
+}
+
+
+/*
  * Connect to kernel wdt driver
  */
 int wdt_init(void)
@@ -143,7 +172,7 @@ int wdt_get_bootstatus(void)
 int wdt_close(uev_ctx_t *ctx)
 {
 	/* Let plugins exit before we leave main loop */
-	pmon_exit(ctx);
+	plugins_exit(ctx);
 
 	if (fd != -1) {
 		if (magic) {
@@ -171,7 +200,7 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 int wdt_reboot(uev_ctx_t *ctx)
 {
 	/* Let plugins exit before we leave main loop */
-	pmon_exit(ctx);
+	plugins_exit(ctx);
 
 	/* Be nice, sync any buffered data to disk first. */
 	sync();
@@ -462,19 +491,8 @@ int main(int argc, char *argv[])
 	/* Every period (T) seconds we kick the wdt */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
-	/* Start file descriptor monitor */
-	filenr_init(&ctx, T);
-
-	/* Start load average monitor, if enabled */
-	loadavg_init(&ctx, T);
-
-	/* Start memory leak monitor */
-	meminfo_init(&ctx, T);
-
-#ifdef EXPERIMENTAL
-	/* Start process monitor */
-	pmon_init(&ctx, T);
-#endif
+	/* Start all enabled plugins */
+	plugins_init(&ctx, T);
 
 	/* Only create pidfile when we're done with all set up. */
 	if (pidfile(NULL))
