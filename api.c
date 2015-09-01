@@ -115,9 +115,16 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 		label = __progname;
 
 	strncpy(req.label, label, sizeof(req.label));
-	if (WDOG_PMON_SUBSCRIBE_CMD != cmd) {
+	switch (cmd) {
+	case WDOG_PMON_KICK_CMD:
+	case WDOG_PMON_UNSUBSCRIBE_CMD:
 		req.id  = id;
 		req.ack = *ack;
+		break;
+
+	default:
+		req.id = id;
+		break;
 	}
 
 	if (sock_poll(sd, POLLOUT)) {
@@ -160,6 +167,16 @@ int wdog_pmon_kick(int id, int *ack)
 int wdog_pmon_unsubscribe(int id, int ack)
 {
 	return doit(WDOG_PMON_UNSUBSCRIBE_CMD, id, NULL, -1, &ack);
+}
+
+int wdog_enable(int enable)
+{
+	return doit(WDOG_ENABLE_CMD, !!enable, NULL, -1, NULL);
+}
+
+int wdog_status(int *enabled)
+{
+	return doit(WDOG_STATUS_CMD, 0, NULL, -1, enabled);
 }
 
 /**

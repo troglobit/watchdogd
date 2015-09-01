@@ -53,12 +53,15 @@
 
 /* Global variables */
 extern int   magic;
+extern int   enabled;
 extern int   verbose;
 extern int   sys_log;
 extern int   extkick;
 extern int   extdelay;
 extern int   period;
 extern char *__progname;
+
+int wdt_enable         (int enable);
 
 int wdt_kick           (char *msg);
 int wdt_set_timeout    (int count);

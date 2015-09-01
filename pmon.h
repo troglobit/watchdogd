@@ -18,8 +18,10 @@
 #ifndef WDOG_PMON_H_
 #define WDOG_PMON_H_
 
-int pmon_init(uev_ctx_t *ctx, int T);
-int pmon_exit(uev_ctx_t *ctx);
+int pmon_init   (uev_ctx_t *ctx, int T);
+int pmon_exit   (uev_ctx_t *ctx);
+
+int pmon_enable (int enable);
 
 #endif /* WDOG_PMON_H_ */
 

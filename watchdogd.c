@@ -25,6 +25,7 @@
 
 /* Global daemon settings */
 int magic   = 0;
+int enabled = 1;
 int verbose = 0;
 int sys_log = 0;
 int extkick = 0;
@@ -167,6 +168,27 @@ int wdt_get_bootstatus(void)
 	}
 
 	return status;
+}
+
+int wdt_enable(int enable)
+{
+	int result = 0;
+
+	if (!enable) {
+		/* Attempt to disable HW watchdog */
+		if (fd != 1) {
+			if (-1 == write(fd, "V", 1))
+				PERROR("Failed disabling HW watchdog, system will likely reboot now");
+			close(fd);
+			fd = -1;
+		}
+	} else {
+		result += wdt_init();
+	}
+
+	result += pmon_enable(enable);
+
+	return result;
 }
 
 int wdt_close(uev_ctx_t *ctx)

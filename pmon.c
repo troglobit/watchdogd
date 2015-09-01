@@ -202,8 +202,17 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 			INFO("How do you do %s (pid %d), id:%d -- ACK should be %d, is %d",
 			      req.label, req.pid, req.id, p->ack, req.ack);
 			next_ack(p, &req);
-			uev_timer_set(&p->watcher, p->timeout, p->timeout);
+			if (enabled)
+				uev_timer_set(&p->watcher, p->timeout, p->timeout);
 		}
+		break;
+
+	case WDOG_ENABLE_CMD:
+		req.next_ack = wdt_enable(req.id);
+		break;
+
+	case WDOG_STATUS_CMD:
+		req.next_ack = enabled;
 		break;
 
 	default:
@@ -269,6 +278,25 @@ int pmon_exit(uev_ctx_t *UNUSED(ctx))
 	}
 
 	return 0;
+}
+
+int pmon_enable(int enable)
+{
+	int    result = 0;
+	size_t i;
+
+	for (i = 0; i < NELEMS(process); i++) {
+		pmon_t *p = &process[i];
+
+		if (p->id != -1) {
+			if (!enable)
+				result += uev_timer_stop(&p->watcher);
+			else
+				result += uev_timer_set(&p->watcher, p->timeout, p->timeout);
+		}
+	}
+
+	return result;
 }
 
 /**
