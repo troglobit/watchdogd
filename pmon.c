@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sched.h>
 #include <sys/socket.h>
 
 #include "wdt.h"
@@ -31,9 +32,50 @@ typedef struct {
 } pmon_t;
 
 static int     sd = -1;
+static int     rtprio = 0;
 static uev_t   watcher;
 static pmon_t  process[256];	/* Max ID 0-255 */
 
+/* In libwdog.a */
+extern int wdog_pmon_api_init(int server);
+
+
+static size_t num_supervised(void)
+{
+	size_t i, num = 0;
+
+	for (i = 0; i < NELEMS(process); i++) {
+		if (process[i].id != -1)
+			num++;
+	}
+
+	return num;
+}
+
+/*
+ * If any process is being supervised/subscribed, and watchdogd is
+ * enabled, we raise the RT priority to 98 (just below the kernel WDT in
+ * prio).  This to ensure that system monitoring goes before anything
+ * else in the system.
+ */
+static void set_priority(void)
+{
+	struct sched_param prio;
+
+	if (num_supervised() && enabled) {
+		if (!rtprio) {
+			prio.sched_priority = 98;
+			sched_setscheduler(getpid(), SCHED_RR, &prio);
+			rtprio = 1;
+		}
+	} else {
+		if (rtprio) {
+			prio.sched_priority = 0;
+			sched_setscheduler(getpid(), SCHED_OTHER, &prio);
+			rtprio = 0;
+		}
+	}
+}
 
 /*
  * Create new &pmon_t for client process
@@ -227,10 +269,9 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 	shutdown(sd, SHUT_RDWR);
 	close(sd);
-}
 
-/* In libwdog.a */
-extern int wdog_pmon_api_init(int server);
+	set_priority();
+}
 
 int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 {
@@ -277,6 +318,8 @@ int pmon_exit(uev_ctx_t *UNUSED(ctx))
 		}
 	}
 
+	set_priority();
+
 	return 0;
 }
 
@@ -295,6 +338,8 @@ int pmon_enable(int enable)
 				result += uev_timer_set(&p->watcher, p->timeout, p->timeout);
 		}
 	}
+
+	set_priority();
 
 	return result;
 }
