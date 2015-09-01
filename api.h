@@ -17,7 +17,7 @@
 
 #include <unistd.h>
 
-#define WDOG_PMON_PATH              "/tmp/wdog.sock"
+#define WDOG_PMON_PATH              "/tmp/wdog.sock" /* XXX: Change to _PATH_VARRUN later! */
 
 #define WDOG_PMON_SUBSCRIBE_CMD     1
 #define WDOG_PMON_UNSUBSCRIBE_CMD   2
