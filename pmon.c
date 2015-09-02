@@ -60,21 +60,27 @@ static size_t num_supervised(void)
  */
 static void set_priority(void)
 {
+	int result = 0;
 	struct sched_param prio;
 
 	if (num_supervised() && enabled) {
 		if (!rtprio) {
 			prio.sched_priority = 98;
-			sched_setscheduler(getpid(), SCHED_RR, &prio);
+			DEBUG("Setting SCHED_RR rtprio %d", prio.sched_priority);
+			result = sched_setscheduler(getpid(), SCHED_RR, &prio);
 			rtprio = 1;
 		}
 	} else {
 		if (rtprio) {
 			prio.sched_priority = 0;
-			sched_setscheduler(getpid(), SCHED_OTHER, &prio);
+			DEBUG("Setting SCHED_OTHER prio %d", prio.sched_priority);
+			result = sched_setscheduler(getpid(), SCHED_OTHER, &prio);
 			rtprio = 0;
 		}
 	}
+
+	if (result)
+		PERROR("Failed setting process %spriority", rtprio ? "realtime " : "");
 }
 
 /*
