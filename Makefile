@@ -40,8 +40,7 @@ SUBMODULES := libuev/Makefile libite/Makefile
 
 CFLAGS     += -O2 -W -Wall -Werror -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
-#CPPFLAGS   += -DEXPERIMENTAL
-LDLIBS     += libuev/libuev.a libite/pidfile.o libite/strlcpy.o
+LDLIBS     += libuev/libuev.a libite/pidfile.o libite/strlcpy.o libite/strtonum.o
 
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr

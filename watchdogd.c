@@ -63,10 +63,8 @@ static void plugins_init(uev_ctx_t *ctx, int T)
 	/* Start memory leak monitor */
 	meminfo_init(ctx, T);
 
-#ifdef EXPERIMENTAL
 	/* Start process monitor */
 	pmon_init(ctx, T);
-#endif
 }
 
 /*
@@ -385,6 +383,8 @@ static int usage(int status)
 	       "  -a, --load-average=<val> Enable load average check, <WARN,REBOOT>\n"
 	       "  -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>\n"
 	       "  -n, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>\n"
+	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"
+	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
 	       "  -V, --verbose            Verbose, noisy output suitable for debugging\n"
 	       "  -v, --version            Display version and exit\n"
@@ -420,6 +420,7 @@ int main(int argc, char *argv[])
 		{"syslog",        0, 0, 'L'},
 		{"meminfo",       1, 0, 'm'},
 		{"filenr",        1, 0, 'n'},
+		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 's'},
 		{"test-mode",     0, 0, 't'},
 		{"verbose",       0, 0, 'V'},
@@ -430,7 +431,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:d:fhl:Lm:n:w:k:stVvx::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:d:fhl:Lm:n:w:k:p::stVvx::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -475,6 +476,11 @@ int main(int argc, char *argv[])
 
 		case 'n':
 			if (filenr_set(optarg))
+				return usage(1);
+			break;
+
+		case 'p':
+			if (pmon_set(optarg))
 				return usage(1);
 			break;
 

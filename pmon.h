@@ -20,6 +20,7 @@
 
 int pmon_init   (uev_ctx_t *ctx, int T);
 int pmon_exit   (uev_ctx_t *ctx);
+int pmon_set    (char *optarg);
 
 int pmon_enable (int enable);
 

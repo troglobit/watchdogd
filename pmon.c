@@ -32,7 +32,9 @@ typedef struct {
 } pmon_t;
 
 static int     sd = -1;
-static int     rtprio = 0;
+static int     active = 0;
+static int     rtprio = 98;
+static int     pmon_enabled = 0;
 static uev_t   watcher;
 static pmon_t  process[256];	/* Max ID 0-255 */
 
@@ -64,23 +66,23 @@ static void set_priority(void)
 	struct sched_param prio;
 
 	if (num_supervised() && enabled) {
-		if (!rtprio) {
+		if (!active) {
 			prio.sched_priority = 98;
 			DEBUG("Setting SCHED_RR rtprio %d", prio.sched_priority);
 			result = sched_setscheduler(getpid(), SCHED_RR, &prio);
-			rtprio = 1;
+			active = 1;
 		}
 	} else {
-		if (rtprio) {
+		if (active) {
 			prio.sched_priority = 0;
 			DEBUG("Setting SCHED_OTHER prio %d", prio.sched_priority);
 			result = sched_setscheduler(getpid(), SCHED_OTHER, &prio);
-			rtprio = 0;
+			active = 0;
 		}
 	}
 
 	if (result)
-		PERROR("Failed setting process %spriority", rtprio ? "realtime " : "");
+		PERROR("Failed setting process %spriority", active ? "realtime " : "");
 }
 
 /*
@@ -283,6 +285,11 @@ int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 {
 	size_t i;
 
+	if (!pmon_enabled) {
+		INFO("Process heartbeat monitor (pmon) disabled.");
+		return 1;
+	}
+
 	if (sd != -1) {
 		ERROR("Plugin pmon already started.");
 		return 1;
@@ -309,6 +316,9 @@ int pmon_exit(uev_ctx_t *UNUSED(ctx))
 {
 	size_t i;
 
+	if (!pmon_enabled)
+		return 0;
+
 	uev_io_stop(&watcher);
 	shutdown(sd, SHUT_RDWR);
 	remove(WDOG_PMON_PATH);
@@ -329,6 +339,9 @@ int pmon_exit(uev_ctx_t *UNUSED(ctx))
 	return 0;
 }
 
+/*
+ * Disable the pmon plugin when watchdogd is disabled
+ */
 int pmon_enable(int enable)
 {
 	int    result = 0;
@@ -348,6 +361,28 @@ int pmon_enable(int enable)
 	set_priority();
 
 	return result;
+}
+
+int pmon_set(char *optarg)
+{
+	long long min = sched_get_priority_min(SCHED_RR);
+	long long max = sched_get_priority_max(SCHED_RR);
+
+	pmon_enabled = 1;
+
+	if (optarg) {
+		const char *errstr = NULL;
+
+		rtprio = strtonum(optarg, min, max, &errstr);
+		if (errstr) {
+			ERROR("Watchdog RT priority '%s' is %s!", optarg, errstr);
+			return 1;
+		}
+	} else {
+		rtprio = max - 1;
+	}
+
+	return 0;
 }
 
 /**
