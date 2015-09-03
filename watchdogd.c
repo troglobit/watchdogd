@@ -77,7 +77,6 @@ static void plugins_exit(uev_ctx_t *ctx)
 	pmon_exit(ctx);
 }
 
-
 /*
  * Connect to kernel wdt driver
  */
@@ -321,6 +320,51 @@ static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 	}
 }
 
+/*
+ * Parse and set monitor plugin warning and critical level arg.
+ */
+int wdt_set_plugin_arg(char *desc, char *arg, double *warning, double *critical)
+{
+	char buf[16], *ptr;
+	double value;
+
+	if (!arg) {
+		ERROR("%s argument missing.", desc);
+		return 1;
+	}
+
+	strlcpy(buf, arg, sizeof(buf));
+	ptr = strchr(buf, ',');
+	if (ptr) {
+		*ptr++ = 0;
+		DEBUG("Found second arg: %s", ptr);
+	}
+
+	/* First argument is warning */
+	value = strtod(buf, NULL);
+	if (value <= 0) {
+	error:
+		ERROR("%s argument invalid or too small.", desc);
+		return 1;
+	}
+	*warning = value;
+
+	/* Second argument, if given, is warning */
+	if (ptr) {
+		value = strtod(ptr, NULL);
+		if (value <= 0)
+			goto error;
+	} else {
+		/* Backwards compat, when only warning is given */
+		value += 0.1;
+	}
+	*critical = value;
+
+	DEBUG("%s monitor: %.2f, %.2f", desc, *warning, *critical);
+
+	return 0;
+}
+
 static int usage(int status)
 {
 	printf("Usage:\n"
@@ -337,13 +381,20 @@ static int usage(int status)
                "  -w, --timeout=<sec>      Set the HW watchdog timeout to <sec> seconds\n"
                "  -k, --interval=<sec>     Set watchdog kick interval to <sec> seconds\n"
                "  -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM\n"
-	       "  -a, --load-average=<val> Enable load average check <WARN,REBOOT>\n"
+	       "\n"
+	       "  -a, --load-average=<val> Enable load average check, <WARN,REBOOT>\n"
+	       "  -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>\n"
+	       "  -n, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>\n"
+	       "\n"
 	       "  -V, --verbose            Verbose, noisy output suitable for debugging\n"
 	       "  -v, --version            Display version and exit\n"
-               "  -h, --help               Display this help message and exit\n\n"
-               "Kicks %s every %d sec, loadavg monitor disabled, by default\n\n"
+               "  -h, --help               Display this help message and exit\n"
+	       "\n"
+               "Kicks %s every %d sec, loadavg monitor disabled, by default\n"
+	       "\n"
 	       "Most WDT drivers only support 120 sec as lowest timeout, but %s\n"
-	       "tries to set %d sec timeout.  Example values above are recommendations\n\n",
+	       "tries to set %d sec timeout.  Example values above are recommendations\n"
+	       "\n",
                __progname, __progname,
 	       WDT_DEVNODE, WDT_DEVNODE, WDT_TIMEOUT_DEFAULT / 2,
 	       __progname, WDT_TIMEOUT_DEFAULT);
@@ -360,24 +411,26 @@ int main(int argc, char *argv[])
 	int c, status;
 	char *logfile = NULL;
 	struct option long_options[] = {
+		{"load-average",  1, 0, 'a'},
 		{"device",        1, 0, 'd'},
 		{"foreground",    0, 0, 'f'},
-		{"external-kick", 2, 0, 'x'},
+		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 'k'},
-		{"load-average",  1, 0, 'a'},
 		{"logfile",       1, 0, 'l'},
-		{"safe-exit",     0, 0, 's'},
 		{"syslog",        0, 0, 'L'},
+		{"meminfo",       1, 0, 'm'},
+		{"filenr",        1, 0, 'n'},
+		{"safe-exit",     0, 0, 's'},
 		{"test-mode",     0, 0, 't'},
-		{"timeout",       1, 0, 'w'},
 		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
-		{"help",          0, 0, 'h'},
+		{"timeout",       1, 0, 'w'},
+		{"external-kick", 2, 0, 'x'},
 		{NULL, 0, 0, 0}
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:d:fx::l:Lw:k:stVvh?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:d:fhl:Lm:n:w:k:stVvx::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -395,6 +448,14 @@ int main(int argc, char *argv[])
 		case 'h':
 			return usage(0);
 
+		case 'k':	/* Watchdog kick interval */
+			if (!optarg) {
+				ERROR("Missing interval argument.");
+				return usage(1);
+			}
+			period = atoi(optarg);
+			break;
+
 		case 'l':	/* Log to file */
 			if (!optarg) {
 				ERROR("Missing logfile argument.");
@@ -407,12 +468,14 @@ int main(int argc, char *argv[])
 			sys_log = 1;
 			break;
 
-		case 'k':	/* Watchdog kick interval */
-			if (!optarg) {
-				ERROR("Missing interval argument.");
+		case 'm':
+			if (meminfo_set(optarg))
 				return usage(1);
-			}
-			period = atoi(optarg);
+			break;
+
+		case 'n':
+			if (filenr_set(optarg))
+				return usage(1);
 			break;
 
 		case 's':	/* Safe exit, i.e., don't reboot if we exit and close device */

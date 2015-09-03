@@ -21,9 +21,9 @@
 
 static uev_t watcher;
 
-/* Default: enabled */
-static double warning  = 0.8;	/* 80% of all file descriptors allocated */
-static double critical = 0.95;
+/* Default: disabled -- recommended 0.8, 0.95 */
+static double warning  = 0.0;
+static double critical = 0.0;
 
 
 static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
@@ -78,6 +78,14 @@ int filenr_init(uev_ctx_t *ctx, int T)
 	     warning * 100, critical * 100);
 
 	return uev_timer_init(ctx, &watcher, cb, NULL, T, T);
+}
+
+/*
+ * Parse '-a warning[,critical]' argument
+ */
+int filenr_set(char *arg)
+{
+	return wdt_set_plugin_arg("File descriptor", arg, &warning, &critical);
 }
 
 /**

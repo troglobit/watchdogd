@@ -21,9 +21,9 @@
 
 static uev_t watcher;
 
-/* Default: enabled */
-static double warning  = 0.9;	/* 90% of all memory allocated */
-static double critical = 0.95;
+/* Default: disabled -- recommended 0.9, 0.95 */
+static double warning  = 0.0;
+static double critical = 0.0;
 
 #define MEMTOTAL   0
 #define MEMFREE    1
@@ -118,7 +118,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 int meminfo_init(uev_ctx_t *ctx, int T)
 {
 	if (warning == 0.0 && critical == 0.0) {
-		INFO("memory leak monitoring disabled.");
+		INFO("Memory leak monitoring disabled.");
 		return 1;
 	}
 
@@ -126,6 +126,14 @@ int meminfo_init(uev_ctx_t *ctx, int T)
 	     warning * 100, critical * 100);
 
 	return uev_timer_init(ctx, &watcher, cb, NULL, T, T);
+}
+
+/*
+ * Parse '-a warning[,critical]' argument
+ */
+int meminfo_set(char *arg)
+{
+	return wdt_set_plugin_arg("Memory leak", arg, &warning, &critical);
 }
 
 /**

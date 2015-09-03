@@ -21,8 +21,8 @@
 static uev_t watcher;
 
 /* Default: disabled -- recommended 0.8, 0.9 */
-static double warning  = 0;
-static double critical = 0;
+static double warning  = 0.0;
+static double critical = 0.0;
 
 
 static double num_cores(void)
@@ -90,44 +90,7 @@ int loadavg_init(uev_ctx_t *ctx, int T)
  */
 int loadavg_set(char *arg)
 {
-	char buf[16], *ptr;
-	double load;
-
-	if (!arg) {
-		ERROR("Load average argument missing.");
-		return 1;
-	}
-
-	strlcpy(buf, arg, sizeof(buf));
-	ptr = strchr(buf, ',');
-	if (ptr) {
-		*ptr++ = 0;
-		DEBUG("Found second arg: %s", ptr);
-	}
-
-	/* First argument is warning */
-	load = strtod(buf, NULL);
-	if (load <= 0) {
-	error:
-		ERROR("Load average argument invalid or too small.");
-		return 1;
-	}
-	warning = load;
-
-	/* Second argument, if given, is warning */
-	if (ptr) {
-		load = strtod(ptr, NULL);
-		if (load <= 0)
-			goto error;
-	} else {
-		/* Backwards compat, when only warning is given */
-		load += 0.1;
-	}
-	critical = load;
-
-	DEBUG("Enabling loadavg check: %.2f, %.2f", warning, critical);
-
-	return 0;
+	return wdt_set_plugin_arg("Loadavg", arg, &warning, &critical);
 }
 
 /**
