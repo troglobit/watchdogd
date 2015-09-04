@@ -27,7 +27,7 @@
 #define WDOG_STATUS_CMD             11
 #define WDOG_PMON_CMD_ERROR         255
 
-#define WDOG_PMON_MIN_TIMEOUT 1000 /* msec */
+#define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
 
 typedef struct {
 	int    cmd;
