@@ -15,9 +15,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <paths.h>
 #include <unistd.h>
 
-#define WDOG_PMON_PATH              "/tmp/wdog.sock" /* XXX: Change to _PATH_VARRUN later! */
+#define WDOG_PMON_PATH              _PATH_VARRUN "watchdogd.sock"
 
 #define WDOG_PMON_SUBSCRIBE_CMD     1
 #define WDOG_PMON_UNSUBSCRIBE_CMD   2
