@@ -216,8 +216,40 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	wdt_close(w->ctx);
 }
 
-int wdt_reboot(uev_ctx_t *ctx)
+static int save_cause(pid_t pid, char *label)
 {
+	FILE *fp;
+
+	fp = fopen(WDT_STATE, "w");
+	if (!fp) {
+		PERROR("Failed opening %s to save reset cause (%d, %s)", WDT_STATE, pid, label);
+		return 1;
+	}
+
+	if (!label)
+		label = "XBAD_LABEL";
+
+	/* XXX: Add more entrys, e.g. reset cause, counter and id */
+	fprintf(fp, "PID          : %d\n", pid);
+	fprintf(fp, "Label        : %s\n", label);
+
+	return fclose(fp);
+}
+
+/*
+ * Exit and reboot system -- reason for reboot is stored in some form of
+ * semi-persistent backend, using @pid and @label, defined at compile
+ * time.  By default the backend will be a regular file in /var/lib/,
+ * most likely /var/lib/misc/watchdogd.state -- see the FHS for details
+ * http://www.pathname.com/fhs/pub/fhs-2.3.html#VARLIBVARIABLESTATEINFORMATION
+ */
+int wdt_reboot(uev_ctx_t *ctx, pid_t pid, char *label)
+{
+	INFO("Reboot requested by pid %d, label %s ...", pid, label);
+
+	/* Save reboot cause */
+	save_cause(pid, label);
+
 	/* Let plugins exit before we leave main loop */
 	plugins_exit(ctx);
 
@@ -239,7 +271,7 @@ int wdt_reboot(uev_ctx_t *ctx)
 
 void reboot_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
-	wdt_reboot(w->ctx);
+	wdt_reboot(w->ctx, 1, "init");
 }
 
 static void ext_kick_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
@@ -319,9 +351,9 @@ static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 }
 
 /*
- * Parse and set monitor plugin warning and critical level arg.
+ * Parse monitor plugin warning and critical level arg.
  */
-int wdt_set_plugin_arg(char *desc, char *arg, double *warning, double *critical)
+int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 {
 	char buf[16], *ptr;
 	double value;
@@ -361,6 +393,18 @@ int wdt_set_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 	DEBUG("%s monitor: %.2f, %.2f", desc, *warning, *critical);
 
 	return 0;
+}
+
+/*
+ * Concatenate __progname with plugin name for reset cause label
+ */
+char *wdt_plugin_label(char *plugin_name)
+{
+	static char name[16];
+
+	snprintf(name, sizeof(name), "%s:%s", __progname, plugin_name);
+
+	return name;
 }
 
 static int usage(int status)

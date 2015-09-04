@@ -180,14 +180,10 @@ static void timeout(uev_t *w, void *arg, int UNUSED(events))
 {
 	pmon_t *p = (pmon_t *)arg;
 
-	if (system("date"))
-		perror("system");
-		
 	ERROR("Process %d, label '%s' failed to meet its deadline, rebooting ...",
 	      p->pid, p->label);
 
-	/* XXX */
-	WARN("Process %d had timeout %d msec ...", p->pid, w->period);
+	wdt_reboot(w->ctx, p->pid, p->label);
 }
 
 /* Client connected to domain socket sent a request */

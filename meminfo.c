@@ -106,7 +106,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		if (level > warning) {
 			if (level > critical) {
 				ERROR("Memory usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
-				wdt_reboot(w->ctx);
+				wdt_reboot(w->ctx, getpid(), wdt_plugin_label("meminfo"));
 				return;
 			}
 
@@ -133,7 +133,7 @@ int meminfo_init(uev_ctx_t *ctx, int T)
  */
 int meminfo_set(char *arg)
 {
-	return wdt_set_plugin_arg("Memory leak", arg, &warning, &critical);
+	return wdt_plugin_arg("Memory leak", arg, &warning, &critical);
 }
 
 /**

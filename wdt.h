@@ -40,6 +40,7 @@
 #include "libuev/uev.h"
 
 #define WDT_DEVNODE          "/dev/watchdog"
+#define WDT_STATE            _PATH_VARDB "watchdogd.state"
 #define WDT_TIMEOUT_DEFAULT  20
 #define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
 
@@ -68,9 +69,10 @@ int wdt_set_timeout    (int count);
 int wdt_get_timeout    (void);
 int wdt_get_bootstatus (void);
 int wdt_close          (uev_ctx_t *ctx);
-int wdt_reboot         (uev_ctx_t *ctx);
+int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, char *label);
 
-int wdt_set_plugin_arg (char *desc, char *arg, double *warning, double *critical);
+int   wdt_plugin_arg   (char *desc, char *arg, double *warning, double *critical);
+char *wdt_plugin_label (char *plugin_name);
 
 #endif /* WDT_H_ */
 
