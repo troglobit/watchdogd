@@ -20,10 +20,10 @@
 # Top directory for building complete system, fall back to this directory
 ROOTDIR    ?= $(shell pwd)
 
-#VERSION    ?= $(shell git tag -l | tail -1)
-VERSION    ?= 2.0-beta1
+VERSION     = 2.0-beta1
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
+DEV         = $(NAME)-dev
 ARCHTOOL    = `which git-archive-all`
 ARCHIVE     = $(PKG).tar
 ARCHIVEZ    = ../$(ARCHIVE).xz
