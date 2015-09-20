@@ -16,7 +16,7 @@
  */
 
 #include <stdio.h>
-#include "../api.h"
+#include "../wdog.h"
 
 char *__progname;
 

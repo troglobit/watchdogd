@@ -20,8 +20,8 @@
 # Top directory for building complete system, fall back to this directory
 ROOTDIR    ?= $(shell pwd)
 
-# VERSION      ?= $(shell git tag -l | tail -1)
-VERSION    ?= 2.0-pre
+#VERSION    ?= $(shell git tag -l | tail -1)
+VERSION    ?= 2.0-beta1
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
 ARCHTOOL    = `which git-archive-all`
@@ -31,7 +31,7 @@ EXEC        = $(NAME)
 DISTFILES   = LICENSE README.md
 OBJS        = watchdogd.o loadavg.o filenr.o meminfo.o pmon.o
 LIB        := libwdog.a
-LIBOBJS    := api.o
+LIBOBJS    := wdog.o
 ALLOBJS    := $(OBJS) $(LIBOBJS)
 DEPS        = $(ALLOBJS:.o=.d)
 EXAMPLES   := examples/ex1
@@ -43,9 +43,11 @@ CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
 LDLIBS     += libuev/libuev.a libite/pidfile.o libite/strlcpy.o libite/strtonum.o
 
 # Installation paths, always prepended with DESTDIR if set
-prefix     ?= /usr
-sbindir    ?= /sbin
+prefix     ?= /usr/local
+sbindir    ?= $(prefix)/sbin
 datadir     = $(prefix)/share/doc/$(NAME)
+incdir      = $(prefix)/include/wdog
+libdir      = $(prefix)/lib
 
 include common.mk
 
@@ -71,25 +73,41 @@ $(EXEC): $(OBJS) $(LDLIBS) $(LIB)
 
 examples/ex1: examples/ex1.o $(LIB)
 
-install: all
+install-dev:
+	@$(INSTALL) -d $(DESTDIR)$(incdir)
+	@$(INSTALL) -d $(DESTDIR)$(libdir)
+	@printf "  INSTALL $(DESTDIR)$(incdir)/wdog.h\n"
+	@$(INSTALL) -m 0644 wdog.h $(DESTDIR)$(incdir)/wdog.h
+	@printf "  INSTALL $(DESTDIR)$(libdir)/$(LIB)\n"
+	@$(INSTALL) -m 0644 $(LIB) $(DESTDIR)$(libdir)/$(LIB)
+
+install-data:
 	@$(INSTALL) -d $(DESTDIR)$(datadir)
-	@$(INSTALL) -d $(DESTDIR)$(sbindir)
 	@for file in $(DISTFILES); do	                                \
 		printf "  INSTALL $(DESTDIR)$(datadir)/$$file\n";	\
 		$(INSTALL) -m 0644 $$file $(DESTDIR)$(datadir)/$$file;	\
 	done
+
+install-exec:
+	@$(INSTALL) -d $(DESTDIR)$(sbindir)
 	@printf "  INSTALL $(DESTDIR)$(sbindir)/$(EXEC)\n"
 	$(STRIPINST) $(EXEC) $(DESTDIR)$(sbindir)/$(EXEC)
 
+install: install-exec install-data install-dev
+
 uninstall:
+	@printf "  REMOVE  $(DESTDIR)$(sbindir)/$(EXEC)\n"
+	-@$(RM) $(DESTDIR)$(sbindir)/$(EXEC) 2>/dev/null
 	-@for file in $(DISTFILES); do	                                \
 		printf "  REMOVE  $(DESTDIR)$(datadir)/$$file\n";	\
 		rm $(DESTDIR)$(datadir)/$$file 2>/dev/null;		\
 	done
-	@printf "  REMOVE  $(DESTDIR)$(sbindir)/$(EXEC)\n"
-	-@$(RM) $(DESTDIR)$(sbindir)/$(EXEC) 2>/dev/null
-	-@rmdir $(DESTDIR)$(datadir) 2>/dev/null
-	-@rmdir $(DESTDIR)$(sbindir) 2>/dev/null
+	@printf "  REMOVE  $(DESTDIR)$(incdir)\n"
+	-@$(RM) -rf $(DESTDIR)$(incdir)      2>/dev/null
+	@printf "  REMOVE  $(DESTDIR)$(libdir)/$(LIB)\n"
+	-@$(RM) $(DESTDIR)$(libdir)/$(LIB)   2>/dev/null
+	-@rmdir $(DESTDIR)$(datadir)         2>/dev/null
+	-@rmdir $(DESTDIR)$(sbindir)         2>/dev/null
 
 clean:
 	+@$(MAKE) -C libite $@

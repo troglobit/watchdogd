@@ -19,7 +19,7 @@
 #include <sys/socket.h>
 
 #include "wdt.h"
-#include "api.h"
+#include "wdog.h"
 #include "pmon.h"
 
 typedef struct {
