@@ -636,8 +636,20 @@ int main(int argc, char *argv[])
 	status = uev_run(&ctx, 0);
 
 	while (!testmode && wait_reboot) {
+		int reboot_in = 3 * real_timeout;
+
 		INFO("Waiting for HW WDT reboot ...");
-		sleep(period);
+		while (reboot_in > 0) {
+			unsigned int rest = sleep(real_timeout);
+
+			while (rest)
+				rest = sleep(rest);
+
+			reboot_in -= real_timeout;
+		}
+
+		INFO("HW WDT dit not reboot, forcing reboot now ...");
+		reboot(RB_AUTOBOOT);
 	}
 
 	return status;

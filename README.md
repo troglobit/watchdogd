@@ -85,9 +85,11 @@ An external supervisor often need to lookup the PID to be able to send
 signals, watchdogd stores its PID in `/var/run/watchdogd.pid` like any
 other daemon.
 
-To force a kernel watchdog reboot, watchdogd supports `SIGPWR`.  What
-it does is to set the WDT timer to the lowest possible value (1 sec),
-close the connection to `/dev/watchdog`, and wait for WDT reboot.
+To force a kernel watchdog reboot, watchdogd supports `SIGPWR`.  What it
+does is to set the WDT timer to the lowest possible value (1 sec), close
+the connection to `/dev/watchdog`, and wait for WDT reboot.  It waits at
+most 3x the WDT timeout before announcing HW WDT failure and forcing a
+reboot.
 
 System load average monitoring can be enabeled with the `-a 0.8,0.9`
 command line argument.  The two values, separated by a comma, is the
