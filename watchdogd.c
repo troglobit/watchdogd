@@ -410,7 +410,7 @@ char *wdt_plugin_label(char *plugin_name)
 static int usage(int status)
 {
 	printf("Usage:\n"
-	       "  %s [-fxLsVvh] [-d /dev/watchdog] [-a WARN,REBOOT] [-w SEC] [-k SEC]\n\n"
+	       "  %s [-fxLsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [[-d] /dev/watchdog]\n\n"
 	       "Example:\n"
 	       "  %s -d /dev/watchdog2 -a 0.8,0.9 -w 120 -k 30\n\n"
                "Options:\n"
@@ -420,8 +420,8 @@ static int usage(int status)
 	       "                           A 'N x <interval>' delay for startup is given\n"
 	       "  -l, --logfile=<file>     Log to <file> in background, otherwise silent\n"
 	       "  -L, --syslog             Use syslog, even if in foreground\n"
-               "  -w, --timeout=<sec>      Set the HW watchdog timeout to <sec> seconds\n"
-               "  -k, --interval=<sec>     Set watchdog kick interval to <sec> seconds\n"
+               "  -w, -T, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds\n"
+               "  -k, -t, --interval=<sec> Set watchdog kick interval to <sec> seconds\n"
                "  -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM\n"
 	       "\n"
 	       "  -a, --load-average=<val> Enable load average check, <WARN,REBOOT>\n"
@@ -466,7 +466,7 @@ int main(int argc, char *argv[])
 		{"filenr",        1, 0, 'n'},
 		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 's'},
-		{"test-mode",     0, 0, 't'},
+		{"test-mode",     0, 0, 'S'},
 		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
 		{"timeout",       1, 0, 'w'},
@@ -475,7 +475,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:d:fhl:Lm:n:w:k:p::stVvx::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:d:fFhl:Lm:n:w:k:p::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -486,6 +486,7 @@ int main(int argc, char *argv[])
 			strlcpy(devnode, optarg, sizeof(devnode));
 			break;
 
+		case 'F':	/* BusyBox watchdogd compat. */
 		case 'f':	/* Run in foreground */
 			background = 0;
 			break;
@@ -493,6 +494,7 @@ int main(int argc, char *argv[])
 		case 'h':
 			return usage(0);
 
+		case 't':	/* BusyBox watchdogd compat. */
 		case 'k':	/* Watchdog kick interval */
 			if (!optarg) {
 				ERROR("Missing interval argument.");
@@ -532,7 +534,7 @@ int main(int argc, char *argv[])
 			magic = 1;
 			break;
 
-		case 't':	/* Enable test mode, no interaction with kernel, for testing pmon */
+		case 'S':	/* Simulate: no interaction with kernel, for testing pmon */
 			testmode = 1;
 			break;
 
@@ -544,6 +546,7 @@ int main(int argc, char *argv[])
 			verbose = 1;
 			break;
 
+		case 'T':	/* BusyBox watchdogd compat. */
 		case 'w':	/* Watchdog timeout */
 			if (!optarg) {
 				ERROR("Missing timeout argument.");
@@ -563,6 +566,14 @@ int main(int argc, char *argv[])
 			printf("Unrecognized option \"-%c\".\n", c);
 			return usage(1);
 		}
+	}
+
+	/* BusyBox watchdogd compat. */
+	if (optind < argc) {
+		char *dev = argv[optind];
+
+		if (!strncmp(dev, "/dev", 4))
+			strlcpy(devnode, dev, sizeof(devnode));
 	}
 
 	if (background) {
