@@ -20,7 +20,7 @@
 # Top directory for building complete system, fall back to this directory
 ROOTDIR    ?= $(shell pwd)
 
-VERSION     = 2.0-beta1
+VERSION     = 2.0
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
 DEV         = $(NAME)-dev
