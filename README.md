@@ -32,24 +32,10 @@ tries to set 20 sec timeout.  Example values above are recommendations
 watchdogd runs at the default UNIX priority (nice) level.
 
 
-Download
---------
-
-Although the project makes heavy use of GitHub, it is *not* recommended
-to use the ZIP file links GitHub provides.  Instead, we recommend using
-proper tarball releases from [the FTP][], or the [releases page][].
-
-The GitHub *Download ZIP* links, and ZIP files on the [releases page][],
-do not include files from the GIT submodules.  The Makefile makes up for
-this, but is not 100% foolproof.
-
-See below if you want to contribute.
-
-
 Usage
 -----
 
-    watchdogd [-fxLsVvh] [-d /dev/watchdog] [-a WARN,REBOOT] [-w SEC] [-k SEC]
+    watchdogd [-fxLsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [[-d] /dev/watchdog]
     
     Options:
       -d, --device=<dev>       Device to use, default: /dev/watchdog
@@ -58,10 +44,16 @@ Usage
                                A 'N x <interval>' delay for startup is given
       -l, --logfile=<file>     Log to <file> in background, otherwise silent
       -L, --syslog             Use syslog, even if in foreground
-      -w, --timeout=<sec>      Set the HW watchdog timeout to <sec> seconds
-      -k, --interval=<sec>     Set watchdog kick interval to <sec> seconds
+      -w, -T, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds
+      -k, -t, --interval=<sec> Set watchdog kick interval to <sec> seconds
       -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
+      
       -a, --load-average=<val> Enable load average check <WARN,REBOOT>
+      -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>
+      -n, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>
+      -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
+                               Default RT prio when active: SCHED_RR @98
+
       -V, --verbose            Verbose, noisy output suitable for debugging
       -v, --version            Display version and exit
       -h, --help               Display this help message and exit
@@ -91,25 +83,72 @@ the connection to `/dev/watchdog`, and wait for WDT reboot.  It waits at
 most 3x the WDT timeout before announcing HW WDT failure and forcing a
 reboot.
 
-System load average monitoring can be enabeled with the `-a 0.8,0.9`
-command line argument.  The two values, separated by a comma, is the
-normalized load level for logging a warning message and issuing a
-reboot, respectively.  Normalized means watchdogd does not care how many
-CPU cores your system as online.  If the Linux kernel `/proc/loadavg`
+watchdogd supports monitoring of several system resources, all of which
+are disabled by default.  First, system load average monitoring can be
+enabled with the `-a 0.8,0.9` command line argument.  Second, the memory
+leak detector `-m 0.9,0.95`.  Third, the file descriptor leak detector
+`-n 0.8,0.95`.  All of which are *very* useful on an embedded system!
+
+The two values, separated by a comma, are the warning and reboot levels
+in percent.  For the loadavg monitoring it is important to know that the
+trigger levels are normalized.  This means watchdogd does not care how
+many CPU cores your system has online.  If the kernel `/proc/loadavg`
 file shows `3.9 3.0 2.5` on a four-core CPU, watchdogd will consider
 this as a load of `0.98 0.75 0.63`, i.e. divided by four.  Only the one
 (1) and five (5) minute average values are used.  For more information
 on the UNIX load average, see this [StackOverflow question][loadavg].
 
-watchdogd also monitors both file descriptor and RAM usage.  These are
-currently not possible to disable.  (Thsi will be in watchdogd 2.0 which
-also will use a configuration file.)  The default is to issue a warning
-at 80% usage of all available file descriptors, 90% for RAM, and reboot
-at 95%.  The RAM usage monitor only triggers on systems without swap.
-This is detected by reading the file `/proc/meminfo`, looking for the
+The RAM usage monitor only triggers on systems without swap.  This is
+detected by reading the file `/proc/meminfo`, looking for the
 `SwapTotal:` value.  For more details on the underlying mechanisms of
 file descriptor usage, see [this article][filenr].  For more info on the
 details of memory usage, see [this article][meminfo].
+
+Also, watchdogd v2.0 comes with a process monitor, pmon.  It must be
+enabled and a monitored client must connect using the API for pmon to
+start.  As soon pmon starts it raises the real-time priority of
+watchdogd to 98 to be able to ensure proper monitoring of its clients.
+
+
+Pmon API
+--------
+
+To use pmon a client must have its source code instrumented with at
+least a "subscribe" and a "kick" call.  Commonly this is achieved by
+adding the `wdog_pmon_kick()` call to the main event loop.
+
+All API calls, except `wdog_pmon_ping()`, return POSIX OK(0) or negative
+value with `errno` set on error.  The `wdog_pmon_subscribe()` call
+returns a positive integer (including zero) for the watchdog `id`.
+
+```C
+
+    /*
+     * Enable or disable watchdogd at runtime,
+     * i.e., if upgrading flash or similar.
+	 */
+    int wdog_enable           (int enable);
+	int wdog_status           (int *enabled);
+	
+    /*
+	 * Check if watchdogd API is actively responding,
+	 * returns %TRUE(1) or %FALSE(0)
+	 */
+	int wdog_pmon_ping        (void);
+
+    /*
+     * Register with pmon, timeout in msec.  The return value is the `id`
+     * to be used with the `ack` in subsequent kick/unsubscribe.
+     */
+	int wdog_pmon_subscribe   (char *label, int timeout, int *ack);
+	int wdog_pmon_unsubscribe (int id, int ack);
+	int wdog_pmon_kick        (int id, int *ack);
+
+```
+
+It is recommended to use an event loop library like libev, [libuev][],
+or similar.  For such libraries one can simply add a timer callback for
+the kick to run periodically to monitor proper operation of the client.
 
 
 Operation
@@ -167,6 +206,7 @@ for details.
 [filenr]:          http://www.cyberciti.biz/tips/linux-procfs-file-descriptors.html
 [meminfo]:         http://www.cyberciti.biz/faq/linux-check-memory-usage/
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
+[libuev]:          https://github.com/troglobit/libuev/
 [Travis]:          https://travis-ci.org/troglobit/watchdogd
 [Travis Status]:   https://travis-ci.org/troglobit/watchdogd.png?branch=master
 [GitHub]:          http://github.com/troglobit/watchdogd
