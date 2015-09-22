@@ -6,9 +6,9 @@ Table of Contents
 -----------------
 
 * [Introduction](#introduction)
-* [Download](#download)
 * [Usage](#usage)
 * [Features](#features)
+* [Pmon API](#pmon-api)
 * [Operation](#operation)
 * [Debugging](#debugging)
 * [Origin & References](#origin--references)
@@ -18,18 +18,33 @@ Table of Contents
 Introduction
 ------------
 
-This is a refactored and improved version of the original watchdogd from
-[uClinux-dist][].  It was written by Michele d'Amico and later adapted
-to uClinux-dist by Mike Frysinger.
+A watchdog timer (WDT) is something most motherboards of laptops and
+servers today are equipped with.  It is basically a small timer that is
+connected to the reset circuitry so that it can reset the board when the
+timer expires.
 
-**Example**
+The Linux kernel provides a common userspace interface `/dev/watchdog`,
+created automatically when the appropriate driver module is loaded.  If
+your board does not have a WDT the kernel provides a "softdog" module
+which could be good enough.
 
-    watchdogd -d /dev/watchdog2 -a 0.8,0.9 -w 120 -k 30
+The idea is to have a watchdog daemon in userspace that runs in the
+background of your system.  When there is no more CPU time for the
+watchdog daemon to run it will fail to "kick" the WDT.  This will in
+turn cause the WDT to reboot the system.
 
-Most WDT drivers only support 120 sec as lowest timeout, but watchdogd
-tries to set 20 sec timeout.  Example values above are recommendations
+> If you have an embedded system -- you need a watchdog daemon.
 
-watchdogd runs at the default UNIX priority (nice) level.
+Most embedded systems utilise this as a way to automatically recover
+when they get stuck.
+
+Without arguments *watchdogd* can be used for this, but it can also be
+used to detect other system problems:
+
+- Load average
+- Memory leaks
+- File descriptor leaks
+- Process live locks
 
 
 Usage
@@ -60,6 +75,15 @@ Usage
     
 By default, watchdogd opens `/dev/watchdog`, attempts to set 20 sec WDT
 timeout and then kicks, in the background, every 10 sec.
+
+**Example**
+
+    watchdogd -d /dev/watchdog2 -a 0.8,0.9 -w 120 -k 30
+
+Most WDT drivers only support 120 sec as lowest timeout, but watchdogd
+tries to set 20 sec timeout.  Example values above are recommendations
+
+watchdogd runs at the default UNIX priority (nice) level.
 
 
 Features
@@ -180,6 +204,11 @@ everywhere.  Enable `--verbose` and use `--syslog` a logfile or
 Origin & References
 -------------------
 
+This is project is a heavily refactored and improved version of the
+original watchdogd by Michele d'Amico, adapted to [uClinux-dist][] by
+Mike Frysinger.  It is maintained by [Joachim Nilsson][] collaboratively
+at [GitHub][].
+
 The [original code][] in uClinux-dist has no license and is available in
 the public domain, whereas this version is distributed under the ISC
 license.  See the file [LICENSE][] for more on this.
@@ -188,12 +217,11 @@ license.  See the file [LICENSE][] for more on this.
 Contributing
 ------------
 
-This project is maintained by [Joachim Nilsson][] collaboratively at
-[GitHub][].  If you find bugs or want to contribute fixes or features,
-check out the code from GitHub, including the submodules:
+If you find bugs or want to contribute fixes or features, check out the
+code from GitHub, including the submodules:
 
-	git clone https://github.com/troglobit/uftpd
-	cd uftpd
+	git clone https://github.com/troglobit/watchdogd
+	cd watchdogd
 	make submodules
 
 When you pull from upstream, remember to also update the submodules
