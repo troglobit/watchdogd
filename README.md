@@ -174,6 +174,30 @@ It is recommended to use an event loop library like libev, [libuev][],
 or similar.  For such libraries one can simply add a timer callback for
 the kick to run periodically to monitor proper operation of the client.
 
+### Example
+
+For other applications, identify your main loop, its max period time and
+instrument it like this:
+
+```C
+
+    int ack, wid = wdog_pmon_subscribe(NULL, 10000, &ack);
+
+    while (1) {
+            ...
+            wdog_pmon_kick(wid, &ack);
+            ...
+    }
+
+```
+
+This simple example subscribes to the watchdog with a 10 sec timeout.
+The received `wid` is used in the call to `wdog_pmon_kick()`, along with
+the received `ack` value.  Which is changed every time the application
+calls `wdog_pmon_kick()`.  The application should of course check the
+return value of `wdog_pmon_subscribe()` for errors, that code is left
+out of the example to make it easier to read.
+
 
 Operation
 ---------
