@@ -117,7 +117,7 @@ clean:
 distclean: clean
 	+@$(MAKE) -C libite $@
 	+@$(MAKE) -C libuev $@
-	-@$(RM) $(JUNK) unittest *.elf *.gdb *.o .*.d examples/*.o examples/*~
+	-@$(RM) $(JUNK) unittest *.elf *.gdb *.o .*.d examples/*.o examples/*~ *.sock
 
 dist:
 	@if [ x"$(ARCHTOOL)" = x"" ]; then \

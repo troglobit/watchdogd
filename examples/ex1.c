@@ -16,17 +16,23 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "../wdog.h"
 
 extern char *__progname;
 extern int   __wdog_testmode;
 
-int main(void)
+#define DEBUG(fmt, args...) if (verbose) printf(fmt, ##args);
+
+int main(int argc, char *argv[])
 {
 	int id, i;
-	int ack;
+	int ack, verbose = 0;
 
-	printf("%s: Starting ...\n", __progname);
+	if (argc >= 2 && !strncmp(argv[1], "-V", 2))
+		verbose = 1;
+
+	DEBUG("%s: Starting ...\n", __progname);
 	__wdog_testmode = 1;
 
 	id = wdog_pmon_subscribe(NULL, 3000, &ack);
@@ -36,13 +42,13 @@ int main(void)
 	}
 
 	for (i = 0; i < 20; i++) {
-		printf("%s: Kicking ...\n", __progname);
+		DEBUG("%s: Kicking ...\n", __progname);
 		if (wdog_pmon_kick(id, &ack))
 			perror("Failed kicking");
 		sleep(2);
 	}
 
-	printf("%s: Exiting ...\n", __progname);
+	DEBUG("%s: Exiting ...\n", __progname);
 	wdog_pmon_unsubscribe(id, ack);
 
 	return 0;

@@ -1,28 +1,26 @@
 #!/bin/sh
 
-VERBOSE=0
-if [ x"$1" = x"-v" ]; then
-    VERBOSE=1
+ARG=""
+if [ x"$1" = x"-v" -o x"$1" = x"-V" ]; then
+    ARG="-V"
 fi
 
-./watchdogd -f -p --test-mode &
-PID=$!
+./watchdogd $ARG -f -p --test-mode &
+WDOG=$!
 sleep 2
 
-./examples/ex1
+# This test should take ~40 seconds to run
+echo "Starting API test ..."
+timeout 45s ./examples/ex1 $ARG
 result=$?
 
-kill $PID
+# Stop watchdogd
+kill $WDOG
 
 if [ $result -ne 0 ]; then
-    if [ $VERBOSE -eq 1 ]; then
-	echo "Test FAIL! :-("
-    fi
+    echo "Test FAIL!"
     exit 1
 fi
 
-if [ $VERBOSE -eq 1 ]; then
-    echo "Test OK! :-)"
-fi
-
+echo "Test OK!"
 exit 0
