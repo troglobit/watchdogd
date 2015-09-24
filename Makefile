@@ -57,7 +57,7 @@ $(ALLOBJS): $(SUBMODULES)
 
 $(LIB): $(LIBOBJS)
 	@printf "  ARCHIVE $(subst $(ROOTDIR)/,,$(shell pwd)/$@)\n"
-	@$(AR) $(ARFLAGS) $@ $^
+	@$(AR) $(ARFLAGS) $@ $^ 2>/dev/null
 
 $(SUBMODULES): submodules
 
