@@ -51,7 +51,7 @@ libdir      = $(prefix)/lib
 
 include common.mk
 
-all: $(LDLIBS) $(EXEC) $(LIB) $(EXAMPLES)
+all: $(LDLIBS) $(EXEC) $(LIB)
 
 $(ALLOBJS): $(SUBMODULES)
 
@@ -132,6 +132,9 @@ dist:
 	@$(ARCHTOOL) ../$(ARCHIVE)
 	@xz ../$(ARCHIVE)
 	@md5sum $(ARCHIVEZ) | tee $(ARCHIVEZ).md5
+
+test: all $(EXAMPLES)
+	./testit.sh
 
 dev: distclean
 	@echo "Building unstable xz $(DEV) in parent dir..."
