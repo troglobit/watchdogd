@@ -32,12 +32,10 @@ int extkick = 0;
 int extdelay = 0;
 int wait_reboot = 0;
 int period = -1;
-int testmode = 0;
 
 /* Local variables */
 static int fd = -1;
 static char devnode[42] = WDT_DEVNODE;
-
 
 /* Event contexts */
 static uev_t period_watcher;
@@ -80,7 +78,7 @@ static void plugins_exit(uev_ctx_t *ctx)
  */
 int wdt_init(void)
 {
-	if (testmode)
+	if (__wdog_testmode)
 		return 0;
 
 	fd = open(devnode, O_WRONLY);
@@ -102,7 +100,7 @@ int wdt_kick(char *msg)
 	int dummy;
 
 	DEBUG("%s", msg);
-	if (testmode)
+	if (__wdog_testmode)
 		return 0;
 
 	return ioctl(fd, WDIOC_KEEPALIVE, &dummy);
@@ -113,7 +111,7 @@ int wdt_set_timeout(int count)
 {
 	int arg = count;
 
-	if (testmode)
+	if (__wdog_testmode)
 		return 0;
 
 	DEBUG("Setting watchdog timeout to %d sec.", count);
@@ -130,7 +128,7 @@ int wdt_get_timeout(void)
 	int count;
 	int err;
 
-	if (testmode)
+	if (__wdog_testmode)
 		return 0;
 
 	err = ioctl(fd, WDIOC_GETTIMEOUT, &count);
@@ -147,7 +145,7 @@ int wdt_get_bootstatus(void)
 	int status = 0;
 	int err;
 
-	if (testmode)
+	if (__wdog_testmode)
 		return status;
 
 	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
@@ -466,7 +464,7 @@ int main(int argc, char *argv[])
 		{"filenr",        1, 0, 'n'},
 		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 's'},
-		{"test-mode",     0, 0, 'S'},
+		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
 		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
 		{"timeout",       1, 0, 'w'},
@@ -535,7 +533,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'S':	/* Simulate: no interaction with kernel, for testing pmon */
-			testmode = 1;
+			__wdog_testmode = 1;
 			break;
 
 		case 'v':
@@ -641,12 +639,12 @@ int main(int argc, char *argv[])
 	plugins_init(&ctx, T);
 
 	/* Only create pidfile when we're done with all set up. */
-	if (pidfile(NULL))
+	if (pidfile(NULL) && !__wdog_testmode)
 		PERROR("Cannot create pidfile");
 
 	status = uev_run(&ctx, 0);
 
-	while (!testmode && wait_reboot) {
+	while (!__wdog_testmode && wait_reboot) {
 		int reboot_in = 3 * real_timeout;
 
 		INFO("Waiting for HW WDT reboot ...");

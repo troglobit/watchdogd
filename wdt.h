@@ -62,6 +62,7 @@ extern int   extkick;
 extern int   extdelay;
 extern int   period;
 extern char *__progname;
+extern int   __wdog_testmode;
 
 int wdt_enable         (int enable);
 

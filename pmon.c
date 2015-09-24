@@ -81,7 +81,7 @@ static void set_priority(void)
 		}
 	}
 
-	if (result)
+	if (result && !__wdog_testmode)
 		PERROR("Failed setting process %spriority", active ? "realtime " : "");
 }
 

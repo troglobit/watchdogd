@@ -27,23 +27,31 @@
 #include "wdog.h"
 #include "wdt.h"
 
-extern char *__progname;
- 
+/*
+ * Hidden test mode.  Set by daemon when in --test-mode,
+ * or by examples when testing the API.
+ */
+int __wdog_testmode = 0;
+
+
 /* Hidden API */
 int wdog_pmon_api_init(int server)
 {
 	int sd;
-	struct sockaddr_un sun = {
-		.sun_family = AF_UNIX,
-		.sun_path   = WDOG_PMON_PATH,
-	};
+	struct sockaddr_un sun;
+
+	sun.sun_family = AF_UNIX;
+	if (__wdog_testmode)
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_BASENAME);
+	else
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_PATH);
 
 	sd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (-1 == sd)
 		return -1;
 
 	if (server) {
-		remove(WDOG_PMON_PATH);
+		remove(sun.sun_path);
 
 		if (-1 == bind(sd, (struct sockaddr*)&sun, sizeof(sun)))
 			goto error;

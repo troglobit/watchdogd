@@ -18,7 +18,8 @@
 #include <stdio.h>
 #include "../wdog.h"
 
-char *__progname;
+extern char *__progname;
+extern int   __wdog_testmode;
 
 int main(void)
 {
@@ -26,6 +27,7 @@ int main(void)
 	int ack;
 
 	printf("%s: Starting ...\n", __progname);
+	__wdog_testmode = 1;
 
 	id = wdog_pmon_subscribe(NULL, 3000, &ack);
 	if (id < 0) {
