@@ -158,7 +158,7 @@ static pmon_t *get(int id, pid_t pid, int ack)
 	}
 
 	if (p->ack != ack) {
-		INFO("BAD next ack for pid %d, was %d, expected ack %d", pid, ack, p->ack);
+		DEBUG("BAD next ack for pid %d, was %d, expected ack %d", pid, ack, p->ack);
 		errno = EBADRQC;
 		return NULL;
 	}
@@ -211,14 +211,14 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	switch (req.cmd) {
 	case WDOG_PMON_SUBSCRIBE_CMD:
 		/* Start timer, return ID from allocated timer. */
-		INFO("Hello %s, registering pid %d ...", req.label, req.pid);
+		DEBUG("Hello %s, registering pid %d ...", req.label, req.pid);
 		p = allocate(req.pid, req.label, req.timeout);
 		if (!p) {
 			req.cmd   = WDOG_PMON_CMD_ERROR;
 			req.error = errno;
 		} else {
 			next_ack(p, &req);
-			INFO("pid %d next ack => %d", req.pid, req.next_ack);
+			DEBUG("pid %d next ack => %d", req.pid, req.next_ack);
 			uev_timer_init(w->ctx, &p->watcher, timeout, p, p->timeout, p->timeout);
 		}
 		break;
@@ -233,7 +233,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		} else {
 			uev_timer_stop(&p->watcher);
 			release(p);
-			INFO("Goodbye %s (pid:%d), id:%d ...", req.label, req.pid, req.id);
+			DEBUG("Goodbye %s (pid:%d), id:%d ...", req.label, req.pid, req.id);
 		}
 		break;
 
@@ -245,7 +245,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 			req.cmd   = WDOG_PMON_CMD_ERROR;
 			req.error = errno;
 		} else {
-			INFO("How do you do %s (pid %d), id:%d -- ACK should be %d, is %d",
+			DEBUG("How do you do %s (pid %d), id:%d -- ACK should be %d, is %d",
 			      req.label, req.pid, req.id, p->ack, req.ack);
 			next_ack(p, &req);
 			if (enabled)
