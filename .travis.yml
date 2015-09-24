@@ -9,3 +9,4 @@ sudo: false
 # Makefile, for the time being.
 script:
   - make
+  - make test
