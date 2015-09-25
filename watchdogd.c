@@ -182,6 +182,8 @@ int wdt_enable(int enable)
 	}
 
 	result += pmon_enable(enable);
+	if (!result)
+		enabled = enable;
 
 	return result;
 }
