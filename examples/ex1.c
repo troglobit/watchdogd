@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include "../wdog.h"
@@ -22,18 +23,26 @@
 extern char *__progname;
 extern int   __wdog_testmode;
 
-#define DEBUG(fmt, args...) if (verbose) printf(fmt, ##args);
+#define DEBUG(fmt, args...)  if (dbg) printf("%s: " fmt "\n", __progname, ##args);
+#define PERROR(fmt, args...) if (dbg) fprintf(stderr, "%s: " fmt ": %s\n", __progname, ##args, strerror(errno));
 
 int main(int argc, char *argv[])
 {
 	int id, i;
-	int ack, verbose = 0;
+	int ack, dbg = 0;
 
 	if (argc >= 2 && !strncmp(argv[1], "-V", 2))
-		verbose = 1;
+		dbg = 1;
 
-	DEBUG("%s: Starting ...\n", __progname);
+	DEBUG("Starting ...");
 	__wdog_testmode = 1;
+
+	DEBUG("Checking connectivity with watchdogd ...");
+	if (wdog_pmon_ping()) {
+		PERROR("Failed connectivity check");
+		return 1;
+	}
+	DEBUG("OK!");
 
 	id = wdog_pmon_subscribe(NULL, 3000, &ack);
 	if (id < 0) {
@@ -42,14 +51,17 @@ int main(int argc, char *argv[])
 	}
 
 	for (i = 0; i < 20; i++) {
-		DEBUG("%s: Kicking ...\n", __progname);
+		DEBUG("Kicking ...");
 		if (wdog_pmon_kick(id, &ack))
-			perror("Failed kicking");
+			PERROR("Failed kicking");
 		sleep(2);
 	}
 
-	DEBUG("%s: Exiting ...\n", __progname);
-	wdog_pmon_unsubscribe(id, ack);
+	DEBUG("Exiting ...");
+	if (wdog_pmon_unsubscribe(id, ack)) {
+		PERROR("Failed unsubscribe");
+		return 1;
+	}
 
 	return 0;
 }
