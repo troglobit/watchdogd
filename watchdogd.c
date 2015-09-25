@@ -171,7 +171,7 @@ int wdt_enable(int enable)
 
 	if (!enable) {
 		/* Attempt to disable HW watchdog */
-		if (fd != 1) {
+		if (fd != -1) {
 			if (-1 == write(fd, "V", 1))
 				PERROR("Failed disabling HW watchdog, system will likely reboot now");
 			close(fd);
