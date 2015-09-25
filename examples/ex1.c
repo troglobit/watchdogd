@@ -51,10 +51,32 @@ int main(int argc, char *argv[])
 	}
 
 	for (i = 0; i < 20; i++) {
-		DEBUG("Kicking ...");
+		int enabled = 0;
+
+		if (wdog_status(&enabled))
+			PERROR("Failed reading wdog status");
+
+		DEBUG("Kicking ... (%sABLED)", enabled ? "EN" : "DIS");
 		if (wdog_pmon_kick(id, &ack))
 			PERROR("Failed kicking");
 		sleep(2);
+
+		/* Apx. halfway through, disable wdog ... */
+		if (i == 8) {
+			DEBUG("Verify that wdog can be disabled at runtime.");
+			wdog_enable(0);
+
+			/* Miss deadline */
+			sleep(3);
+		}
+
+		/* Let program kick "in the air" for a few iterations, must work! */
+
+		/* Later on ... re-enable */
+		if (i == 14) {
+			DEBUG("Re-enabling wdog ...");
+			wdog_enable(1);
+		}
 	}
 
 	DEBUG("Exiting ...");
