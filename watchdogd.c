@@ -197,7 +197,7 @@ int wdt_close(uev_ctx_t *ctx)
 		if (magic) {
 			INFO("Disabling HW watchdog timer before (safe) exit.");
 			if (-1 == write(fd, "V", 1))
-				PERROR("Failed disabling HW watchdog, system will likely reboot now");
+				PERROR("Failed disabling HW watchdog before exit, system will likely reboot now");
 		} else {
 			INFO("Exiting, watchdog still active.  Expect reboot!");
 			/* Be nice, sync any buffered data to disk first. */
