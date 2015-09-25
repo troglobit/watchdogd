@@ -198,23 +198,26 @@ calls `wdog_pmon_kick()`.  The application should of course check the
 return value of `wdog_pmon_subscribe()` for errors, that code is left
 out of the example to make it easier to read.
 
+See also the [example/ex1.c][ex1] in the source distribution.  This is
+used by the automatic tests.
+
 
 Operation
 ---------
 
-Without any arguments watchdogd forks off a daemon in the background,
-opens the `/dev/watchdog` device, attempts to set the default watchdog
-timeout to 20 seconds and then goes into an endless loop where it kicks
-the watchdog every 10 seconds.
+By default, watchdogd forks off a daemon in the background, opens the
+`/dev/watchdog` device, attempts to set the default WDT timeout to 20
+seconds and then goes into an endless loop where it kicks the watchdog
+every 10 seconds.
 
-If the device driver does not support setting the watchdog timeout
-watchdogd attempts to query the actual (possibly hard coded) watchdog
-timeout and then uses half that time as the kick interval.
+If the device driver does not support setting the WDT timeout watchdogd
+attempts to query the actual (possibly hard coded) watchdog timeout and
+then uses half that time as the kick interval.
 
-When the daemon backgrounds itself syslog is implicitly used for all
+When watchdogd backgrounds itself syslog is implicitly used for all
 informational and debug messages.  If a user requests to run the daemon
-in the foreground the `--syslog`, or `-L`, argument can be used to
-redirect STDERR/STDOUT to the syslog.
+in the foreground watchdogd will use STDERR/STDOUT, unless the user
+gives the `--syslog`, or `-L`, argument to force use of syslog.
 
 
 Debugging
@@ -262,11 +265,10 @@ for details.
 [Travis]:          https://travis-ci.org/troglobit/watchdogd
 [Travis Status]:   https://travis-ci.org/troglobit/watchdogd.png?branch=master
 [GitHub]:          http://github.com/troglobit/watchdogd
+[ex1]:             https://github.com/troglobit/watchdogd/blob/master/examples/ex1.c
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [contrib]:         https://github.com/troglobit/watchdogd/blob/master/CONTRIBUTING.md
 [Joachim Nilsson]: http://troglobit.com
-[the FTP]:         http://ftp.troglobit.com/watchdogd/
-[releases page]:   https://github.com/troglobit/watchdogd/releases
 
 <!--
   -- Local Variables:
