@@ -1,6 +1,6 @@
 Watchdog with loadavg monitoring
 ================================
-[![Travis Status][]][Travis]
+[![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 Table of Contents
 -----------------
@@ -251,9 +251,8 @@ code from GitHub, including the submodules:
 	cd watchdogd
 	make submodules
 
-When you pull from upstream, remember to also update the submodules
-using `git submodule update`, see the file [CONTRIBUTING.md][contrib]
-for details.
+Remember to also update the submodules when updating your clone using
+`git submodule update`.  For more details, see [CONTRIBUTING][contrib].
 
 
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
@@ -264,6 +263,8 @@ for details.
 [libuev]:          https://github.com/troglobit/libuev/
 [Travis]:          https://travis-ci.org/troglobit/watchdogd
 [Travis Status]:   https://travis-ci.org/troglobit/watchdogd.png?branch=master
+[Coverity Scan]:   https://scan.coverity.com/projects/6458
+[Coverity Status]: https://scan.coverity.com/projects/6458/badge.svg
 [GitHub]:          http://github.com/troglobit/watchdogd
 [ex1]:             https://github.com/troglobit/watchdogd/blob/master/examples/ex1.c
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE

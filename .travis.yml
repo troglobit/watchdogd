@@ -5,8 +5,24 @@ language: c
 # We don't need to install packages, use dockerized build, quicker
 sudo: false
 
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "QnHNpmsJUB/wGiZkXjwof0k2J1cTH1yPEQJoGTDUSSysN/WHKaisOyUq0N9cjx1KGK5zJ/LbxhUrpL30lqCSg4ZKbb4gxd8TFVqeYhznvQqOSDMv0zVmqjLHgPjCogLoHRNfuDdhIQgytp+xIeVbIoHqzS3WjG96TN3M68k4cJI="
+
+addons:
+  coverity_scan:
+    project:
+      name: "troglobit/watchdogd"
+      description: "Watchdog daemon for embedded Linux systems with pmon API"
+    notification_email: troglobit@gmail.com
+    build_command: "make"
+    branch_pattern: master
+
 # We (currently) don't use GNU Configure & Build System, only a simple
 # Makefile, for the time being.
 script:
+  - make distclean
   - make
   - make test
