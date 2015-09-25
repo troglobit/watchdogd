@@ -150,7 +150,8 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 		goto error;
 	}
 
-	*ack = req.next_ack;
+	if (ack)
+		*ack = req.next_ack;
 	close(sd);
 
 	if (WDOG_PMON_SUBSCRIBE_CMD == cmd)
