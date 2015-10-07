@@ -1,5 +1,5 @@
-Watchdog with loadavg monitoring
-================================
+Watchdog ][ with loadavg monitoring
+===================================
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 Table of Contents
@@ -148,8 +148,7 @@ returns a positive integer (including zero) for the watchdog `id`.
 ```C
 
     /*
-     * Enable or disable watchdogd at runtime,
-     * i.e., if upgrading flash or similar.
+     * Enable or disable watchdogd at runtime.
 	 */
     int wdog_enable           (int enable);
 	int wdog_status           (int *enabled);
@@ -161,8 +160,8 @@ returns a positive integer (including zero) for the watchdog `id`.
 	int wdog_pmon_ping        (void);
 
     /*
-     * Register with pmon, timeout in msec.  The return value is the `id`
-     * to be used with the `ack` in subsequent kick/unsubscribe.
+     * Register with pmon, timeout in msec.  Return value is the `id`
+     * to be used with the `ack` in subsequent kick()/unsubscribe()
      */
 	int wdog_pmon_subscribe   (char *label, int timeout, int *ack);
 	int wdog_pmon_unsubscribe (int id, int ack);
@@ -170,9 +169,10 @@ returns a positive integer (including zero) for the watchdog `id`.
 
 ```
 
-It is recommended to use an event loop library like libev, [libuev][],
-or similar.  For such libraries one can simply add a timer callback for
-the kick to run periodically to monitor proper operation of the client.
+It is highly recommended to use an event loop like libev, [libuev][], or
+similar.  For such libraries one can simply add a timer callback for the
+kick to run periodically to monitor proper operation of the client.
+
 
 ### Example
 
@@ -231,14 +231,14 @@ everywhere.  Enable `--verbose` and use `--syslog` a logfile or
 Origin & References
 -------------------
 
-This is project is a heavily refactored and improved version of the
-original watchdogd by Michele d'Amico, adapted to [uClinux-dist][] by
+watchdogd is a heavily refactored and improved version of the original
+watchdogd by Michele d'Amico, which was adapted to [uClinux-dist][] by
 Mike Frysinger.  It is maintained by [Joachim Nilsson][] collaboratively
 at [GitHub][].
 
 The [original code][] in uClinux-dist has no license and is available in
 the public domain, whereas this version is distributed under the ISC
-license.  See the file [LICENSE][] for more on this.
+license.  See the file [LICENSE][] for more details on this.
 
 
 Contributing
