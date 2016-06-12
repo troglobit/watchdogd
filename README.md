@@ -51,7 +51,7 @@ used to detect other system problems:
 Usage
 -----
 
-    watchdogd [-hlnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
+    watchdogd [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
     
     Options:
       -n, --foreground         Start in foreground (background is default)
@@ -68,7 +68,7 @@ Usage
       -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
                                Default RT prio when active: SCHED_RR @98
 
-      -V, --verbose            Verbose, noisy output suitable for debugging
+      -l LVL --loglevel=LVL    Log level: none, err, info, notice*, debug
       -v, --version            Display version and exit
       -h, --help               Display this help message and exit
     

@@ -45,17 +45,15 @@
 #define WDT_TIMEOUT_DEFAULT  20
 #define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
 
-#define ERROR(fmt, args...)                   syslog(LOG_ERR,   fmt, ##args)
-#define PERROR(fmt, args...)                  syslog(LOG_ERR,   fmt ": %s", ##args, strerror(errno))
-#define DEBUG(fmt, args...) do { if (verbose) syslog(LOG_DEBUG, fmt, ##args); } while(0)
-#define INFO(fmt, args...)                    syslog(LOG_INFO,  fmt, ##args)
-#define WARN(fmt, args...)                    syslog(LOG_WARNING, fmt, ##args)
+#define ERROR(fmt, args...)  syslog(LOG_ERR,   fmt, ##args)
+#define PERROR(fmt, args...) syslog(LOG_ERR,   fmt ": %s", ##args, strerror(errno))
+#define DEBUG(fmt, args...)  syslog(LOG_DEBUG, fmt, ##args)
+#define INFO(fmt, args...)   syslog(LOG_INFO,  fmt, ##args)
+#define WARN(fmt, args...)   syslog(LOG_WARNING, fmt, ##args)
 
 /* Global variables */
 extern int   magic;
 extern int   enabled;
-extern int   verbose;
-extern int   sys_log;
 extern int   extkick;
 extern int   extdelay;
 extern int   period;

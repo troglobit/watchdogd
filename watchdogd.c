@@ -17,6 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define SYSLOG_NAMES
 #include "wdt.h"
 #include "filenr.h"
 #include "loadavg.h"
@@ -26,7 +27,7 @@
 /* Global daemon settings */
 int magic   = 0;
 int enabled = 1;
-int verbose = 0;
+int loglevel = 0;
 int extkick = 0;
 int extdelay = 0;
 int wait_reboot = 0;
@@ -409,9 +410,9 @@ char *wdt_plugin_label(char *plugin_name)
 static int usage(int status)
 {
 	printf("Usage:\n"
-	       "  %s [-hlnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
+	       "  %s [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
-	       "  %s -a 0.8,0.9 -w 120 -k 30 /dev/watchdog2\n\n"
+	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
                "  -n, --foreground         Start in foreground (background is default)\n"
 	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
@@ -428,7 +429,7 @@ static int usage(int status)
 	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"
 	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
-	       "  -V, --verbose            Verbose, noisy output suitable for debugging\n"
+	       "  -l LVL --loglevel=LVL    Log level: none, err, info, notice*, debug\n"
 	       "  -v, --version            Display version and exit\n"
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
@@ -438,6 +439,16 @@ static int usage(int status)
 	       __progname, WDT_TIMEOUT_DEFAULT / 2);
 
 	return status;
+}
+
+static int loglvl(char *level)
+{
+	for (int i = 0; prioritynames[i].c_name; i++) {
+		if (string_match(prioritynames[i].c_name, level))
+			return prioritynames[i].c_val;
+	}
+
+	return atoi(level);
 }
 
 int main(int argc, char *argv[])
@@ -454,13 +465,13 @@ int main(int argc, char *argv[])
 		{"foreground",    0, 0, 'n'},
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 'k'},
-		{"syslog",        0, 0, 's'},
+		{"loglevel",      1, 0, 'l'},
 		{"meminfo",       1, 0, 'm'},
 		{"filenr",        1, 0, 'f'},
 		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 'e'},
+		{"syslog",        0, 0, 's'},
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
-		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
 		{"timeout",       1, 0, 'w'},
 		{"external-kick", 2, 0, 'x'},
@@ -468,7 +479,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:ef:Fhm:nk:p::sSt:T:Vvw:x::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:ef:Fhk:lLm:np::sSt:T:Vvw:x::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -486,6 +497,12 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			return usage(0);
+
+		case 'l':
+			loglevel = loglvl(optarg);
+			if (-1 == loglevel)
+				return usage(1);
+			break;
 
 		case 't':	/* BusyBox watchdogd compat. */
 		case 'k':	/* Watchdog kick interval */
@@ -523,10 +540,6 @@ int main(int argc, char *argv[])
 		case 'v':
 			printf("v%s\n", VERSION);
 			return 0;
-
-		case 'V':
-			verbose = 1;
-			break;
 
 		case 'T':	/* BusyBox watchdogd compat. */
 		case 'w':	/* Watchdog timeout */
@@ -570,6 +583,7 @@ int main(int argc, char *argv[])
 	if (!background && use_syslog < 1)
 		log_opts |= LOG_PERROR;
 
+	setlogmask(LOG_UPTO(loglevel));
 	openlog(NULL, log_opts, LOG_DAEMON);
 
 	INFO("Userspace watchdog daemon v%s starting ...", VERSION);
