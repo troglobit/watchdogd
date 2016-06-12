@@ -18,6 +18,7 @@
  */
 
 #define SYSLOG_NAMES
+#include "config.h"
 #include "wdt.h"
 #include "filenr.h"
 #include "loadavg.h"
