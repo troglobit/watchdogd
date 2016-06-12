@@ -1,5 +1,5 @@
-Watchdog ][ with loadavg monitoring
-===================================
+watchdogd -- a system and process supervisor
+============================================
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 Table of Contents
@@ -18,6 +18,10 @@ Table of Contents
 
 Introduction
 ------------
+
+watchdogd is an advanced system and process supervisor daemon.  It can
+monitor critical system resources, supervise the heartbeat of processes
+and record deadline transgressions before safely rebooting your system.
 
 A watchdog timer (WDT) is something most motherboards of laptops and
 servers today are equipped with.  It is basically a small timer that is
