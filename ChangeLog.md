@@ -3,6 +3,24 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
+[2.0.1][] - 2016-06-12
+----------------------
+
+Minor bugfix release
+
+### Changes
+- Update README with simple API example
+- Make it possible to run automatic tests as non-root
+- Add automatic testing of PMON API to Travis
+- Add Coverity Scan
+
+### Fixes
+- Silence GNU ar output, has suddenly started warning about `ar crus`.
+- Only `write()` to watchdog if descriptor is valid, fixes annoying
+  issue with watchdog not being properly disabled with `wdt_enable()`
+- Fix issue in `wdt_enable()` which could possible deref. NULL pointer
+- Only change enabled state in `wdt_enable()` if operation is succesful
+
 
 [2.0][] - 2015-09-20
 --------------------
