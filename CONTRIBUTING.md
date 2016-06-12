@@ -22,17 +22,6 @@ days.  In fact, there exist no enforced maximum, but keeping it around
 The coding style itself is strictly Linux [KNF][].
 
 
-GIT Submodules
---------------
-
-watchdogd use two Git submodules, [libite][] and [libuEv][].  The former
-provides several utilities, like `pidfile()` and the OpenBSD `strlcpy()`
-family of functions.  The latter is a small event loop library.
-
-Make sure to `git submodule update` after a `git pull`, in addition to
-the required `git submodule update --init` when you clone the repo.
-
-
 Commit Messages
 ---------------
 
@@ -75,8 +64,6 @@ Bill & Ted; [be excellent to each other][conduct].
 [gitbook]:  https://git-scm.com/book/ch5-2.html
 [rambling]: http://stopwritingramblingcommitmessages.com/
 [conduct]:  https://github.com/troglobit/watchdogd/blob/master/CODE-OF-CONDUCT.md
-[libuEv]:   https://github.com/troglobit/libuev
-[libite]:   https://github.com/troglobit/libite
 
 <!--
   -- Local Variables:

@@ -241,6 +241,8 @@ Would require watchdogd to be built with:
     prefix=/opt/secret make
     prefix=/opt/secret make test
 
+To build the source from GIT, see below.
+
 
 Origin & References
 -------------------
@@ -259,14 +261,12 @@ Contributing
 ------------
 
 If you find bugs or want to contribute fixes or features, check out the
-code from GitHub, including the submodules:
+code from GitHub:
 
 	git clone https://github.com/troglobit/watchdogd
 	cd watchdogd
-	make submodules
 
-Remember to also update the submodules when updating your clone using
-`git submodule update`.  For more details, see [CONTRIBUTING][contrib].
+For more details, see [CONTRIBUTING][contrib].
 
 
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
@@ -274,7 +274,8 @@ Remember to also update the submodules when updating your clone using
 [filenr]:          http://www.cyberciti.biz/tips/linux-procfs-file-descriptors.html
 [meminfo]:         http://www.cyberciti.biz/faq/linux-check-memory-usage/
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
-[libuev]:          https://github.com/troglobit/libuev/
+[libite]:          https://github.com/troglobit/libite/
+[libuEv]:          https://github.com/troglobit/libuev/
 [Travis]:          https://travis-ci.org/troglobit/watchdogd
 [Travis Status]:   https://travis-ci.org/troglobit/watchdogd.png?branch=master
 [Coverity Scan]:   https://scan.coverity.com/projects/6458
