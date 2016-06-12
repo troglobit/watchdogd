@@ -416,10 +416,11 @@ static int usage(int status)
                "  -n, --foreground         Start in foreground (background is default)\n"
 	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
 	       "                           A 'N x <interval>' delay for startup is given\n"
-	       "  -l, --syslog             Use syslog, even if in foreground\n"
+	       "  -s, --syslog             Use syslog, even if in foreground\n"
                "  -w, -T, --timeout=<sec>  HW watchdog timeout, in <sec> seconds\n"
                "  -k, -t, --interval=<sec> WDT kick interval, in <sec> seconds, default: %d\n"
-               "  -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM\n"
+               "  -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
+	       "                           \"magic\" exit may not be supported by HW/driver\n"
 	       "\n"
 	       "  -a, --load-average=<val> Enable load average check, <WARN,REBOOT>\n"
 	       "  -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>\n"
@@ -453,11 +454,11 @@ int main(int argc, char *argv[])
 		{"foreground",    0, 0, 'n'},
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 'k'},
-		{"syslog",        0, 0, 'l'},
+		{"syslog",        0, 0, 's'},
 		{"meminfo",       1, 0, 'm'},
 		{"filenr",        1, 0, 'f'},
 		{"pmon",          2, 0, 'p'},
-		{"safe-exit",     0, 0, 's'},
+		{"safe-exit",     0, 0, 'e'},
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
 		{"verbose",       0, 0, 'V'},
 		{"version",       0, 0, 'v'},
@@ -467,11 +468,15 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:f:Fhlm:nk:p::sSt:T:Vvw:x::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:ef:Fhm:nk:p::sSt:T:Vvw:x::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
 			    return usage(1);
+			break;
+
+		case 'e':	/* Safe exit, i.e., don't reboot if we exit and close device */
+			magic = 1;
 			break;
 
 		case 'f':
@@ -491,10 +496,6 @@ int main(int argc, char *argv[])
 			period = atoi(optarg);
 			break;
 
-		case 'l':
-			use_syslog++;
-			break;
-
 		case 'm':
 			if (meminfo_set(optarg))
 				return usage(1);
@@ -511,8 +512,8 @@ int main(int argc, char *argv[])
 				return usage(1);
 			break;
 
-		case 's':	/* Safe exit, i.e., don't reboot if we exit and close device */
-			magic = 1;
+		case 's':
+			use_syslog++;
 			break;
 
 		case 'S':	/* Simulate: no interaction with kernel, for testing pmon */
