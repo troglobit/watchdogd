@@ -57,7 +57,7 @@ Usage
       -n, --foreground         Start in foreground (background is default)
       -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
                                A 'N x <interval>' delay for startup is given
-      -s, --syslog             Use syslog, even if in foreground
+      -s, --syslog             Use syslog, even if running in foreground
       -w, -T, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds
       -k, -t, --interval=<sec> Set watchdog kick interval to <sec> seconds
       -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM

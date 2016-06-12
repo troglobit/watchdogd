@@ -416,7 +416,7 @@ static int usage(int status)
                "  -n, --foreground         Start in foreground (background is default)\n"
 	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
 	       "                           A 'N x <interval>' delay for startup is given\n"
-	       "  -s, --syslog             Use syslog, even if in foreground\n"
+	       "  -s, --syslog             Use syslog, even if running in foreground\n"
                "  -w, -T, --timeout=<sec>  HW watchdog timeout, in <sec> seconds\n"
                "  -k, -t, --interval=<sec> WDT kick interval, in <sec> seconds, default: %d\n"
                "  -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
