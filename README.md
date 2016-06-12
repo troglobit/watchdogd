@@ -58,8 +58,8 @@ Usage
       -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
                                A 'N x <interval>' delay for startup is given
       -s, --syslog             Use syslog, even if running in foreground
-      -w, -T, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds
-      -k, -t, --interval=<sec> Set watchdog kick interval to <sec> seconds
+      -T, -w, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds
+      -t, -k, --interval=<sec> Set watchdog kick interval to <sec> seconds
       -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
       
       -a, --load-average=<val> Enable load average check <WARN,REBOOT>
@@ -72,12 +72,15 @@ Usage
       -v, --version            Display version and exit
       -h, --help               Display this help message and exit
     
-By default, watchdogd opens `/dev/watchdog`, attempts to set 20 sec WDT
-timeout and then kicks, in the background, every 10 sec.
+By default, with any arguments given on the command line, `watchdogd`
+opens `/dev/watchdog`, forks to the background and then tries to to set
+a 20 sec WDT timeout.  It then kicks every 10 sec.  If it fails setting
+the 20 sec WDT timeout it attempts to read back the lowest possible WDT
+timeout and kicks every half that interval.
 
 **Example**
 
-    watchdogd -a 0.8,0.9 -w 120 -k 30 /dev/watchdog2
+    watchdogd -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2
 
 Most WDT drivers only support 120 sec as lowest timeout, but watchdogd
 tries to set 20 sec timeout.  Example values above are recommendations
@@ -110,7 +113,7 @@ watchdogd supports monitoring of several system resources, all of which
 are disabled by default.  First, system load average monitoring can be
 enabled with the `-a 0.8,0.9` command line argument.  Second, the memory
 leak detector `-m 0.9,0.95`.  Third, the file descriptor leak detector
-`-n 0.8,0.95`.  All of which are *very* useful on an embedded system!
+`-f 0.8,0.95`.  All of which are *very* useful on an embedded system!
 
 The two values, separated by a comma, are the warning and reboot levels
 in percent.  For the loadavg monitoring it is important to know that the
@@ -223,8 +226,9 @@ Debugging
 ---------
 
 The code has both `INFO()` and `DEBUG()` statements sprinkled almost
-everywhere.  Enable `--verbose` and use `--syslog`, or `--foreground` to
-get debug output to the terminal.
+everywhere.  Use the `--loglevel=debug` command line option to enable
+full debug output to stderr or the syslog, depending on how you start
+`watchdogd`.
 
 
 Build & Install
