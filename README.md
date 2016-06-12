@@ -11,6 +11,7 @@ Table of Contents
 * [Pmon API](#pmon-api)
 * [Operation](#operation)
 * [Debugging](#debugging)
+* [Build & Install](#build--install)
 * [Origin & References](#origin--references)
 * [Contributing](#contributing)
 
@@ -226,6 +227,30 @@ Debugging
 The code has both `INFO()` and `DEBUG()` statements sprinkled almost
 everywhere.  Enable `--verbose` and use `--syslog` a logfile or
 `--foreground` to get debug output to the terminal.
+
+
+Build & Install
+---------------
+
+watchdogd is tailored for Linux systems and should build against any
+(old) C libray.  However, watchdogd v2.1 and later require two external
+libraries that were previously a built-in, [libite][] and [libuEv][].
+Neither of them should present any surprises, both use de facto standard
+configure script.
+
+One thing of importance though, the current build system for watchdogd
+requires that the build prefix for both depending libraries and also
+for watchdogd is the same.  I.e.,
+
+For libite and libuev:
+
+    ./configure --prefix=/opt/secret
+
+Would require watchdogd to be built with:
+
+    make distclean
+    prefix=/opt/secret make
+    prefix=/opt/secret make test
 
 
 Origin & References
