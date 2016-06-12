@@ -380,24 +380,27 @@ static int usage(int status)
 	       "  -s, --syslog             Use syslog, even if running in foreground\n"
 	       "  -l, --loglevel=LVL       Log level: none, err, info, notice*, debug\n"
 	       "\n"
-               "  -T, --timeout=SEC        HW watchdog timeout, in <sec> seconds\n"
-               "  -t, --interval=SEC       WDT kick interval, in <sec> seconds, default: %d\n"
+               "  -T, --timeout=SEC        HW watchdog timer (WDT) timeout, in SEC seconds\n"
+               "  -t, --interval=SEC       WDT kick interval, in SEC seconds, default: %d\n"
                "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
 	       "\n"
-	       "  -a, --load-average=W,R   Enable load average check, <WARN,REBOOT>\n"
-	       "  -m, --meminfo=W,R        Enable memory leak check, <WARN,REBOOT>\n"
-	       "  -f, --filenr=W,R         Enable file descriptor leak check, <WARN,REBOOT>\n"
+	       "  -a, --load-average=W,R   Enable load average check, WARN,REBOOT\n"
+	       "  -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT\n"
+	       "  -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT\n"
 	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"
 	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
 	       "  -v, --version            Display version and exit\n"
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
-	       "Most WDT drivers only support 120 sec as lowest timeout, but %s\n"
-	       "tries to set %d sec timeout.  Example values above are recommendations\n"
-	       "\n", __progname, WDT_DEVNODE, __progname, WDT_TIMEOUT_DEFAULT,
-	       __progname, WDT_TIMEOUT_DEFAULT / 2);
+	       "WARN,REBOOT ranges are 0-1, even for load average, where number of CPUs\n"
+	       "are in fact taken into consideration.\n"
+	       "\n"
+	       "WDT drivers usually support 120 sec as lowest timeout (T), but %s\n"
+	       "tries to set %d sec timeout, falling back to what the driver reports.\n"
+	       "\n", __progname, WDT_DEVNODE, __progname, WDT_KICK_DEFAULT,
+	       __progname, WDT_TIMEOUT_DEFAULT);
 
 	return status;
 }

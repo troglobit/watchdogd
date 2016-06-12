@@ -71,13 +71,13 @@ Usage
       -s, --syslog             Use syslog, even if running in foreground
       -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
       
-      -T, --timeout=SEC        Set the HW watchdog timeout to <sec> seconds
-      -t, --interval=SEC       Set watchdog kick interval to <sec> seconds
+      -T, --timeout=SEC        HW watchdog timer (WDT) timeout in SEC seconds
+      -t, --interval=SEC       WDT kick interval in SEC seconds, default: 10
       -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
       
-      -a, --load-average=W,R   Enable load average check <WARN,REBOOT>
-      -m, --meminfo=W,R        Enable memory leak check, <WARN,REBOOT>
-      -f, --filenr=W,R         Enable file descriptor leak check, <WARN,REBOOT>
+      -a, --load-average=W,R   Enable load average check WARN,REBOOT
+      -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT
+      -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT
       -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
                                Default RT prio when active: SCHED_RR @98
       
