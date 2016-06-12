@@ -58,11 +58,10 @@ Usage
       -s, --syslog             Use syslog, even if running in foreground
       -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
       
-      -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
       -T, --timeout=SEC        Set the HW watchdog timeout to <sec> seconds
       -t, --interval=SEC       Set watchdog kick interval to <sec> seconds
-      -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
-                               A 'N x <interval>' delay for startup is given
+      -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
+      
       -a, --load-average=W,R   Enable load average check <WARN,REBOOT>
       -m, --meminfo=W,R        Enable memory leak check, <WARN,REBOOT>
       -f, --filenr=W,R         Enable file descriptor leak check, <WARN,REBOOT>
@@ -90,18 +89,6 @@ watchdogd runs at the default UNIX priority (nice) level.
 
 Features
 --------
-
-watchdogd can be used stand-alone to kick a kernel `/dev/watchdog`, or
-with an external supervisor.  The latter must use `SIGUSR1` to activate
-external kicks.  Use `--external-kick[=NUM]` to force an external
-supervisor daemon, where NUM is an optional delay which can be quite
-useful at system startup.  E.g., with `NUM=3` watchdogd will delay the
-handover three built-in kicks, providing the external supervisor enough
-time to start.
-
-An external supervisor often need to lookup the PID to be able to send
-signals, watchdogd stores its PID in `/var/run/watchdogd.pid` like any
-other daemon.
 
 To force a kernel watchdog reboot, watchdogd supports `SIGPWR`.  What it
 does is to set the WDT timer to the lowest possible value (1 sec), close

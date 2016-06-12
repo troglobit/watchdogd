@@ -28,8 +28,6 @@
 int magic   = 0;
 int enabled = 1;
 int loglevel = 0;
-int extkick = 0;
-int extdelay = 0;
 int wait_reboot = 0;
 int period = -1;
 
@@ -43,8 +41,6 @@ static uev_t sigterm_watcher;
 static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
 static uev_t sigpwr_watcher;
-static uev_t sigusr1_watcher;
-static uev_t sigusr2_watcher;
 
 
 /*
@@ -274,23 +270,6 @@ void reboot_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	wdt_reboot(w->ctx, 1, "init");
 }
 
-static void ext_kick_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
-{
-	if (!extkick) {
-		extdelay = 0;
-		extkick = 1;
-		INFO("External supervisor now controls watchdog kick via SIGUSR1.");
-	}
-
-	wdt_kick("External kick.");
-}
-
-static void ext_kick_exit_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(events))
-{
-	INFO("External supervisor requested safe exit.  Reverting to built-in kick.");
-	extkick = 0;
-}
-
 static void setup_signals(uev_ctx_t *ctx)
 {
 	/* Signals to stop watchdogd */
@@ -300,12 +279,6 @@ static void setup_signals(uev_ctx_t *ctx)
 
 	/* Watchdog reboot support */
 	uev_signal_init(ctx, &sigpwr_watcher, reboot_cb, NULL, SIGPWR);
-
-	/* Kick from external process supervisor */
-	uev_signal_init(ctx, &sigusr1_watcher, ext_kick_cb, NULL, SIGUSR1);
-
-	/* Handle graceful exit by external supervisor */
-	uev_signal_init(ctx, &sigusr2_watcher, ext_kick_exit_cb, NULL, SIGUSR2);
 }
 
 static int create_bootstatus(int timeout, int interval)
@@ -336,18 +309,7 @@ static int create_bootstatus(int timeout, int interval)
 
 static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 {
-	/* When an external supervisor once has started sending SIGUSR1
-	 * it fully assumes responsibility for kicking. No magic here. */
-	if (!extkick)
-		wdt_kick("Kicking watchdog.");
-
-	/* Startup delay before handing over to external kick.
-	 * Wait MAX:@extdelay number of built-in kicks, MIN:1 */
-	if (extdelay) {
-		DEBUG("Pending external kick in %d sec ...", extdelay * period);
-		if (!--extdelay)
-			extkick = 1;
-	}
+	wdt_kick("Kicking watchdog.");
 }
 
 /*
@@ -418,12 +380,10 @@ static int usage(int status)
 	       "  -s, --syslog             Use syslog, even if running in foreground\n"
 	       "  -l, --loglevel=LVL       Log level: none, err, info, notice*, debug\n"
 	       "\n"
-               "  -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
-	       "                           \"magic\" exit may not be supported by HW/driver\n"
                "  -T, --timeout=SEC        HW watchdog timeout, in <sec> seconds\n"
                "  -t, --interval=SEC       WDT kick interval, in <sec> seconds, default: %d\n"
-	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
-	       "                           A 'N x <interval>' delay for startup is given\n"
+               "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
+	       "                           \"magic\" exit may not be supported by HW/driver\n"
 	       "\n"
 	       "  -a, --load-average=W,R   Enable load average check, <WARN,REBOOT>\n"
 	       "  -m, --meminfo=W,R        Enable memory leak check, <WARN,REBOOT>\n"
@@ -475,20 +435,15 @@ int main(int argc, char *argv[])
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
 		{"version",       0, 0, 'v'},
 		{"timeout",       1, 0, 'T'},
-		{"external-kick", 2, 0, 'x'},
 		{NULL, 0, 0, 0}
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:ef:FhlLm:np::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:f:FhlLm:np::sSt:T:Vvx?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
 			    return usage(1);
-			break;
-
-		case 'e':	/* Safe exit, i.e., don't reboot if we exit and close device */
-			magic = 1;
 			break;
 
 		case 'f':
@@ -503,14 +458,6 @@ int main(int argc, char *argv[])
 			loglevel = loglvl(optarg);
 			if (-1 == loglevel)
 				return usage(1);
-			break;
-
-		case 't':	/* Watchdog kick interval */
-			if (!optarg) {
-				ERROR("Missing interval argument.");
-				return usage(1);
-			}
-			period = atoi(optarg);
 			break;
 
 		case 'm':
@@ -537,9 +484,13 @@ int main(int argc, char *argv[])
 			__wdog_testmode = 1;
 			break;
 
-		case 'v':
-			printf("v%s\n", VERSION);
-			return 0;
+		case 't':	/* Watchdog kick interval */
+			if (!optarg) {
+				ERROR("Missing interval argument.");
+				return usage(1);
+			}
+			period = atoi(optarg);
+			break;
 
 		case 'T':	/* Watchdog timeout */
 			if (!optarg) {
@@ -549,11 +500,12 @@ int main(int argc, char *argv[])
 			timeout = atoi(optarg);
 			break;
 
-		case 'x':
-			if (!optarg)
-				extdelay = 1; /* Default is 1 x period */
-			else
-				extdelay = atoi(optarg);
+		case 'v':
+			printf("v%s\n", VERSION);
+			return 0;
+
+		case 'x':	/* Safe exit, i.e., don't reboot if we exit and close device */
+			magic = 1;
 			break;
 
 		default:
