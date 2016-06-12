@@ -36,15 +36,16 @@ ALLOBJS    := $(OBJS) $(LIBOBJS)
 DEPS        = $(ALLOBJS:.o=.d)
 EXAMPLES   := examples/ex1
 
-CFLAGS     += -O2 -W -Wall -Wextra -g
-CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
-
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr/local
 sbindir    ?= $(prefix)/sbin
 datadir     = $(prefix)/share/doc/$(NAME)
-incdir      = $(prefix)/include/wdog
+incdir      = $(prefix)/include
 libdir      = $(prefix)/lib
+
+CFLAGS     += -O2 -W -Wall -Wextra -g
+CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
+CPPFLAGS   += -I$(incdir)
 
 LDFLAGS    += -L$(libdir)
 LDLIBS     += -luev -lite
@@ -62,10 +63,10 @@ $(EXEC): $(OBJS) $(LIB)
 examples/ex1: examples/ex1.o $(LIB)
 
 install-dev:
-	@$(INSTALL) -d $(DESTDIR)$(incdir)
+	@$(INSTALL) -d $(DESTDIR)$(incdir)/wdog
 	@$(INSTALL) -d $(DESTDIR)$(libdir)
-	@printf "  INSTALL $(DESTDIR)$(incdir)/wdog.h\n"
-	@$(INSTALL) -m 0644 wdog.h $(DESTDIR)$(incdir)/wdog.h
+	@printf "  INSTALL $(DESTDIR)$(incdir)/wdog/wdog.h\n"
+	@$(INSTALL) -m 0644 wdog.h $(DESTDIR)$(incdir)/wdog/wdog.h
 	@printf "  INSTALL $(DESTDIR)$(libdir)/$(LIB)\n"
 	@$(INSTALL) -m 0644 $(LIB) $(DESTDIR)$(libdir)/$(LIB)
 
@@ -91,7 +92,7 @@ uninstall:
 		rm $(DESTDIR)$(datadir)/$$file 2>/dev/null;		\
 	done
 	@printf "  REMOVE  $(DESTDIR)$(incdir)\n"
-	-@$(RM) -rf $(DESTDIR)$(incdir)      2>/dev/null
+	-@$(RM) -rf $(DESTDIR)$(incdir)/wdog 2>/dev/null
 	@printf "  REMOVE  $(DESTDIR)$(libdir)/$(LIB)\n"
 	-@$(RM) $(DESTDIR)$(libdir)/$(LIB)   2>/dev/null
 	-@rmdir $(DESTDIR)$(datadir)         2>/dev/null
