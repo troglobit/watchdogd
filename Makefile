@@ -38,7 +38,7 @@ EXAMPLES   := examples/ex1
 
 SUBMODULES := libuev/Makefile libite/Makefile
 
-CFLAGS     += -O2 -W -Wall -Werror -g
+CFLAGS     += -O2 -W -Wall -Wextra -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
 LDLIBS     += libuev/libuev.a libite/pidfile.o libite/strlcpy.o libite/strtonum.o
 
