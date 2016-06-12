@@ -43,7 +43,7 @@ datadir     = $(prefix)/share/doc/$(NAME)
 incdir      = $(prefix)/include
 libdir      = $(prefix)/lib
 
-CFLAGS     += -O2 -W -Wall -Wextra -g
+CFLAGS     += -O2 -W -Wall -Wextra -g -std=gnu99
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
 CPPFLAGS   += -I$(incdir)
 
