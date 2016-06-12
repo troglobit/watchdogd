@@ -27,7 +27,7 @@
 /* Global daemon settings */
 int magic   = 0;
 int enabled = 1;
-int loglevel = 0;
+int loglevel = LOG_NOTICE;
 int wait_reboot = 0;
 int period = -1;
 
