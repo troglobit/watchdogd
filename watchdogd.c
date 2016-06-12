@@ -27,7 +27,6 @@
 int magic   = 0;
 int enabled = 1;
 int verbose = 0;
-int sys_log = 0;
 int extkick = 0;
 int extdelay = 0;
 int wait_reboot = 0;
@@ -418,8 +417,7 @@ static int usage(int status)
                "  -f, --foreground         Start in foreground (background is default)\n"
 	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
 	       "                           A 'N x <interval>' delay for startup is given\n"
-	       "  -l, --logfile=<file>     Log to <file> in background, otherwise silent\n"
-	       "  -L, --syslog             Use syslog, even if in foreground\n"
+	       "  -l, --syslog             Use syslog, even if in foreground\n"
                "  -w, -T, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds\n"
                "  -k, -t, --interval=<sec> Set watchdog kick interval to <sec> seconds\n"
                "  -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM\n"
@@ -452,16 +450,16 @@ int main(int argc, char *argv[])
 	int real_timeout = 0;
 	int T;
 	int background = 1;
+	int use_syslog = 1;
 	int c, status;
-	char *logfile = NULL;
+	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
 	struct option long_options[] = {
 		{"load-average",  1, 0, 'a'},
 		{"device",        1, 0, 'd'},
 		{"foreground",    0, 0, 'f'},
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 'k'},
-		{"logfile",       1, 0, 'l'},
-		{"syslog",        0, 0, 'L'},
+		{"syslog",        0, 0, 'l'},
 		{"meminfo",       1, 0, 'm'},
 		{"filenr",        1, 0, 'n'},
 		{"pmon",          2, 0, 'p'},
@@ -475,7 +473,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:d:fFhl:Lm:n:w:k:p::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:d:fFhlm:n:w:k:p::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -489,6 +487,7 @@ int main(int argc, char *argv[])
 		case 'F':	/* BusyBox watchdogd compat. */
 		case 'f':	/* Run in foreground */
 			background = 0;
+			use_syslog--;
 			break;
 
 		case 'h':
@@ -503,16 +502,8 @@ int main(int argc, char *argv[])
 			period = atoi(optarg);
 			break;
 
-		case 'l':	/* Log to file */
-			if (!optarg) {
-				ERROR("Missing logfile argument.");
-				return usage(1);
-			}
-			logfile = strdup(optarg);
-			break;
-
-		case 'L':	/* Force use of syslog, regardless */
-			sys_log = 1;
+		case 'l':
+			use_syslog++;
 			break;
 
 		case 'm':
@@ -579,18 +570,16 @@ int main(int argc, char *argv[])
 	if (background) {
 		DEBUG("Daemonizing ...");
 
-		/* If backgrounding and no logfile is given, use syslog */
-		if (!logfile)
-			sys_log = 1;
-
 		if (-1 == daemon(0, 0)) {
 			PERROR("Failed daemonizing");
 			return 1;
 		}
 	}
 
-	if (sys_log)
-		openlog(__progname, LOG_NDELAY | LOG_NOWAIT | LOG_PID, LOG_DAEMON);
+	if (!background && use_syslog < 1)
+		log_opts |= LOG_PERROR;
+
+	openlog(NULL, log_opts, LOG_DAEMON);
 
 	INFO("Userspace watchdog daemon v%s starting ...", VERSION);
 	uev_init(&ctx);

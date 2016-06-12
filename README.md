@@ -58,8 +58,7 @@ Usage
       -f, --foreground         Start in foreground (background is default)
       -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
                                A 'N x <interval>' delay for startup is given
-      -l, --logfile=<file>     Log to <file> in background, otherwise silent
-      -L, --syslog             Use syslog, even if in foreground
+      -l, --syslog             Use syslog, even if in foreground
       -w, -T, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds
       -k, -t, --interval=<sec> Set watchdog kick interval to <sec> seconds
       -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
@@ -225,8 +224,8 @@ Debugging
 ---------
 
 The code has both `INFO()` and `DEBUG()` statements sprinkled almost
-everywhere.  Enable `--verbose` and use `--syslog` a logfile or
-`--foreground` to get debug output to the terminal.
+everywhere.  Enable `--verbose` and use `--syslog`, or `--foreground` to
+get debug output to the terminal.
 
 
 Build & Install

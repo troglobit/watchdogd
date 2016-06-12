@@ -45,13 +45,11 @@
 #define WDT_TIMEOUT_DEFAULT  20
 #define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
 
-#define print(prio, fmt, args...)  (sys_log ? syslog(prio, fmt, ##args) \
-                                            : fprintf(stderr, "%s: " fmt "\n", __progname, ##args))
-#define ERROR(fmt, args...)                   print(LOG_DAEMON | LOG_ERR,   fmt, ##args)
-#define PERROR(fmt, args...)                  print(LOG_DAEMON | LOG_ERR,   fmt ": %s", ##args, strerror(errno))
-#define DEBUG(fmt, args...) do { if (verbose) print(LOG_DAEMON | LOG_DEBUG, fmt, ##args); } while(0)
-#define INFO(fmt, args...)                    print(LOG_DAEMON | LOG_INFO,  fmt, ##args)
-#define WARN(fmt, args...)                    print(LOG_DAEMON | LOG_WARNING, fmt, ##args)
+#define ERROR(fmt, args...)                   syslog(LOG_ERR,   fmt, ##args)
+#define PERROR(fmt, args...)                  syslog(LOG_ERR,   fmt ": %s", ##args, strerror(errno))
+#define DEBUG(fmt, args...) do { if (verbose) syslog(LOG_DEBUG, fmt, ##args); } while(0)
+#define INFO(fmt, args...)                    syslog(LOG_INFO,  fmt, ##args)
+#define WARN(fmt, args...)                    syslog(LOG_WARNING, fmt, ##args)
 
 /* Global variables */
 extern int   magic;

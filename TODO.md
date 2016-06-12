@@ -25,7 +25,7 @@ System Health Monitor
 
 Add system health monitor with capabilities to monitor:
 
-* RAM disks used for logfiles.  Best way is probably to implement this
+* RAM disks used for log files.  Best way is probably to implement this
   as a generic checker that the user can define any way they like.  E.g,
 
         fs-monitor /var { warning = 90%, critical 95% }
