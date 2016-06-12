@@ -20,7 +20,7 @@
 # Top directory for building complete system, fall back to this directory
 ROOTDIR    ?= $(shell pwd)
 
-VERSION     = 2.0.1
+VERSION     = 2.1-dev
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
 DEV         = $(NAME)-dev
@@ -36,11 +36,8 @@ ALLOBJS    := $(OBJS) $(LIBOBJS)
 DEPS        = $(ALLOBJS:.o=.d)
 EXAMPLES   := examples/ex1
 
-SUBMODULES := libuev/Makefile libite/Makefile
-
 CFLAGS     += -O2 -W -Wall -Wextra -g
 CPPFLAGS   += -D_GNU_SOURCE -D_DEFAULT_SOURCE -DVERSION=\"$(VERSION)\"
-LDLIBS     += libuev/libuev.a libite/pidfile.o libite/strlcpy.o libite/strtonum.o
 
 # Installation paths, always prepended with DESTDIR if set
 prefix     ?= /usr/local
@@ -49,27 +46,18 @@ datadir     = $(prefix)/share/doc/$(NAME)
 incdir      = $(prefix)/include/wdog
 libdir      = $(prefix)/lib
 
+LDFLAGS    += -L$(libdir)
+LDLIBS     += -luev -lite
+
 include common.mk
 
-all: $(LDLIBS) $(EXEC) $(LIB)
-
-$(ALLOBJS): $(SUBMODULES)
+all: $(EXEC) $(LIB)
 
 $(LIB): $(LIBOBJS)
 	@printf "  ARCHIVE $(subst $(ROOTDIR)/,,$(shell pwd)/$@)\n"
 	@$(AR) $(ARFLAGS) $@ $^ 2>/dev/null
 
-$(SUBMODULES): submodules
-
-submodules:
-	@if [ ! -e libuev/Makefile -o ! -e libite/Makefile ]; then	\
-		git submodule update --init;				\
-	fi
-
-$(LDLIBS): $(SUBMODULES) Makefile
-	+@$(MAKE) STATIC=1 -C `dirname $@` `basename $@`
-
-$(EXEC): $(OBJS) $(LDLIBS) $(LIB)
+$(EXEC): $(OBJS) $(LIB)
 
 examples/ex1: examples/ex1.o $(LIB)
 
@@ -110,13 +98,9 @@ uninstall:
 	-@rmdir $(DESTDIR)$(sbindir)         2>/dev/null
 
 clean:
-	+@$(MAKE) -C libite $@
-	+@$(MAKE) -C libuev $@
 	-@$(RM) $(OBJS) $(DEPS) $(EXEC) $(LIB) $(LIBOBJS)
 
 distclean: clean
-	+@$(MAKE) -C libite $@
-	+@$(MAKE) -C libuev $@
 	-@$(RM) $(JUNK) unittest *.elf *.gdb *.o .*.d examples/*.o examples/*~ *.sock
 
 dist:
@@ -134,7 +118,7 @@ dist:
 	@md5sum $(ARCHIVEZ) | tee $(ARCHIVEZ).md5
 
 test: all $(EXAMPLES)
-	./testit.sh
+	LD_LIBRARY_PATH=$(libdir) ./testit.sh
 
 dev: distclean
 	@echo "Building unstable xz $(DEV) in parent dir..."

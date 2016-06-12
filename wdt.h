@@ -37,8 +37,8 @@
 #include <syslog.h>
 #include <sched.h>
 
-#include "libite/lite.h"
-#include "libuev/uev.h"
+#include "lite/lite.h"
+#include "uev/uev.h"
 
 #define WDT_DEVNODE          "/dev/watchdog"
 #define WDT_STATE            _PATH_VARDB "watchdogd.state"

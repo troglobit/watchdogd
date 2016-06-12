@@ -18,11 +18,19 @@ addons:
       description: "Watchdog daemon for embedded Linux systems with pmon API"
     notification_email: troglobit@gmail.com
     build_command: "make"
-    branch_pattern: master
+    branch_pattern: dev
+
+install:
+  - wget https://github.com/troglobit/libuev/releases/download/v1.4.0/libuev-1.4.0.tar.xz
+  - wget https://github.com/troglobit/libite/releases/download/v1.5.0/libite-1.5.0.tar.xz
+  - tar xf libuev-1.4.0.tar.xz
+  - tar xf libite-1.5.0.tar.xz
+  - (cd libuev-1.4.0 && ./configure --prefix=/tmp && make && make install-strip)
+  - (cd libite-1.5.0 && ./configure --prefix=/tmp && make && make install-strip)
 
 # We (currently) don't use GNU Configure & Build System, only a simple
 # Makefile, for the time being.
 script:
   - make distclean
-  - make
-  - make test
+  - prefix=/tmp make
+  - prefix=/tmp make test

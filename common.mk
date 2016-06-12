@@ -19,5 +19,5 @@ STRIPINST := $(INSTALL) -s --strip-program=$(CROSS)strip -m 0755
 
 %: %.o
 	@printf "  CC      $(subst $(ROOTDIR)/,,$(shell pwd)/$@)\n"
-	@$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
