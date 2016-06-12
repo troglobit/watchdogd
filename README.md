@@ -51,10 +51,9 @@ used to detect other system problems:
 Usage
 -----
 
-    watchdogd [-fxLsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [[-d] /dev/watchdog]
+    watchdogd [-fxlsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
     
     Options:
-      -d, --device=<dev>       Device to use, default: /dev/watchdog
       -f, --foreground         Start in foreground (background is default)
       -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
                                A 'N x <interval>' delay for startup is given
@@ -78,7 +77,7 @@ timeout and then kicks, in the background, every 10 sec.
 
 **Example**
 
-    watchdogd -d /dev/watchdog2 -a 0.8,0.9 -w 120 -k 30
+    watchdogd -a 0.8,0.9 -w 120 -k 30 /dev/watchdog2
 
 Most WDT drivers only support 120 sec as lowest timeout, but watchdogd
 tries to set 20 sec timeout.  Example values above are recommendations

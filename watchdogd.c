@@ -409,17 +409,16 @@ char *wdt_plugin_label(char *plugin_name)
 static int usage(int status)
 {
 	printf("Usage:\n"
-	       "  %s [-fxLsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [[-d] /dev/watchdog]\n\n"
+	       "  %s [-fxLsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
-	       "  %s -d /dev/watchdog2 -a 0.8,0.9 -w 120 -k 30\n\n"
+	       "  %s -a 0.8,0.9 -w 120 -k 30 /dev/watchdog2\n\n"
                "Options:\n"
-	       "  -d, --device=<dev>       Device to use, default: %s\n"
                "  -f, --foreground         Start in foreground (background is default)\n"
 	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
 	       "                           A 'N x <interval>' delay for startup is given\n"
 	       "  -l, --syslog             Use syslog, even if in foreground\n"
-               "  -w, -T, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds\n"
-               "  -k, -t, --interval=<sec> Set watchdog kick interval to <sec> seconds\n"
+               "  -w, -T, --timeout=<sec>  HW watchdog timeout, in <sec> seconds\n"
+               "  -k, -t, --interval=<sec> WDT kick interval, in <sec> seconds, default: %d\n"
                "  -s, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM\n"
 	       "\n"
 	       "  -a, --load-average=<val> Enable load average check, <WARN,REBOOT>\n"
@@ -432,14 +431,10 @@ static int usage(int status)
 	       "  -v, --version            Display version and exit\n"
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
-               "Kicks %s every %d sec, loadavg monitor disabled, by default\n"
-	       "\n"
 	       "Most WDT drivers only support 120 sec as lowest timeout, but %s\n"
 	       "tries to set %d sec timeout.  Example values above are recommendations\n"
-	       "\n",
-               __progname, __progname,
-	       WDT_DEVNODE, WDT_DEVNODE, WDT_TIMEOUT_DEFAULT / 2,
-	       __progname, WDT_TIMEOUT_DEFAULT);
+	       "\n", __progname, WDT_DEVNODE, __progname, WDT_TIMEOUT_DEFAULT,
+	       __progname, WDT_TIMEOUT_DEFAULT / 2);
 
 	return status;
 }
@@ -455,7 +450,6 @@ int main(int argc, char *argv[])
 	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
 	struct option long_options[] = {
 		{"load-average",  1, 0, 'a'},
-		{"device",        1, 0, 'd'},
 		{"foreground",    0, 0, 'f'},
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 'k'},
@@ -473,15 +467,11 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:d:fFhlm:n:w:k:p::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:fFhlm:n:w:k:p::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
 			    return usage(1);
-			break;
-
-		case 'd':
-			strlcpy(devnode, optarg, sizeof(devnode));
 			break;
 
 		case 'F':	/* BusyBox watchdogd compat. */
