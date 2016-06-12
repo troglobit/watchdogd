@@ -1,5 +1,5 @@
-watchdogd -- a system and process supervisor
-============================================
+Advanced System & Process Supervisor
+====================================
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 Table of Contents
@@ -23,6 +23,12 @@ watchdogd is an advanced system and process supervisor daemon.  It can
 monitor critical system resources, supervise the heartbeat of processes
 and record deadline transgressions before safely rebooting your system.
 
+When the system boots back up watchdogd queries the system to determine
+the cause of the (re)boot and records it in a logfile for later analysis
+by an operator or network management system (NMS).
+
+### What is watchdog timer?
+
 A watchdog timer (WDT) is something most motherboards of laptops and
 servers today are equipped with.  It is basically a small timer that is
 connected to the reset circuitry so that it can reset the board when the
@@ -43,8 +49,11 @@ turn cause the WDT to reboot the system.
 Most embedded systems utilise this as a way to automatically recover
 when they get stuck.
 
-Without arguments *watchdogd* can be used for this, but it can also be
-used to detect other system problems:
+### What can watchdogd do?
+
+Without arguments *watchdogd* simply runs in the background, "kicking"
+the WDT (via the driver).  However, with few command line options it can
+also detect system problems such as:
 
 - Load average
 - Memory leaks
