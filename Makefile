@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2008       Michele d'Amico <michele.damico@fitre.it>
 # Copyright (C) 2008       Mike Frysinger <vapier@gentoo.org>
-# Copyright (C) 2012-2015  Joachim Nilsson <troglobit@gmail.com>
+# Copyright (C) 2012-2016  Joachim Nilsson <troglobit@gmail.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
 # Top directory for building complete system, fall back to this directory
 ROOTDIR    ?= $(shell pwd)
 
-VERSION     = 2.1-dev
+VERSION     = 3.0-dev
 NAME        = watchdogd
 PKG         = $(NAME)-$(VERSION)
 DEV         = $(NAME)-dev

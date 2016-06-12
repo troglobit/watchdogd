@@ -3,6 +3,27 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
+
+[3.0][UNRELEASED]
+-----------------
+
+This release includes some major changes to the build system and is
+incompatible with previous version due to changes in the command line
+options.
+
+### Changes
+- Refined command line options and arguments.  Some options in previous
+  released were not options, they were optional arguents, others were
+  useless options for a daemon.
+  - No more `--logfile=FILE` option, redirect `stderr` instead.
+  - When running foreground, output syslog also to `stderr`, unless
+	the `--syslog` option is given.
+  - XXX: more changes later, e.g. device, safe-exit, etc.
+
+### Fixes
+- XXX: Fix outstanding issues found by Coverity Scan
+
+
 [2.0.1][] - 2016-06-12
 ----------------------
 
