@@ -2,7 +2,7 @@
 
 ARG=""
 if [ x"$1" = x"-v" -o x"$1" = x"-V" ]; then
-    ARG="-V"
+    ARG="-l debug"
 fi
 
 timeout 5s ./examples/ex1 $ARG
@@ -12,7 +12,7 @@ if [ $? -eq 0 ]; then
 fi
 sleep 1
 
-./watchdogd $ARG -f -p --test-mode &
+./watchdogd $ARG -n -p --test-mode &
 WDOG=$!
 sleep 5
 
