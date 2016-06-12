@@ -415,21 +415,22 @@ static int usage(int status)
 	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
                "  -n, --foreground         Start in foreground (background is default)\n"
-	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
-	       "                           A 'N x <interval>' delay for startup is given\n"
 	       "  -s, --syslog             Use syslog, even if running in foreground\n"
-               "  -w, -T, --timeout=<sec>  HW watchdog timeout, in <sec> seconds\n"
-               "  -k, -t, --interval=<sec> WDT kick interval, in <sec> seconds, default: %d\n"
+	       "  -l, --loglevel=LVL       Log level: none, err, info, notice*, debug\n"
+	       "\n"
                "  -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
+               "  -T, --timeout=SEC        HW watchdog timeout, in <sec> seconds\n"
+               "  -t, --interval=SEC       WDT kick interval, in <sec> seconds, default: %d\n"
+	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
+	       "                           A 'N x <interval>' delay for startup is given\n"
 	       "\n"
-	       "  -a, --load-average=<val> Enable load average check, <WARN,REBOOT>\n"
-	       "  -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>\n"
-	       "  -f, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>\n"
+	       "  -a, --load-average=W,R   Enable load average check, <WARN,REBOOT>\n"
+	       "  -m, --meminfo=W,R        Enable memory leak check, <WARN,REBOOT>\n"
+	       "  -f, --filenr=W,R         Enable file descriptor leak check, <WARN,REBOOT>\n"
 	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"
 	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
-	       "  -l LVL --loglevel=LVL    Log level: none, err, info, notice*, debug\n"
 	       "  -v, --version            Display version and exit\n"
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
@@ -464,7 +465,7 @@ int main(int argc, char *argv[])
 		{"load-average",  1, 0, 'a'},
 		{"foreground",    0, 0, 'n'},
 		{"help",          0, 0, 'h'},
-		{"interval",      1, 0, 'k'},
+		{"interval",      1, 0, 't'},
 		{"loglevel",      1, 0, 'l'},
 		{"meminfo",       1, 0, 'm'},
 		{"filenr",        1, 0, 'f'},
@@ -473,13 +474,13 @@ int main(int argc, char *argv[])
 		{"syslog",        0, 0, 's'},
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
 		{"version",       0, 0, 'v'},
-		{"timeout",       1, 0, 'w'},
+		{"timeout",       1, 0, 'T'},
 		{"external-kick", 2, 0, 'x'},
 		{NULL, 0, 0, 0}
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:ef:Fhk:lLm:np::sSt:T:Vvw:x::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:ef:FhlLm:np::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -504,8 +505,7 @@ int main(int argc, char *argv[])
 				return usage(1);
 			break;
 
-		case 't':	/* BusyBox watchdogd compat. */
-		case 'k':	/* Watchdog kick interval */
+		case 't':	/* Watchdog kick interval */
 			if (!optarg) {
 				ERROR("Missing interval argument.");
 				return usage(1);
@@ -541,8 +541,7 @@ int main(int argc, char *argv[])
 			printf("v%s\n", VERSION);
 			return 0;
 
-		case 'T':	/* BusyBox watchdogd compat. */
-		case 'w':	/* Watchdog timeout */
+		case 'T':	/* Watchdog timeout */
 			if (!optarg) {
 				ERROR("Missing timeout argument.");
 				return usage(1);

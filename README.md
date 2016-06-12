@@ -55,20 +55,20 @@ Usage
     
     Options:
       -n, --foreground         Start in foreground (background is default)
+      -s, --syslog             Use syslog, even if running in foreground
+      -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
+      
+      -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
+      -T, --timeout=SEC        Set the HW watchdog timeout to <sec> seconds
+      -t, --interval=SEC       Set watchdog kick interval to <sec> seconds
       -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
                                A 'N x <interval>' delay for startup is given
-      -s, --syslog             Use syslog, even if running in foreground
-      -T, -w, --timeout=<sec>  Set the HW watchdog timeout to <sec> seconds
-      -t, -k, --interval=<sec> Set watchdog kick interval to <sec> seconds
-      -e, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
-      
-      -a, --load-average=<val> Enable load average check <WARN,REBOOT>
-      -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>
-      -f, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>
+      -a, --load-average=W,R   Enable load average check <WARN,REBOOT>
+      -m, --meminfo=W,R        Enable memory leak check, <WARN,REBOOT>
+      -f, --filenr=W,R         Enable file descriptor leak check, <WARN,REBOOT>
       -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
                                Default RT prio when active: SCHED_RR @98
-
-      -l LVL --loglevel=LVL    Log level: none, err, info, notice*, debug
+      
       -v, --version            Display version and exit
       -h, --help               Display this help message and exit
     
