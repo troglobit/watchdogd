@@ -183,8 +183,13 @@ instrument it like this:
 
 ```C
 
-    int ack, wid = wdog_pmon_subscribe(NULL, 10000, &ack);
-
+    int ack, wid;
+    
+    /* Library will use process' name on NULL first arg. */
+    wid = wdog_pmon_subscribe(NULL, 10000, &ack);
+    if (-1 == wid)
+            ;      /* Error handling */
+    
     while (1) {
             ...
             wdog_pmon_kick(wid, &ack);
