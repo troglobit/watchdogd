@@ -409,11 +409,11 @@ char *wdt_plugin_label(char *plugin_name)
 static int usage(int status)
 {
 	printf("Usage:\n"
-	       "  %s [-fxLsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
+	       "  %s [-hlnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
 	       "  %s -a 0.8,0.9 -w 120 -k 30 /dev/watchdog2\n\n"
                "Options:\n"
-               "  -f, --foreground         Start in foreground (background is default)\n"
+               "  -n, --foreground         Start in foreground (background is default)\n"
 	       "  -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1\n"
 	       "                           A 'N x <interval>' delay for startup is given\n"
 	       "  -l, --syslog             Use syslog, even if in foreground\n"
@@ -423,7 +423,7 @@ static int usage(int status)
 	       "\n"
 	       "  -a, --load-average=<val> Enable load average check, <WARN,REBOOT>\n"
 	       "  -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>\n"
-	       "  -n, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>\n"
+	       "  -f, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>\n"
 	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"
 	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
@@ -450,12 +450,12 @@ int main(int argc, char *argv[])
 	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
 	struct option long_options[] = {
 		{"load-average",  1, 0, 'a'},
-		{"foreground",    0, 0, 'f'},
+		{"foreground",    0, 0, 'n'},
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 'k'},
 		{"syslog",        0, 0, 'l'},
 		{"meminfo",       1, 0, 'm'},
-		{"filenr",        1, 0, 'n'},
+		{"filenr",        1, 0, 'f'},
 		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 's'},
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
@@ -467,17 +467,16 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:fFhlm:n:w:k:p::sSt:T:Vvx::?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:f:Fhlm:nk:p::sSt:T:Vvw:x::?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
 			    return usage(1);
 			break;
 
-		case 'F':	/* BusyBox watchdogd compat. */
-		case 'f':	/* Run in foreground */
-			background = 0;
-			use_syslog--;
+		case 'f':
+			if (filenr_set(optarg))
+				return usage(1);
 			break;
 
 		case 'h':
@@ -501,9 +500,10 @@ int main(int argc, char *argv[])
 				return usage(1);
 			break;
 
-		case 'n':
-			if (filenr_set(optarg))
-				return usage(1);
+		case 'F':	/* BusyBox watchdogd compat. */
+		case 'n':	/* Run in foreground */
+			background = 0;
+			use_syslog--;
 			break;
 
 		case 'p':

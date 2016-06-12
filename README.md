@@ -51,10 +51,10 @@ used to detect other system problems:
 Usage
 -----
 
-    watchdogd [-fxlsVvh] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
+    watchdogd [-hlnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
     
     Options:
-      -f, --foreground         Start in foreground (background is default)
+      -n, --foreground         Start in foreground (background is default)
       -x, --external-kick[=N]  Force external watchdog kick using SIGUSR1
                                A 'N x <interval>' delay for startup is given
       -l, --syslog             Use syslog, even if in foreground
@@ -64,7 +64,7 @@ Usage
       
       -a, --load-average=<val> Enable load average check <WARN,REBOOT>
       -m, --meminfo=<val>      Enable memory leak check, <WARN,REBOOT>
-      -n, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>
+      -f, --filenr=<val>       Enable file descriptor leak check, <WARN,REBOOT>
       -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
                                Default RT prio when active: SCHED_RR @98
 
