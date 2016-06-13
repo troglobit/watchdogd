@@ -2,7 +2,7 @@
 # Defaults to GNU GCC and autotools: ./configure && make && make test
 language: c
 
-# We don't need to install packages, use dockerized build, quicker
+# Use docker for quicker builds, it now allows https://docs.travis-ci.com/user/apt/
 sudo: false
 
 env:
@@ -12,12 +12,16 @@ env:
    - secure: "HvCTpuitYJe0ew5cdHzEL0GLESnMMChI8Pv6XN3L33GykdSvYIgWf5RSX8gfRUMSit6oISfBwHY8sWDOEXs2L7O+QE7uaOdn/zF8Nmdo+7UHECI8ir5hUbMlZKA4dY6264hpnRJg9wQq9DE9vTzW9VydUs2X42cnZz3jA0x8A5A="
 
 addons:
+  apt:
+    packages:
+      - tree
   coverity_scan:
     project:
       name: "troglobit/watchdogd"
       description: "Watchdog daemon for embedded Linux systems with pmon API"
     notification_email: troglobit@gmail.com
-    build_command: "make"
+    build_command_prepend: "./autogen.sh && PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure"
+    build_command:   "make clean all"
     branch_pattern: dev
 
 install:
@@ -28,9 +32,13 @@ install:
   - (cd libuev-1.4.0 && ./configure --prefix=/tmp && make && make install-strip)
   - (cd libite-1.5.0 && ./configure --prefix=/tmp && make && make install-strip)
 
-# We (currently) don't use GNU Configure & Build System, only a simple
-# Makefile, for the time being.
 script:
-  - make distclean
-  - prefix=/tmp make
-  - prefix=/tmp make test
+  - ./autogen.sh
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix=/tmp --enable-examples
+  - make clean
+  - make V=1 -j5
+  - make install-strip
+  - tree /tmp
+  - ldd /tmp/sbin/watchdogd
+  - LD_LIBRARY_PATH=/tmp/lib /tmp/sbin/watchdogd -h
+  - LD_LIBRARY_PATH=/tmp/lib ./testit.sh
