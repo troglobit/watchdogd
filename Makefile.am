@@ -1,4 +1,5 @@
 ACLOCAL_AMFLAGS     = -I m4
+SUBDIRS             = examples
 
 sbin_PROGRAMS       = watchdogd
 dist_man8_MANS      = watchdogd.8
