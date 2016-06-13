@@ -19,7 +19,7 @@ lib_LTLIBRARIES     = libwdog.la
 pkgincludedir       = $(includedir)/wdog
 pkginclude_HEADERS  = wdog.h
 libwdog_la_SOURCES  = wdog.c	wdog.h
-libwdog_la_CFLAGS   = -W -Wall -Wextra -std=gnu99
+libwdog_la_CFLAGS   = -W -Wall -Wextra -std=gnu99 $(lite_CFLAGS)
 libwdog_la_LDFLAGS  = $(AM_LDFLAGS) -version-info 1:0:0
 
 DIST_SUBDIRS        = examples
