@@ -1,5 +1,4 @@
 ACLOCAL_AMFLAGS     = -I m4
-SUBDIRS             = examples
 
 sbin_PROGRAMS       = watchdogd
 dist_man8_MANS      = watchdogd.8
@@ -22,6 +21,12 @@ pkginclude_HEADERS  = wdog.h
 libwdog_la_SOURCES  = wdog.c	wdog.h
 libwdog_la_CFLAGS   = -W -Wall -Wextra -std=gnu99
 libwdog_la_LDFLAGS  = $(AM_LDFLAGS) -version-info 1:0:0
+
+DIST_SUBDIRS        = examples
+SUBDIRS             = .
+if ENABLE_EXAMPLES
+SUBDIRS            += examples
+endif
 
 ## Generate MD5 checksum file
 MD5 = md5sum

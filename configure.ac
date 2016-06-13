@@ -6,6 +6,7 @@ AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([watchdogd.c])
 AC_CONFIG_HEADER([config.h])
+AC_CONFIG_SUBDIRS([examples])
 AC_CONFIG_FILES([Makefile examples/Makefile])
 
 # Older versions of autoconf (<2.58) do not have AC_CONFIG_MACRO_DIR()
@@ -20,6 +21,12 @@ AC_PROG_INSTALL
 # Check for required libraries
 PKG_CHECK_MODULES([uev],  [libuev >= 1.4.0])
 PKG_CHECK_MODULES([lite], [libite >= 1.5.0])
+
+# Check for configure switches
+AC_ARG_ENABLE([examples],
+	[AS_HELP_STRING([--enable-examples], [build examples])],
+	[enable_examples=yes], [])
+AM_CONDITIONAL([ENABLE_EXAMPLES], [test "$enable_examples" = yes])
 
 # Generate all files
 AC_OUTPUT
