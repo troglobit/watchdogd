@@ -4,6 +4,7 @@ sbin_PROGRAMS       = watchdogd
 dist_man8_MANS      = watchdogd.8
 doc_DATA            = README.md LICENSE
 EXTRA_DIST          = README.md LICENSE ChangeLog.md
+DISTCLEANFILES      = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d *.sock
 
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      filenr.c		filenr.h	\
