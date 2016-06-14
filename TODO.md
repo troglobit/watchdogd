@@ -60,6 +60,7 @@ process stops responding, or when a respawn limit has been reached,
     /* pause pmon as well on wdog pause, reset pmon timers on resume! */
     wdt_pause()
 
+* Document API, maybe try Doxygen this time?
 * The pmon API must be non-blocking!  Only the two (un)subscribe API's
   may block for a short period of time to ascertain connectivitiy.
 * The pmon API must handle the case when pmon has been stopped, or
