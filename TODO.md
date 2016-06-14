@@ -7,6 +7,7 @@ Monitor the health of the system and its processes.
 General
 -------
 
+* Add `pkg-config` support, a `libwdog.pc.in` file
 * Support enable/disable watchdog features in a `/etc/watchdogd.conf`
   - Supervise processes,
   - CPU loadavg,
