@@ -243,21 +243,15 @@ watchdogd is tailored for Linux systems and should build against any
 (old) C libray.  However, watchdogd v2.1 and later require two external
 libraries that were previously a built-in, [libite][] and [libuEv][].
 Neither of them should present any surprises, both use de facto standard
-configure script.
+configure script and support `pkg-config` which watchdogd use to locate
+requried libraries and header files.
 
-One thing of importance though, the current build system for watchdogd
-requires that the build prefix for both depending libraries and also
-for watchdogd is the same.  I.e.,
+Hence, the regular `./configure && make` is usually sufficient to build
+watchdogd.  But, if libraries are installed in non-standard locations
+you may need to provide their paths:
 
-For libite and libuev:
-
-    ./configure --prefix=/opt/secret
-
-Would require watchdogd to be built with:
-
-    make distclean
-    prefix=/opt/secret make
-    prefix=/opt/secret make test
+    PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
+    make
 
 To build the source from GIT, see below.
 
@@ -283,8 +277,11 @@ code from GitHub:
 
 	git clone https://github.com/troglobit/watchdogd
 	cd watchdogd
+	./autogen.sh
 
-For more details, see [CONTRIBUTING][contrib].
+The `autogen.sh` script runs `autoconf`, `automake`, et al to create the
+configure script and such generated files not part of the VCS tree.  For
+more details, see the file [CONTRIBUTING][contrib].
 
 
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
