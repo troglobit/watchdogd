@@ -78,6 +78,5 @@ char *wdt_plugin_label (char *plugin_name);
  * Local Variables:
  *  c-file-style: "linux"
  *  indent-tabs-mode: t
- *  version-control: t
  * End:
  */

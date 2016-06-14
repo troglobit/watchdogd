@@ -27,6 +27,5 @@ int filenr_set  (char *arg);
  * Local Variables:
  *  c-file-style: "linux"
  *  indent-tabs-mode: t
- *  version-control: t
  * End:
  */

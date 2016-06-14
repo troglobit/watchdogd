@@ -51,7 +51,6 @@ int wdog_pmon_kick        (int id, int *ack); /* Returns 0 while OK, or errno */
 
 /**
  * Local Variables:
- *  version-control: t
  *  indent-tabs-mode: t
  *  c-file-style: "linux"
  * End:

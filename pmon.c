@@ -385,6 +385,5 @@ int pmon_set(char *optarg)
  * Local Variables:
  *  c-file-style: "linux"
  *  indent-tabs-mode: t
- *  version-control: t
  * End:
  */
