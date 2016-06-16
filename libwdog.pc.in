@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @PACKAGE@
+Description: Watchdog and process monitor (PMON) API
+Version: @VERSION@
+Requires:
+Libs: -L${libdir} -lwdog
+Cflags: -I${includedir}
+
