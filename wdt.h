@@ -20,6 +20,7 @@
 #ifndef WDT_H_
 #define WDT_H_
 
+#include "config.h"
 #include <ctype.h>
 #include <errno.h>
 #include <getopt.h>
