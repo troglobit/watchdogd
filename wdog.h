@@ -46,6 +46,7 @@ int wdog_status           (int *enabled); /* Check if enabled */
 int wdog_pmon_ping        (void);
 int wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */
 int wdog_pmon_unsubscribe (int id, int ack);  /* Returns 0 if OK, or errno */
+int wdog_pmon_extend_kick (int id, int timeout, int *ack);
 int wdog_pmon_kick        (int id, int *ack); /* Returns 0 while OK, or errno */
 
 

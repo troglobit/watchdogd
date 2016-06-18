@@ -245,11 +245,17 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 			req.cmd   = WDOG_PMON_CMD_ERROR;
 			req.error = errno;
 		} else {
+			int timeout = p->timeout;
+
+			/* If process needs to request an extended timemout */
+			if (req.timeout >= 0)
+				timeout = req.timeout;
+
 			DEBUG("How do you do %s (pid %d), id:%d -- ACK should be %d, is %d",
 			      req.label, req.pid, req.id, p->ack, req.ack);
 			next_ack(p, &req);
 			if (enabled)
-				uev_timer_set(&p->watcher, p->timeout, p->timeout);
+				uev_timer_set(&p->watcher, timeout, timeout);
 		}
 		break;
 

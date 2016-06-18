@@ -173,6 +173,11 @@ int wdog_pmon_kick(int id, int *ack)
 	return doit(WDOG_PMON_KICK_CMD, id, NULL, -1, ack);
 }
 
+int wdog_pmon_extend_kick(int id, int timeout, int *ack)
+{
+	return doit(WDOG_PMON_KICK_CMD, id, NULL, timeout, ack);
+}
+
 int wdog_pmon_unsubscribe(int id, int ack)
 {
 	return doit(WDOG_PMON_UNSUBSCRIBE_CMD, id, NULL, -1, &ack);
