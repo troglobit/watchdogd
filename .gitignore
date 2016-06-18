@@ -2,6 +2,9 @@
 *.d
 *.o
 *.a
+*.la
+*.lo
+*.pc
 *.so
 *.so.*
 *.map
