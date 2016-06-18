@@ -30,7 +30,7 @@ static double num_cores(void)
 	int num = sysconf(_SC_NPROCESSORS_ONLN);
 
 	if (-1 == num)
-		return 1.0d;	/* At least one core. */
+		return (double)1.0; /* At least one core. */
 
 	return (double)num;
 }
