@@ -284,26 +284,22 @@ static void setup_signals(uev_ctx_t *ctx)
 
 static int create_bootstatus(int timeout, int interval)
 {
-	int err, cause = 0;
-	char *status;
+	int cause;
+	FILE *fp;
 
-	err = asprintf(&status, "%s%s.status", _PATH_VARRUN, __progname);
-	if (-1 != err && status) {
-		FILE *fp;
-
-		fp = fopen(status, "w");
-		if (fp) {
-			int cause = wdt_get_bootstatus();
-
-			fprintf(fp, "Reset cause (WDIOF) : 0x%04x\n", cause >= 0 ? cause : 0);
-			fprintf(fp, "Timeout (sec)       : %d\n", timeout);
-			fprintf(fp, "Kick interval       : %d\n", interval);
-
-			fclose(fp);
-		}
-
-		free(status);
+	fp = fopen(WDT_STATUS, "w");
+	if (!fp) {
+		PERROR("Failed opening %s", WDT_STATUS);
+		return cause;
 	}
+
+	cause = wdt_get_bootstatus();
+
+	fprintf(fp, "Reset cause (WDIOF) : 0x%04x\n", cause >= 0 ? cause : 0);
+	fprintf(fp, "Timeout (sec)       : %d\n", timeout);
+	fprintf(fp, "Kick interval       : %d\n", interval);
+
+	fclose(fp);
 
 	return cause;
 }

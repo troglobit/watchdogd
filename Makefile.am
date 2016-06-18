@@ -15,7 +15,6 @@ watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      pmon.c		pmon.h
 
 watchdogd_CFLAGS    = -W -Wall -Wextra -std=gnu99 $(uev_CFLAGS) $(lite_CFLAGS)
-watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_DEFAULT_SOURCE
 watchdogd_LDADD     = libwdog.la $(uev_LIBS) $(lite_LIBS)
 
 lib_LTLIBRARIES     = libwdog.la
