@@ -189,11 +189,12 @@ static void timeout(uev_t *w, void *arg, int UNUSED(events))
 /* Client connected to domain socket sent a request */
 static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
-	int sd = accept(w->fd, NULL, NULL);
-	wdog_pmon_t req;
+	int sd;
 	pmon_t *p;
 	ssize_t num;
+	wdog_pmon_t req;
 
+	sd = accept(w->fd, NULL, NULL);
 	if (-1 == sd) {
 		WARN("pmon failed accepting incoming client connection");
 		return;
@@ -204,7 +205,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		close(sd);
 		if (num < 0)
 			WARN("Failed reading client request");
-		
+
 		return;
 	}
 
@@ -310,7 +311,7 @@ int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 		PERROR("Failed starting pmon");
 		return 1;
 	}
-		
+
 	return uev_io_init(ctx, &watcher, cb, NULL, sd, UEV_READ);
 }
 
