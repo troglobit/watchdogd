@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "wdt.h"
+#include "plugin.h"
 
 #define PROC_FILE "/proc/sys/fs/file-nr"
 

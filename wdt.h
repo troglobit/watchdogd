@@ -71,9 +71,6 @@ int wdt_get_bootstatus (void);
 int wdt_close          (uev_ctx_t *ctx);
 int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, char *label);
 
-int   wdt_plugin_arg   (char *desc, char *arg, double *warning, double *critical);
-char *wdt_plugin_label (char *plugin_name);
-
 #endif /* WDT_H_ */
 
 /**

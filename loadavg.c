@@ -16,7 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "wdt.h"
+#include "plugin.h"
 
 static uev_t watcher;
 

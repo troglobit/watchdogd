@@ -9,6 +9,7 @@ EXTRA_DIST          = README.md LICENSE ChangeLog.md
 DISTCLEANFILES      = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d *.sock
 
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
+		      plugin.c          plugin.h	\
 		      filenr.c		filenr.h	\
 		      loadavg.c		loadavg.h	\
 		      meminfo.c		meminfo.h	\

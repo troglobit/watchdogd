@@ -18,12 +18,8 @@
  */
 
 #define SYSLOG_NAMES
-#include "config.h"
 #include "wdt.h"
-#include "filenr.h"
-#include "loadavg.h"
-#include "meminfo.h"
-#include "pmon.h"
+#include "plugin.h"
 
 /* Global daemon settings */
 int magic   = 0;
@@ -43,32 +39,6 @@ static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
 static uev_t sigpwr_watcher;
 
-
-/*
- *
- */
-static void plugins_init(uev_ctx_t *ctx, int T)
-{
-	/* Start file descriptor monitor */
-	filenr_init(ctx, T);
-
-	/* Start load average monitor, if enabled */
-	loadavg_init(ctx, T);
-
-	/* Start memory leak monitor */
-	meminfo_init(ctx, T);
-
-	/* Start process monitor */
-	pmon_init(ctx, T);
-}
-
-/*
- *
- */
-static void plugins_exit(uev_ctx_t *ctx)
-{
-	pmon_exit(ctx);
-}
 
 /*
  * Connect to kernel wdt driver
@@ -178,7 +148,7 @@ int wdt_enable(int enable)
 		result += wdt_init();
 	}
 
-	result += pmon_enable(enable);
+	result += wdt_plugins_enable(enable);
 	if (!result)
 		enabled = enable;
 
@@ -188,7 +158,7 @@ int wdt_enable(int enable)
 int wdt_close(uev_ctx_t *ctx)
 {
 	/* Let plugins exit before we leave main loop */
-	plugins_exit(ctx);
+	wdt_plugins_exit(ctx);
 
 	if (fd != -1) {
 		if (magic) {
@@ -248,7 +218,7 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, char *label)
 	save_cause(pid, label);
 
 	/* Let plugins exit before we leave main loop */
-	plugins_exit(ctx);
+	wdt_plugins_exit(ctx);
 
 	/* Be nice, sync any buffered data to disk first. */
 	sync();
@@ -307,63 +277,6 @@ static int create_bootstatus(int timeout, int interval)
 static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
 {
 	wdt_kick("Kicking watchdog.");
-}
-
-/*
- * Parse monitor plugin warning and critical level arg.
- */
-int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
-{
-	char buf[16], *ptr;
-	double value;
-
-	if (!arg) {
-		ERROR("%s argument missing.", desc);
-		return 1;
-	}
-
-	strlcpy(buf, arg, sizeof(buf));
-	ptr = strchr(buf, ',');
-	if (ptr) {
-		*ptr++ = 0;
-		DEBUG("Found second arg: %s", ptr);
-	}
-
-	/* First argument is warning */
-	value = strtod(buf, NULL);
-	if (value <= 0) {
-	error:
-		ERROR("%s argument invalid or too small.", desc);
-		return 1;
-	}
-	*warning = value;
-
-	/* Second argument, if given, is warning */
-	if (ptr) {
-		value = strtod(ptr, NULL);
-		if (value <= 0)
-			goto error;
-	} else {
-		/* Backwards compat, when only warning is given */
-		value += 0.1;
-	}
-	*critical = value;
-
-	DEBUG("%s monitor: %.2f, %.2f", desc, *warning, *critical);
-
-	return 0;
-}
-
-/*
- * Concatenate __progname with plugin name for reset cause label
- */
-char *wdt_plugin_label(char *plugin_name)
-{
-	static char name[16];
-
-	snprintf(name, sizeof(name), "%s:%s", __progname, plugin_name);
-
-	return name;
 }
 
 static int usage(int status)
@@ -583,7 +496,7 @@ int main(int argc, char *argv[])
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
 	/* Start all enabled plugins */
-	plugins_init(&ctx, T);
+	wdt_plugins_init(&ctx, T);
 
 	/* Only create pidfile when we're done with all set up. */
 	if (pidfile(NULL) && !__wdog_testmode)

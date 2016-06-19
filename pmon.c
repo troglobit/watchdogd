@@ -18,7 +18,7 @@
 #include <sched.h>
 #include <sys/socket.h>
 
-#include "wdt.h"
+#include "plugin.h"
 #include "wdog.h"
 #include "pmon.h"
 
