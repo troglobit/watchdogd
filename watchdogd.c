@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:f:FhlLm:np::sSt:T:Vvx?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:f:Fhl:Lm:np::sSt:T:Vvx?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
