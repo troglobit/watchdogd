@@ -17,6 +17,7 @@
 
 #include <sched.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 
 #include "plugin.h"
 #include "wdog.h"
@@ -37,9 +38,6 @@ static int     rtprio = 98;
 static int     pmon_enabled = 0;
 static uev_t   watcher;
 static pmon_t  process[256];	/* Max ID 0-255 */
-
-/* In libwdog.a */
-extern int wdog_pmon_api_init(int server);
 
 
 static size_t num_supervised(void)
@@ -81,7 +79,7 @@ static void set_priority(void)
 		}
 	}
 
-	if (result && !__wdog_testmode)
+	if (result && !wdt_testmode())
 		PERROR("Failed setting process %spriority", active ? "realtime " : "");
 }
 
@@ -284,6 +282,36 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	set_priority();
 }
 
+static int api_init(void)
+{
+	int sd;
+	struct sockaddr_un sun;
+
+	sun.sun_family = AF_UNIX;
+	if (wdt_testmode())
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_TEST);
+	else
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_PATH);
+
+	sd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	if (-1 == sd)
+		return -1;
+
+	remove(sun.sun_path);
+
+	if (-1 == bind(sd, (struct sockaddr*)&sun, sizeof(sun)))
+		goto error;
+
+	if (-1 == listen(sd, 10))
+		goto error;
+
+	return sd;
+
+error:
+	close(sd);
+	return -1;
+}
+
 int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 {
 	size_t i;
@@ -306,7 +334,7 @@ int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 		process[i].id = -1;
 	}
 
-	sd = wdog_pmon_api_init(1);
+	sd = api_init();
 	if (sd < 0) {
 		PERROR("Failed starting pmon");
 		return 1;
@@ -325,6 +353,7 @@ int pmon_exit(uev_ctx_t *UNUSED(ctx))
 	uev_io_stop(&watcher);
 	shutdown(sd, SHUT_RDWR);
 	remove(WDOG_PMON_PATH);
+	remove(WDOG_PMON_TEST);
 	close(sd);
 	sd = -1;
 

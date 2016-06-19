@@ -34,9 +34,6 @@ int main(int argc, char *argv[])
 	if (argc >= 2 && !strncmp(argv[1], "-V", 2))
 		dbg = 1;
 
-	DEBUG("Starting ...");
-	__wdog_testmode = 1;
-
 	DEBUG("Checking connectivity with watchdogd ...");
 	if (wdog_pmon_ping()) {
 		PERROR("Failed connectivity check");

@@ -60,7 +60,7 @@ extern int   extkick;
 extern int   extdelay;
 extern int   period;
 extern char *__progname;
-extern int   __wdog_testmode;
+extern int   __wdt_testmode;
 
 int wdt_enable         (int enable);
 
@@ -70,6 +70,11 @@ int wdt_get_timeout    (void);
 int wdt_get_bootstatus (void);
 int wdt_close          (uev_ctx_t *ctx);
 int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, char *label);
+
+static inline int wdt_testmode(void)
+{
+	return __wdt_testmode;
+}
 
 #endif /* WDT_H_ */
 

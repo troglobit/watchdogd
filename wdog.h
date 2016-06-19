@@ -20,6 +20,7 @@
 
 #define WDOG_PMON_BASENAME          "watchdogd.sock"
 #define WDOG_PMON_PATH              _PATH_VARRUN WDOG_PMON_BASENAME
+#define WDOG_PMON_TEST              _PATH_TMP    WDOG_PMON_BASENAME
 
 #define WDOG_PMON_SUBSCRIBE_CMD     1
 #define WDOG_PMON_UNSUBSCRIBE_CMD   2

@@ -27,41 +27,27 @@
 #include "wdog.h"
 #include "wdt.h"
 
-/*
- * Hidden test mode.  Set by daemon when in --test-mode,
- * or by examples when testing the API.
- */
-int __wdog_testmode = 0;
 
-
-/* Hidden API */
-int wdog_pmon_api_init(int server)
+static int api_init(void)
 {
 	int sd;
 	struct sockaddr_un sun;
 
 	sun.sun_family = AF_UNIX;
-	if (__wdog_testmode)
-		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_BASENAME);
-	else
-		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_PATH);
+	snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_PATH);
+	if (access(sun.sun_path, F_OK)) {
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_TEST);
+		if (access(sun.sun_path, F_OK))
+			return -1;
+	}
 
 	sd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (-1 == sd)
 		return -1;
 
-	if (server) {
-		remove(sun.sun_path);
-
-		if (-1 == bind(sd, (struct sockaddr*)&sun, sizeof(sun)))
+	if (connect(sd, (struct sockaddr*)&sun, sizeof(sun)) == -1) {
+		if (EINPROGRESS != errno)
 			goto error;
-
-		if (-1 == listen(sd, 10))
-			goto error;
-	} else {
-		if (connect(sd, (struct sockaddr*)&sun, sizeof(sun)) == -1)
-			if (EINPROGRESS != errno)
-				goto error;
 	}
 
 	return sd;
@@ -71,7 +57,7 @@ error:
 	return -1;
 }
 
-static int sock_poll(int sd, int ev)
+static int api_poll(int sd, int ev)
 {
 	struct pollfd pfd;
 
@@ -91,16 +77,16 @@ int wdog_pmon_ping(void)
 	int so_error = ENOTCONN;
 	socklen_t len = sizeof(so_error);
 
-	sd = wdog_pmon_api_init(0);
+	sd = api_init();
 	if (-1 == sd)
 		return 1;
 
-	if (sock_poll(sd, POLLIN | POLLOUT))
+	if (api_poll(sd, POLLIN | POLLOUT))
 		getsockopt(sd, SOL_SOCKET, SO_ERROR, &so_error, &len);
 
 	close(sd);
 
-	return errno != 0;
+	return so_error != 0;
 }
 
 static int doit(int cmd, int id, char *label, int timeout, int *ack)
@@ -112,7 +98,7 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 		.timeout = timeout,
 	};
 
-	sd = wdog_pmon_api_init(0);
+	sd = api_init();
 	if (-1 == sd) {
 		if (errno == ENOENT)
 			errno = EAGAIN;
@@ -135,12 +121,12 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 		break;
 	}
 
-	if (sock_poll(sd, POLLOUT)) {
+	if (api_poll(sd, POLLOUT)) {
 		if (write(sd, &req, sizeof(req)) != sizeof(req))
 			goto error;
 	}
 
-	if (sock_poll(sd, POLLIN)) {
+	if (api_poll(sd, POLLIN)) {
 		if (read(sd, &req, sizeof(req)) != sizeof(req))
 			goto error;
 	}

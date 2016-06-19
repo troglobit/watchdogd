@@ -27,6 +27,7 @@ int enabled = 1;
 int loglevel = LOG_NOTICE;
 int wait_reboot = 0;
 int period = -1;
+int __wdt_testmode = 0;
 
 /* Local variables */
 static int fd = -1;
@@ -45,7 +46,7 @@ static uev_t sigpwr_watcher;
  */
 int wdt_init(void)
 {
-	if (__wdog_testmode)
+	if (wdt_testmode())
 		return 0;
 
 	fd = open(devnode, O_WRONLY);
@@ -67,7 +68,7 @@ int wdt_kick(char *msg)
 	int dummy;
 
 	DEBUG("%s", msg);
-	if (__wdog_testmode)
+	if (wdt_testmode())
 		return 0;
 
 	return ioctl(fd, WDIOC_KEEPALIVE, &dummy);
@@ -78,7 +79,7 @@ int wdt_set_timeout(int count)
 {
 	int arg = count;
 
-	if (__wdog_testmode)
+	if (wdt_testmode())
 		return 0;
 
 	DEBUG("Setting watchdog timeout to %d sec.", count);
@@ -95,7 +96,7 @@ int wdt_get_timeout(void)
 	int count;
 	int err;
 
-	if (__wdog_testmode)
+	if (wdt_testmode())
 		return 0;
 
 	err = ioctl(fd, WDIOC_GETTIMEOUT, &count);
@@ -112,7 +113,7 @@ int wdt_get_bootstatus(void)
 	int status = 0;
 	int err;
 
-	if (__wdog_testmode)
+	if (wdt_testmode())
 		return status;
 
 	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
@@ -394,7 +395,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'S':	/* Simulate: no interaction with kernel, for testing pmon */
-			__wdog_testmode = 1;
+			__wdt_testmode = 1;
 			break;
 
 		case 't':	/* Watchdog kick interval */
@@ -499,12 +500,14 @@ int main(int argc, char *argv[])
 	wdt_plugins_init(&ctx, T);
 
 	/* Only create pidfile when we're done with all set up. */
-	if (pidfile(NULL) && !__wdog_testmode)
+	if (pidfile(NULL) && !wdt_testmode())
 		PERROR("Cannot create pidfile");
 
 	status = uev_run(&ctx, 0);
+	if (wdt_testmode())
+		return status;
 
-	while (!__wdog_testmode && wait_reboot) {
+	while (wait_reboot) {
 		int reboot_in = 3 * real_timeout;
 
 		INFO("Waiting for HW WDT reboot ...");
