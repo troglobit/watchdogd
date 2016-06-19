@@ -261,7 +261,7 @@ static void setup_signals(uev_ctx_t *ctx)
 
 static int create_bootstatus(int timeout, int interval)
 {
-	int cause;
+	int cause = 0;
 	char *status;
 	FILE *fp;
 
