@@ -1,24 +1,28 @@
 #!/bin/sh
 
-ARG=""
+ARGD=""
+ARGE=""
 if [ x"$1" = x"-v" -o x"$1" = x"-V" ]; then
-    ARG="-l debug"
+    ARGD="-l debug"
+    ARGE="-V"
 fi
 
-timeout 5s ./examples/ex1 $ARG
+echo "Starting test ..."
+
+timeout 5s ./examples/ex1 $ARGE
 if [ $? -eq 0 ]; then
     echo "Test FAIL! (1)"
     exit 1
 fi
 sleep 1
 
-./watchdogd $ARG -n -p --test-mode &
+./watchdogd $ARGD -n -p --test-mode &
 WDOG=$!
 sleep 5
 
 # This test should take ~40 seconds to run
 echo "Starting API test ..."
-timeout 45s ./examples/ex1 $ARG
+timeout 45s ./examples/ex1 $ARGE
 result=$?
 
 # Stop watchdogd
