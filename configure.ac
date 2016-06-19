@@ -28,5 +28,10 @@ AC_ARG_ENABLE([examples],
 	[enable_examples=yes], [])
 AM_CONDITIONAL([ENABLE_EXAMPLES], [test "$enable_examples" = yes])
 
+AC_ARG_ENABLE(test-mode,
+        AS_HELP_STRING([--disable-test-mode], [Disable test mode, for extra safety, default: enabled]))
+AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
+	AC_DEFINE(TESTMODE_DISABLED,  1, [Disable test mode])])
+
 # Generate all files
 AC_OUTPUT

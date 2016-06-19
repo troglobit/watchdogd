@@ -73,7 +73,11 @@ int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, char *label);
 
 static inline int wdt_testmode(void)
 {
+#ifdef TESTMODE_DISABLED
+	return 0;
+#else
 	return __wdt_testmode;
+#endif
 }
 
 #endif /* WDT_H_ */

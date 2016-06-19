@@ -36,9 +36,13 @@ static int api_init(void)
 	sun.sun_family = AF_UNIX;
 	snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_PATH);
 	if (access(sun.sun_path, F_OK)) {
+#ifdef TESTMODE_DISABLED
+		return -1;
+#else
 		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_TEST);
 		if (access(sun.sun_path, F_OK))
 			return -1;
+#endif
 	}
 
 	sd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);

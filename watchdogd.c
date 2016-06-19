@@ -394,9 +394,11 @@ int main(int argc, char *argv[])
 			use_syslog++;
 			break;
 
+#ifndef TESTMODE_DISABLED
 		case 'S':	/* Simulate: no interaction with kernel, for testing pmon */
 			__wdt_testmode = 1;
 			break;
+#endif
 
 		case 't':	/* Watchdog kick interval */
 			if (!optarg) {
@@ -451,7 +453,7 @@ int main(int argc, char *argv[])
 	setlogmask(LOG_UPTO(loglevel));
 	openlog(NULL, log_opts, LOG_DAEMON);
 
-	INFO("Userspace watchdog daemon v%s starting ...", VERSION);
+	INFO("Userspace watchdog daemon v%s %s ...", VERSION, wdt_testmode() ? "test mode" : "starting");
 	uev_init(&ctx);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
