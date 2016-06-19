@@ -187,8 +187,14 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 static int save_cause(pid_t pid, char *label)
 {
 	FILE *fp;
+	const char *state;
 
-	fp = fopen(WDT_STATE, "w");
+	if (wdt_testmode())
+		state = WDT_STATE_TEST;
+	else
+		state = WDT_STATE;
+
+	fp = fopen(state, "w");
 	if (!fp) {
 		PERROR("Failed opening %s to save reset cause (%d, %s)", WDT_STATE, pid, label);
 		return 1;
@@ -256,9 +262,15 @@ static void setup_signals(uev_ctx_t *ctx)
 static int create_bootstatus(int timeout, int interval)
 {
 	int cause;
+	char *status;
 	FILE *fp;
 
-	fp = fopen(WDT_STATUS, "w");
+	if (wdt_testmode())
+		status = WDT_STATUS_TEST;
+	else
+		status = WDT_STATUS;
+
+	fp = fopen(status, "w");
 	if (!fp) {
 		PERROR("Failed opening %s", WDT_STATUS);
 		return cause;
