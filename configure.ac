@@ -6,7 +6,6 @@ AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([watchdogd.c])
 AC_CONFIG_HEADER([config.h])
-AC_CONFIG_SUBDIRS([examples])
 AC_CONFIG_FILES([Makefile libwdog.pc examples/Makefile])
 
 # Older versions of autoconf (<2.58) do not have AC_CONFIG_MACRO_DIR()
