@@ -197,6 +197,9 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	wdt_close(w->ctx);
 }
 
+/*
+ * TODO: Add different types of backends, e.g. RTC alarm registers
+ */
 int wdt_reset_cause(wdog_reason_t *reason)
 {
 	FILE *fp;
@@ -233,6 +236,9 @@ int wdt_reset_cause(wdog_reason_t *reason)
 	return 0;
 }
 
+/*
+ * TODO: Add different types of backends, e.g. RTC alarm registers
+ */
 static int save_cause(pid_t pid, wdog_reason_t *reason)
 {
 	FILE *fp;
