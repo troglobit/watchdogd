@@ -279,11 +279,17 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		break;
 
 	case WDOG_REBOOT_CMD:
-		wdt_forced_reboot(w->ctx, req.id, req.label, WDOG_FORCED_RESET);
+		if (wdt_forced_reboot(w->ctx, req.id, req.label, WDOG_FORCED_RESET)) {
+			req.cmd   = WDOG_CMD_ERROR;
+			req.error = errno;
+		}
 		break;
 
 	case WDOG_RESET_CAUSE_CMD:
-		wdt_reset_cause((wdog_reason_t *)(&req + 2 * sizeof(int)));
+		if (wdt_reset_cause((wdog_reason_t *)(&req + 2 * sizeof(int)))) {
+			req.cmd   = WDOG_CMD_ERROR;
+			req.error = errno;
+		}
 		break;
 
 	default:
