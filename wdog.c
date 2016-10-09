@@ -178,9 +178,9 @@ int wdog_enable(int enable)
 	return doit(WDOG_ENABLE_CMD, !!enable, NULL, -1, NULL);
 }
 
-int wdog_status(int *enabled)
+int wdog_status(int *status)
 {
-	return doit(WDOG_STATUS_CMD, 0, NULL, -1, enabled);
+	return doit(WDOG_STATUS_CMD, 0, NULL, -1, status);
 }
 
 /**

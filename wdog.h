@@ -42,7 +42,7 @@ typedef struct {
 } wdog_pmon_t;
 
 int wdog_enable           (int enable);   /* Attempt to temp. disable */
-int wdog_status           (int *enabled); /* Check if enabled */
+int wdog_status           (int *status);  /* Check if enabled */
 
 int wdog_pmon_ping        (void);
 int wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */
