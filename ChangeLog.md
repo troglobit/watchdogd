@@ -12,9 +12,9 @@ incompatible with previous version due to changes in the command line
 options.
 
 ### Changes
-- Refined command line options and arguments.  Some options in previous
-  released were not options, they were optional arguents, others were
-  useless options for a daemon.
+- Completely overhauled command line options and arguments.  Some
+  options in previous releases were not options but optional arguments,
+  while others were useless options for a daemon.
   - No more `--logfile=FILE` option, redirect `stderr` instead.
   - When running foreground, output syslog also to `stderr`, unless
 	the `--syslog` option is given.
@@ -79,8 +79,8 @@ This release brings two new plugins and a client side API for process monitoring
 
 This is the last release in the v1.x series. It adds support for:
 
-* `-d <device` to select a different watchdog device node
-* `-a <WARN,REBOOT>` to enable loadavg monitoring.  Warn and reboot
+- `-d <device` to select a different watchdog device node
+- `-a <WARN,REBOOT>` to enable loadavg monitoring.  Warn and reboot
   levels are normalized loadavg, no need to take number of CPU cores
   into account.  Feature added by @clockley
 
@@ -93,3 +93,8 @@ support for process monitoring with an instrumentation API.
 [2.0]:        https://github.com/troglobit/watchdogd/compare/1.6...2.0
 [1.6]:        https://github.com/troglobit/watchdogd/compare/1.5...1.6
 
+<!--
+  -- Local Variables:
+  -- mode: markdown
+  -- End:
+  -->
