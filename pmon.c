@@ -177,11 +177,15 @@ static void next_ack(pmon_t *p, wdog_pmon_t *req)
 static void timeout(uev_t *w, void *arg, int UNUSED(events))
 {
 	pmon_t *p = (pmon_t *)arg;
+	wdog_reason_t reason;
 
 	ERROR("Process %d, label '%s' failed to meet its deadline, rebooting ...",
 	      p->pid, p->label);
 
-	wdt_reboot(w->ctx, p->pid, p->label);
+	reason.wid = p->id;
+	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
+	strlcpy(reason.label, p->label, sizeof(reason.label));
+	wdt_reboot(w->ctx, p->pid, &reason);
 }
 
 /* Client connected to domain socket sent a request */

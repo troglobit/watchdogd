@@ -61,7 +61,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	if (avg > warning) {
 		if (avg > critical) {
 			ERROR("System load too high, %.2f > %0.2f, rebooting system ...", avg, critical);
-			wdt_reboot(w->ctx, getpid(), wdt_plugin_label("loadavg"));
+			wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("loadavg"), WDOG_CPU_OVERLOAD);
 			return;
 		}
 

@@ -15,6 +15,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef WDOG_H_
+#define WDOG_H_
+
 #include <paths.h>
 #include <unistd.h>
 
@@ -32,6 +35,30 @@
 #define WDOG_PMON_CMD_ERROR         255
 
 #define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
+
+/* Reset cause codes */
+typedef enum {
+	WDOG_SYSTEM_NONE = 0,        /* XXX: After reset/power-on */
+	WDOG_SYSTEM_OK,
+	WDOG_FAILED_SUBSCRIPTION,
+	WDOG_FAILED_KICK,
+	WDOG_FAILED_UNSUBSCRIPTION,
+	WDOG_FAILED_TO_MEET_DEADLINE,
+	WDOG_FORCED_RESET,
+	WDOG_DESCRIPTOR_LEAK,
+	WDOG_MEMORY_LEAK,
+	WDOG_CPU_OVERLOAD,
+	WDOG_FAILED_UNKNOWN,
+} wdog_cause_t;
+
+typedef struct
+{
+   unsigned int  counter;
+   unsigned int  wid;
+   wdog_cause_t  cause;
+   unsigned int  enabled;
+   char          label[16];
+} wdog_reason_t;
 
 typedef struct {
 	int    cmd;
@@ -55,6 +82,7 @@ int wdog_pmon_unsubscribe (int id, int ack);  /* Returns 0 if OK, or errno */
 int wdog_pmon_extend_kick (int id, int timeout, int *ack);
 int wdog_pmon_kick        (int id, int *ack); /* Returns 0 while OK, or errno */
 
+#endif /* WDOG_H_ */
 
 /**
  * Local Variables:

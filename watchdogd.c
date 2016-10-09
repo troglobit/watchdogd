@@ -187,7 +187,39 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	wdt_close(w->ctx);
 }
 
-static int save_cause(pid_t pid, char *label)
+static char *wdt_reason_str(wdog_reason_t *reason)
+{
+	switch (reason->cause) {
+	case WDOG_SYSTEM_NONE:
+		return "None";
+
+	case WDOG_SYSTEM_OK:
+		return "System OK";
+
+	case WDOG_FAILED_SUBSCRIPTION:
+		return "Failed subscription";
+
+	case WDOG_FAILED_KICK:
+		return "Failed kick";
+
+	case WDOG_FAILED_UNSUBSCRIPTION:
+		return "Failed unsubscription";
+
+	case WDOG_FAILED_TO_MEET_DEADLINE:
+		return "Failed to meet deadline";
+
+	case WDOG_FORCED_RESET:
+		return "Forced reset";
+
+	case WDOG_FAILED_UNKNOWN:
+	default:
+		break;
+	}
+
+	return "Unknown failure";
+}
+
+static int save_cause(pid_t pid, wdog_reason_t *reason)
 {
 	FILE *fp;
 	const char *state;
@@ -199,16 +231,19 @@ static int save_cause(pid_t pid, char *label)
 
 	fp = fopen(state, "w");
 	if (!fp) {
-		PERROR("Failed opening %s to save reset cause (%d, %s)", WDT_STATE, pid, label);
+		PERROR("Failed opening %s to save reset cause (%d, %s)", WDT_STATE, pid, reason->label);
 		return 1;
 	}
 
-	if (!label)
-		label = "XBAD_LABEL";
+	if (!reason->label[0])
+		strlcpy(reason->label, "XBAD_LABEL", sizeof(reason->label));
 
-	/* XXX: Add more entrys, e.g. reset cause, counter and id */
 	fprintf(fp, "PID          : %d\n", pid);
-	fprintf(fp, "Label        : %s\n", label);
+	fprintf(fp, "Watchdog ID  : %d\n", reason->wid);
+	fprintf(fp, "Label        : %s\n", reason->label);
+	fprintf(fp, "Reset cause  : %d\n", reason->cause);
+	fprintf(fp, "Reason       : %s\n", wdt_reason_str(reason));
+	fprintf(fp, "Counter      : %d\n", reason->counter);
 
 	return fclose(fp);
 }
@@ -220,12 +255,12 @@ static int save_cause(pid_t pid, char *label)
  * most likely /var/lib/misc/watchdogd.state -- see the FHS for details
  * http://www.pathname.com/fhs/pub/fhs-2.3.html#VARLIBVARIABLESTATEINFORMATION
  */
-int wdt_reboot(uev_ctx_t *ctx, pid_t pid, char *label)
+int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason)
 {
-	INFO("Reboot requested by pid %d, label %s ...", pid, label);
+	INFO("Reboot requested by pid %d, label %s ...", pid, reason->label);
 
 	/* Save reboot cause */
-	save_cause(pid, label);
+	save_cause(pid, reason);
 
 	/* Let plugins exit before we leave main loop */
 	wdt_plugins_exit(ctx);
@@ -246,9 +281,19 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, char *label)
 	return uev_exit(ctx);
 }
 
+int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, wdog_cause_t cause)
+{
+	wdog_reason_t reason;
+
+	reason.cause = cause;
+	strlcpy(reason.label, label, sizeof(reason.label));
+
+	return wdt_reboot(ctx, pid, &reason);
+}
+
 void reboot_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 {
-	wdt_reboot(w->ctx, 1, "init");
+	wdt_forced_reboot(w->ctx, 1, "init", WDOG_FORCED_RESET);
 }
 
 static void setup_signals(uev_ctx_t *ctx)
