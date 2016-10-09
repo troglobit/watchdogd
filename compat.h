@@ -35,6 +35,11 @@ static inline char *wdog_get_reason_str(wdog_reason_t *reason)
 	return wdog_reboot_reason_str(reason);
 }
 
+static inline int wdog_clear_reason(void)
+{
+	return wdog_reboot_reason_clr();
+}
+
 static inline int wdog_subscribe(char *label, unsigned int timeout, unsigned int *next_ack)
 {
         return wdog_pmon_subscribe(label, (int)timeout, (int *)next_ack);
