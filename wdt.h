@@ -69,6 +69,7 @@ extern int   __wdt_testmode;
 int wdt_enable         (int enable);
 int wdt_debug          (int enable);
 int wdt_reset_cause    (wdog_reason_t *cause);
+int wdt_clear_cause    (void);
 
 int wdt_kick           (char *msg);
 int wdt_set_timeout    (int count);

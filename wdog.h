@@ -34,6 +34,7 @@
 #define WDOG_STATUS_CMD             11
 #define WDOG_REBOOT_CMD             12
 #define WDOG_RESET_CAUSE_CMD        13
+#define WDOG_CLEAR_CAUSE_CMD        14
 #define WDOG_CMD_ERROR              255
 
 #define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
@@ -81,6 +82,7 @@ int   wdog_status           (int *status);  /* Check if enabled */
 int   wdog_reboot           (pid_t pid, char *label);
 int   wdog_reboot_reason    (wdog_reason_t *reason);
 char *wdog_reboot_reason_str(wdog_reason_t *reason);
+int   wdog_reboot_reason_clr(void);
 
 int   wdog_pmon_ping        (void);
 int   wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */

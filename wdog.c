@@ -236,6 +236,12 @@ char *wdog_reboot_reason_str(wdog_reason_t *reason)
 	return "Unknown failure";
 }
 
+int wdog_reboot_reason_clr(void)
+{
+	return doit(WDOG_CLEAR_CAUSE_CMD, -1, NULL, -1, NULL);
+}
+
+
 
 /**
  * Local Variables:

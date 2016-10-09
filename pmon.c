@@ -292,6 +292,13 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		}
 		break;
 
+	case WDOG_CLEAR_CAUSE_CMD:
+		if (wdt_clear_cause()) {
+			req.cmd   = WDOG_CMD_ERROR;
+			req.error = errno;
+		}
+		break;
+
 	default:
 		ERROR("pmon: Invalid command %d", req.cmd);
 		req.cmd   = WDOG_CMD_ERROR;

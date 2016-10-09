@@ -272,6 +272,14 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
 	return fclose(fp);
 }
 
+int wdt_clear_cause(void)
+{
+	wdog_reason_t reason;
+
+	memset(&reason, 0, sizeof(reason));
+	return save_cause(0, &reason);
+}
+
 /*
  * Exit and reboot system -- reason for reboot is stored in some form of
  * semi-persistent backend, using @pid and @label, defined at compile
@@ -360,6 +368,8 @@ static int create_bootstatus(int timeout, int interval)
 	}
 
 	cause = wdt_get_bootstatus();
+	if (cause & WDIOF_POWERUNDER)
+		wdt_clear_cause();
 
 	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
 	fprintf(fp, WDT_REASON_TMO ": %d\n", timeout);
