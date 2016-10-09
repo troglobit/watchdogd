@@ -212,12 +212,12 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	}
 
 	switch (req.cmd) {
-	case WDOG_PMON_SUBSCRIBE_CMD:
+	case WDOG_SUBSCRIBE_CMD:
 		/* Start timer, return ID from allocated timer. */
 		DEBUG("Hello %s, registering pid %d ...", req.label, req.pid);
 		p = allocate(req.pid, req.label, req.timeout);
 		if (!p) {
-			req.cmd   = WDOG_PMON_CMD_ERROR;
+			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		} else {
 			next_ack(p, &req);
@@ -226,12 +226,12 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		}
 		break;
 
-	case WDOG_PMON_UNSUBSCRIBE_CMD:
+	case WDOG_UNSUBSCRIBE_CMD:
 		/* Unregister timer and free it. */
 		p = get(req.id, req.pid, req.ack);
 		if (!p) {
 			PERROR("Process %d tried to unsubscribe using invalid credentials", req.pid);
-			req.cmd   = WDOG_PMON_CMD_ERROR;
+			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		} else {
 			uev_timer_stop(&p->watcher);
@@ -240,12 +240,12 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		}
 		break;
 
-	case WDOG_PMON_KICK_CMD:
+	case WDOG_KICK_CMD:
 		/* Check next_ack from client, restart timer if OK, otherwise force reboot */
 		p = get(req.id, req.pid, req.ack);
 		if (!p) {
 			PERROR("Process %d tried to kick using invalid credentials", req.pid);
-			req.cmd   = WDOG_PMON_CMD_ERROR;
+			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		} else {
 			int timeout = p->timeout;
@@ -284,7 +284,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 	default:
 		ERROR("pmon: Invalid command %d", req.cmd);
-		req.cmd   = WDOG_PMON_CMD_ERROR;
+		req.cmd   = WDOG_CMD_ERROR;
 		req.error = EBADMSG;
 		break;
 	}

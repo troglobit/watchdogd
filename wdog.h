@@ -25,15 +25,15 @@
 #define WDOG_PMON_PATH              _PATH_VARRUN WDOG_PMON_BASENAME
 #define WDOG_PMON_TEST              _PATH_TMP    WDOG_PMON_BASENAME
 
-#define WDOG_PMON_SUBSCRIBE_CMD     1
-#define WDOG_PMON_UNSUBSCRIBE_CMD   2
-#define WDOG_PMON_KICK_CMD          3
+#define WDOG_SUBSCRIBE_CMD          1
+#define WDOG_UNSUBSCRIBE_CMD        2
+#define WDOG_KICK_CMD               3
 #define WDOG_SET_DEBUG_CMD          4
 #define WDOG_GET_DEBUG_CMD          5
 #define WDOG_ENABLE_CMD             10
 #define WDOG_STATUS_CMD             11
 #define WDOG_REBOOT_CMD             12
-#define WDOG_PMON_CMD_ERROR         255
+#define WDOG_CMD_ERROR              255
 
 #define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
 

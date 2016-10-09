@@ -113,8 +113,8 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 
 	strncpy(req.label, label, sizeof(req.label));
 	switch (cmd) {
-	case WDOG_PMON_KICK_CMD:
-	case WDOG_PMON_UNSUBSCRIBE_CMD:
+	case WDOG_KICK_CMD:
+	case WDOG_UNSUBSCRIBE_CMD:
 		req.id  = id;
 		req.ack = *ack;
 		break;
@@ -134,7 +134,7 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 			goto error;
 	}
 
-	if (req.cmd == WDOG_PMON_CMD_ERROR) {
+	if (req.cmd == WDOG_CMD_ERROR) {
 		errno = req.error;
 		goto error;
 	}
@@ -143,7 +143,7 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 		*ack = req.next_ack;
 	close(sd);
 
-	if (WDOG_PMON_SUBSCRIBE_CMD == cmd)
+	if (WDOG_SUBSCRIBE_CMD == cmd)
 		return req.id;
 
 	return 0;
@@ -154,22 +154,22 @@ error:
 
 int wdog_pmon_subscribe(char *label, int timeout, int *ack)
 {
-	return doit(WDOG_PMON_SUBSCRIBE_CMD, -1, label, timeout, ack);
+	return doit(WDOG_SUBSCRIBE_CMD, -1, label, timeout, ack);
 }
 
 int wdog_pmon_kick(int id, int *ack)
 {
-	return doit(WDOG_PMON_KICK_CMD, id, NULL, -1, ack);
+	return doit(WDOG_KICK_CMD, id, NULL, -1, ack);
 }
 
 int wdog_pmon_extend_kick(int id, int timeout, int *ack)
 {
-	return doit(WDOG_PMON_KICK_CMD, id, NULL, timeout, ack);
+	return doit(WDOG_KICK_CMD, id, NULL, timeout, ack);
 }
 
 int wdog_pmon_unsubscribe(int id, int ack)
 {
-	return doit(WDOG_PMON_UNSUBSCRIBE_CMD, id, NULL, -1, &ack);
+	return doit(WDOG_UNSUBSCRIBE_CMD, id, NULL, -1, &ack);
 }
 
 int wdog_set_debug(int enable)
