@@ -25,6 +25,16 @@ static inline int wdog_forced_reset(char *label)
 	return wdog_reboot(getpid(), label);
 }
 
+static inline int wdog_get_reason(wdog_reason_t *reason)
+{
+	return wdog_reboot_reason(reason);
+}
+
+static inline char *wdog_get_reason_str(wdog_reason_t *reason)
+{
+	return wdog_reboot_reason_str(reason);
+}
+
 static inline int wdog_subscribe(char *label, unsigned int timeout, unsigned int *next_ack)
 {
         return wdog_pmon_subscribe(label, (int)timeout, (int *)next_ack);
