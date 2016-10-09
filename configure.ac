@@ -1,6 +1,6 @@
 AC_INIT(watchdogd, 3.0-dev, https://github.com/troglobit/watchdogd/issues)
 AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz subdir-objects])
-LT_INIT([dlopen aix-soname=both disable-fast-install])
+LT_INIT
 
 AM_SILENT_RULES([yes])
 
