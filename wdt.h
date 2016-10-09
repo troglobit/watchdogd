@@ -61,7 +61,9 @@ extern int   enabled;
 extern int   loglevel;
 extern int   period;
 extern char *__progname;
+#ifndef TESTMODE_DISABLED
 extern int   __wdt_testmode;
+#endif
 
 int wdt_enable         (int enable);
 int wdt_debug          (int enable);
@@ -75,10 +77,10 @@ int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, char *label);
 
 static inline int wdt_testmode(void)
 {
-#ifdef TESTMODE_DISABLED
-	return 0;
-#else
+#ifndef TESTMODE_DISABLED
 	return __wdt_testmode;
+#else
+	return 0;
 #endif
 }
 

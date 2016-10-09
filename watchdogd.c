@@ -27,7 +27,10 @@ int enabled = 1;
 int loglevel = LOG_NOTICE;
 int wait_reboot = 0;
 int period = -1;
+
+#ifndef TESTMODE_DISABLED
 int __wdt_testmode = 0;
+#endif
 
 /* Local variables */
 static int fd = -1;
@@ -376,7 +379,9 @@ int main(int argc, char *argv[])
 		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 'e'},
 		{"syslog",        0, 0, 's'},
+#ifndef TESTMODE_DISABLED
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
+#endif
 		{"version",       0, 0, 'v'},
 		{"timeout",       1, 0, 'T'},
 		{NULL, 0, 0, 0}
