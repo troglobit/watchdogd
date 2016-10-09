@@ -21,6 +21,16 @@
 #include "wdt.h"
 #include "plugin.h"
 
+#define WDT_REASON_PID "PID                 "
+#define WDT_REASON_WID "Watchdog ID         "
+#define WDT_REASON_LBL "Label               "
+#define WDT_REASON_CSE "Reset cause         "
+#define WDT_REASON_STR "Reason              "
+#define WDT_REASON_CNT "Counter             "
+#define WDT_REASON_WDT "Reset cause (WDIOF) "
+#define WDT_REASON_TMO "Timeout (sec)       "
+#define WDT_REASON_INT "Kick interval       "
+
 /* Global daemon settings */
 int magic   = 0;
 int enabled = 1;
@@ -231,19 +241,19 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
 
 	fp = fopen(state, "w");
 	if (!fp) {
-		PERROR("Failed opening %s to save reset cause (%d, %s)", WDT_STATE, pid, reason->label);
+		PERROR("Failed opening %s to save reset cause (%d, %s)", state, pid, reason->label);
 		return 1;
 	}
 
 	if (!reason->label[0])
 		strlcpy(reason->label, "XBAD_LABEL", sizeof(reason->label));
 
-	fprintf(fp, "PID          : %d\n", pid);
-	fprintf(fp, "Watchdog ID  : %d\n", reason->wid);
-	fprintf(fp, "Label        : %s\n", reason->label);
-	fprintf(fp, "Reset cause  : %d\n", reason->cause);
-	fprintf(fp, "Reason       : %s\n", wdt_reason_str(reason));
-	fprintf(fp, "Counter      : %d\n", reason->counter);
+	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
+	fprintf(fp, WDT_REASON_WID ": %d\n", reason->wid);
+	fprintf(fp, WDT_REASON_LBL ": %s\n", reason->label);
+	fprintf(fp, WDT_REASON_CSE ": %d\n", reason->cause);
+	fprintf(fp, WDT_REASON_STR ": %s\n", wdt_reason_str(reason));
+	fprintf(fp, WDT_REASON_CNT ": %d\n", reason->counter);
 
 	return fclose(fp);
 }
@@ -326,9 +336,9 @@ static int create_bootstatus(int timeout, int interval)
 
 	cause = wdt_get_bootstatus();
 
-	fprintf(fp, "Reset cause (WDIOF) : 0x%04x\n", cause >= 0 ? cause : 0);
-	fprintf(fp, "Timeout (sec)       : %d\n", timeout);
-	fprintf(fp, "Kick interval       : %d\n", interval);
+	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
+	fprintf(fp, WDT_REASON_TMP ": %d\n", timeout);
+	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
 
 	fclose(fp);
 
