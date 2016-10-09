@@ -32,6 +32,7 @@
 #define WDOG_GET_DEBUG_CMD          5
 #define WDOG_ENABLE_CMD             10
 #define WDOG_STATUS_CMD             11
+#define WDOG_REBOOT_CMD             12
 #define WDOG_PMON_CMD_ERROR         255
 
 #define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
@@ -75,6 +76,8 @@ int wdog_get_debug        (int *status);  /* Check if debug is enabled */
 
 int wdog_enable           (int enable);   /* Attempt to temp. disable */
 int wdog_status           (int *status);  /* Check if enabled */
+
+int wdog_reboot           (pid_t pid, char *label);
 
 int wdog_pmon_ping        (void);
 int wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */

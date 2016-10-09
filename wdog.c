@@ -192,6 +192,11 @@ int wdog_status(int *status)
 	return doit(WDOG_STATUS_CMD, 0, NULL, -1, status);
 }
 
+int wdog_reboot(pid_t pid, char *label)
+{
+	return doit(WDOG_REBOOT_CMD, pid, label, 1, 0);
+}
+
 /**
  * Local Variables:
  *  c-file-style: "linux"

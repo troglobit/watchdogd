@@ -278,6 +278,10 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		req.next_ack = loglevel == LOG_DEBUG;
 		break;
 
+	case WDOG_REBOOT_CMD:
+		wdt_forced_reboot(w->ctx, req.id, req.label, WDOG_FORCED_RESET);
+		break;
+
 	default:
 		ERROR("pmon: Invalid command %d", req.cmd);
 		req.cmd   = WDOG_PMON_CMD_ERROR;
