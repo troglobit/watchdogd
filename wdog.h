@@ -25,6 +25,8 @@
 #define WDOG_PMON_SUBSCRIBE_CMD     1
 #define WDOG_PMON_UNSUBSCRIBE_CMD   2
 #define WDOG_PMON_KICK_CMD          3
+#define WDOG_SET_DEBUG_CMD          4
+#define WDOG_GET_DEBUG_CMD          5
 #define WDOG_ENABLE_CMD             10
 #define WDOG_STATUS_CMD             11
 #define WDOG_PMON_CMD_ERROR         255
@@ -40,6 +42,9 @@ typedef struct {
 	int    timeout;		/* msec */
 	int    ack, next_ack;
 } wdog_pmon_t;
+
+int wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */
+int wdog_get_debug        (int *status);  /* Check if debug is enabled */
 
 int wdog_enable           (int enable);   /* Attempt to temp. disable */
 int wdog_status           (int *status);  /* Check if enabled */

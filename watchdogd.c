@@ -338,6 +338,24 @@ static int loglvl(char *level)
 	return atoi(level);
 }
 
+int wdt_debug(int enable)
+{
+	static int oldlevel = 0;
+
+	if (enable) {
+		if (!oldlevel)
+			oldlevel = loglevel;
+		loglevel = LOG_DEBUG;
+	} else {
+		if (oldlevel) {
+			loglevel = oldlevel;
+			oldlevel = 0;
+		}
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int timeout = WDT_TIMEOUT_DEFAULT;

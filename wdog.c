@@ -173,6 +173,16 @@ int wdog_pmon_unsubscribe(int id, int ack)
 	return doit(WDOG_PMON_UNSUBSCRIBE_CMD, id, NULL, -1, &ack);
 }
 
+int wdog_set_debug(int enable)
+{
+	return doit(WDOG_SET_DEBUG_CMD, !!enable, NULL, -1, NULL);
+}
+
+int wdog_get_debug(int *status)
+{
+	return doit(WDOG_GET_DEBUG_CMD, 0, NULL, -1, status);
+}
+
 int wdog_enable(int enable)
 {
 	return doit(WDOG_ENABLE_CMD, !!enable, NULL, -1, NULL);

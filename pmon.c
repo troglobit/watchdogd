@@ -266,6 +266,14 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		req.next_ack = enabled;
 		break;
 
+	case WDOG_SET_DEBUG_CMD:
+		req.next_ack = wdt_debug(req.id);
+		break;
+
+	case WDOG_GET_DEBUG_CMD:
+		req.next_ack = loglevel == LOG_DEBUG;
+		break;
+
 	default:
 		ERROR("pmon: Invalid command %d", req.cmd);
 		req.cmd   = WDOG_PMON_CMD_ERROR;
