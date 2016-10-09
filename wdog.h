@@ -69,7 +69,7 @@ typedef struct {
 	char   label[16];	/* process name or label */
 	int    timeout;		/* msec */
 	int    ack, next_ack;
-} wdog_pmon_t;
+} wdog_t;
 
 int wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */
 int wdog_get_debug        (int *status);  /* Check if debug is enabled */

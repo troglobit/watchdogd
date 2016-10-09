@@ -95,7 +95,7 @@ int wdog_pmon_ping(void)
 static int doit(int cmd, int id, char *label, int timeout, int *ack)
 {
 	int sd;
-	wdog_pmon_t req = {
+	wdog_t req = {
 		.cmd     = cmd,
 		.pid     = getpid(),
 		.timeout = timeout,

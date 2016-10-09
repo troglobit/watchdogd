@@ -165,7 +165,7 @@ static pmon_t *get(int id, pid_t pid, int ack)
 }
 
 /* XXX: Use a random next-ack != req.ack */
-static void next_ack(pmon_t *p, wdog_pmon_t *req)
+static void next_ack(pmon_t *p, wdog_t *req)
 {
 	p->ack        += 2;	/* FIXME */
 
@@ -194,7 +194,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	int sd;
 	pmon_t *p;
 	ssize_t num;
-	wdog_pmon_t req;
+	wdog_t req;
 
 	sd = accept(w->fd, NULL, NULL);
 	if (-1 == sd) {
