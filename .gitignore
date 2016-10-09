@@ -26,3 +26,10 @@ aclocal.m4
 ar-lib
 autom4te.cache
 watchdogd
+/GPATH
+/GRTAGS
+/GSYMS
+/GTAGS
+/.config
+/.stamp
+/.unpacked
