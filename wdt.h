@@ -42,11 +42,11 @@
 #include "uev/uev.h"
 #include "wdog.h"
 
-#define WDT_DEVNODE          _PATH_DEV    "watchdog"
-#define WDT_STATE            _PATH_VARDB  "watchdogd.state"
-#define WDT_STATE_TEST       _PATH_TMP    "watchdogd.state"
-#define WDT_STATUS           _PATH_VARRUN "watchdogd.status"
-#define WDT_STATUS_TEST      _PATH_TMP    "watchdogd.status"
+#define WDT_DEVNODE          _PATH_DEV      "watchdog"
+#define WDT_STATE            _PATH_PRESERVE "/watchdogd.state"
+#define WDT_STATE_TEST       _PATH_TMP      "watchdogd.state"
+#define WDT_STATUS           _PATH_VARRUN   "watchdogd.status"
+#define WDT_STATUS_TEST      _PATH_TMP      "watchdogd.status"
 #define WDT_TIMEOUT_DEFAULT  20
 #define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
 
