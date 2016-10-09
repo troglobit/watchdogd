@@ -16,6 +16,7 @@ if [ $? -eq 0 ]; then
 fi
 sleep 1
 
+echo "Starting watchdogd ..."
 ./watchdogd $ARGD -n -p --test-mode &
 WDOG=$!
 sleep 5
