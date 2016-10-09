@@ -72,21 +72,21 @@ typedef struct {
 	char         label[16];	/* process name or label */
 } wdog_t;
 
-int wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */
-int wdog_get_debug        (int *status);  /* Check if debug is enabled */
+int   wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */
+int   wdog_get_debug        (int *status);  /* Check if debug is enabled */
 
-int wdog_enable           (int enable);   /* Attempt to temp. disable */
-int wdog_status           (int *status);  /* Check if enabled */
+int   wdog_enable           (int enable);   /* Attempt to temp. disable */
+int   wdog_status           (int *status);  /* Check if enabled */
 
 int   wdog_reboot           (pid_t pid, char *label);
 int   wdog_reboot_reason    (wdog_reason_t *reason);
 char *wdog_reboot_reason_str(wdog_reason_t *reason);
 
-int wdog_pmon_ping        (void);
-int wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */
-int wdog_pmon_unsubscribe (int id, int ack);  /* Returns 0 if OK, or errno */
-int wdog_pmon_extend_kick (int id, int timeout, int *ack);
-int wdog_pmon_kick        (int id, int *ack); /* Returns 0 while OK, or errno */
+int   wdog_pmon_ping        (void);
+int   wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */
+int   wdog_pmon_unsubscribe (int id, int ack);  /* Returns 0 if OK, or errno */
+int   wdog_pmon_extend_kick (int id, int timeout, int *ack);
+int   wdog_pmon_kick        (int id, int *ack); /* Returns 0 while OK, or errno */
 
 /*
  * Compatibility wrapper layer
