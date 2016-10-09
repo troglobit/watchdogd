@@ -489,8 +489,10 @@ int main(int argc, char *argv[])
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
 	setup_signals(&ctx);
 
-	if (wdt_init())
-		errx(1, "Failed connecting to kernel watchdog driver, exiting!");
+	if (wdt_init()) {
+		PERROR("Failed connecting to kernel watchdog driver");
+		return 1;
+	}
 
 	/* Set requested WDT timeout right before we enter the event loop. */
 	if (wdt_set_timeout(timeout))
