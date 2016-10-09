@@ -85,6 +85,11 @@ int wdog_pmon_unsubscribe (int id, int ack);  /* Returns 0 if OK, or errno */
 int wdog_pmon_extend_kick (int id, int timeout, int *ack);
 int wdog_pmon_kick        (int id, int *ack); /* Returns 0 while OK, or errno */
 
+/*
+ * Compatibility wrapper layer
+ */
+#include "compat.h"
+
 #endif /* WDOG_H_ */
 
 /**
