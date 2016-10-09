@@ -27,7 +27,7 @@ When the system boots back up watchdogd queries the system to determine
 the cause of the (re)boot and records it in a logfile for later analysis
 by an operator or network management system (NMS).
 
-### What is watchdog timer?
+### What is a watchdog timer?
 
 A watchdog timer (WDT) is something most motherboards of laptops and
 servers today are equipped with.  It is basically a small timer that is
