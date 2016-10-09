@@ -255,7 +255,8 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
 
 	fp = fopen(state, "w");
 	if (!fp) {
-		PERROR("Failed opening %s to save reset cause (%d, %s)", state, pid, reason->label);
+		PERROR("Failed opening %s to save reset cause %s[%d]: %s",
+		       state, reason->label, pid, wdog_reboot_reason_str(reason));
 		return 1;
 	}
 

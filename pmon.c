@@ -156,7 +156,7 @@ static pmon_t *get(int id, pid_t pid, int ack)
 	}
 
 	if (p->ack != ack) {
-		DEBUG("BAD next ack for pid %d, was %d, expected ack %d", pid, ack, p->ack);
+		DEBUG("BAD next ack for %s[%d] was %d, expected %d", p->label, pid, ack, p->ack);
 		errno = EBADRQC;
 		return NULL;
 	}
@@ -179,8 +179,7 @@ static void timeout(uev_t *w, void *arg, int UNUSED(events))
 	pmon_t *p = (pmon_t *)arg;
 	wdog_reason_t reason;
 
-	ERROR("Process %d, label '%s' failed to meet its deadline, rebooting ...",
-	      p->pid, p->label);
+	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
 
 	reason.wid = p->id;
 	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
@@ -214,14 +213,14 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	switch (req.cmd) {
 	case WDOG_SUBSCRIBE_CMD:
 		/* Start timer, return ID from allocated timer. */
-		DEBUG("Hello %s, registering pid %d ...", req.label, req.pid);
+		DEBUG("Hello %s[%d].", req.label, req.pid);
 		p = allocate(req.pid, req.label, req.timeout);
 		if (!p) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		} else {
 			next_ack(p, &req);
-			DEBUG("pid %d next ack => %d", req.pid, req.next_ack);
+			DEBUG("%s[%d] next ack: %d", req.label, req.pid, req.next_ack);
 			uev_timer_init(w->ctx, &p->watcher, timeout, p, p->timeout, p->timeout);
 		}
 		break;
@@ -230,13 +229,13 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		/* Unregister timer and free it. */
 		p = get(req.id, req.pid, req.ack);
 		if (!p) {
-			PERROR("Process %d tried to unsubscribe using invalid credentials", req.pid);
+			PERROR("%s[%d] tried to unsubscribe using invalid credentials", req.label, req.pid);
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		} else {
 			uev_timer_stop(&p->watcher);
 			release(p);
-			DEBUG("Goodbye %s (pid:%d), id:%d ...", req.label, req.pid, req.id);
+			DEBUG("Goodbye %s[%d] id:%d.", req.label, req.pid, req.id);
 		}
 		break;
 
@@ -244,7 +243,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		/* Check next_ack from client, restart timer if OK, otherwise force reboot */
 		p = get(req.id, req.pid, req.ack);
 		if (!p) {
-			PERROR("Process %d tried to kick using invalid credentials", req.pid);
+			PERROR("%s[%d] tried to kick using invalid credentials", req.label, req.pid);
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		} else {
@@ -254,7 +253,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 			if (req.timeout >= 0)
 				timeout = req.timeout;
 
-			DEBUG("How do you do %s (pid %d), id:%d -- ACK should be %d, is %d",
+			DEBUG("How do you do %s[%d], id:%d -- ACK should be %d, is %d",
 			      req.label, req.pid, req.id, p->ack, req.ack);
 			next_ack(p, &req);
 			if (enabled)
@@ -307,7 +306,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	}
 
 	if (write(sd, &req, sizeof(req)) != sizeof(req))
-		WARN("Failed sending reply to client %s, id:%d", req.label, req.id);
+		WARN("Failed sending reply to %s[%d]", req.label, req.pid);
 
 	shutdown(sd, SHUT_RDWR);
 	close(sd);
