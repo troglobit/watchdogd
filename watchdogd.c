@@ -42,6 +42,10 @@ int period = -1;
 int __wdt_testmode = 0;
 #endif
 
+/* Reset cause */
+wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
+unsigned int reset_counter = 0;
+
 /* Local variables */
 static int fd = -1;
 static char devnode[42] = WDT_DEVNODE;
@@ -277,9 +281,13 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
  */
 int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason)
 {
+	if (!ctx || !reason)
+		return errno = EINVAL;
+
 	INFO("Reboot requested by pid %d, label %s ...", pid, reason->label);
 
 	/* Save reboot cause */
+	reason->counter = reset_counter + 1;
 	save_cause(pid, reason);
 
 	/* Let plugins exit before we leave main loop */
@@ -330,8 +338,15 @@ static void setup_signals(uev_ctx_t *ctx)
 static int create_bootstatus(int timeout, int interval)
 {
 	int cause = 0;
-	char *status;
 	FILE *fp;
+	char *status;
+	wdog_reason_t reason;
+
+	memset(&reason, 0, sizeof(reason));
+	if (!wdt_reset_cause(&reason)) {
+		reset_cause   = reason.cause;
+		reset_counter = reason.counter;
+	}
 
 	if (wdt_testmode())
 		status = WDT_STATUS_TEST;
