@@ -139,7 +139,9 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 		goto error;
 	}
 
-	if (ack)
+	if (cmd == WDOG_RESET_CAUSE_CMD)
+		*(wdog_reason_t *)ack = *(wdog_reason_t *)(&req + 2 * sizeof(int));
+	else if (ack)
 		*ack = req.next_ack;
 	close(sd);
 
@@ -196,6 +198,44 @@ int wdog_reboot(pid_t pid, char *label)
 {
 	return doit(WDOG_REBOOT_CMD, pid, label, 1, 0);
 }
+
+int wdog_reboot_reason(wdog_reason_t *reason)
+{
+	return doit(WDOG_RESET_CAUSE_CMD, 0, NULL, -1, (int *)reason);
+}
+
+char *wdog_reboot_reason_str(wdog_reason_t *reason)
+{
+	switch (reason->cause) {
+	case WDOG_SYSTEM_NONE:
+		return "None";
+
+	case WDOG_SYSTEM_OK:
+		return "System OK";
+
+	case WDOG_FAILED_SUBSCRIPTION:
+		return "Failed subscription";
+
+	case WDOG_FAILED_KICK:
+		return "Failed kick";
+
+	case WDOG_FAILED_UNSUBSCRIPTION:
+		return "Failed unsubscription";
+
+	case WDOG_FAILED_TO_MEET_DEADLINE:
+		return "Failed to meet deadline";
+
+	case WDOG_FORCED_RESET:
+		return "Forced reset";
+
+	case WDOG_FAILED_UNKNOWN:
+	default:
+		break;
+	}
+
+	return "Unknown failure";
+}
+
 
 /**
  * Local Variables:

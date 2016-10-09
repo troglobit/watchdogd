@@ -282,6 +282,10 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		wdt_forced_reboot(w->ctx, req.id, req.label, WDOG_FORCED_RESET);
 		break;
 
+	case WDOG_RESET_CAUSE_CMD:
+		wdt_reset_cause((wdog_reason_t *)(&req + 2 * sizeof(int)));
+		break;
+
 	default:
 		ERROR("pmon: Invalid command %d", req.cmd);
 		req.cmd   = WDOG_CMD_ERROR;

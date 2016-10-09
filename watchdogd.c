@@ -197,36 +197,40 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	wdt_close(w->ctx);
 }
 
-static char *wdt_reason_str(wdog_reason_t *reason)
+int wdt_reset_cause(wdog_reason_t *reason)
 {
-	switch (reason->cause) {
-	case WDOG_SYSTEM_NONE:
-		return "None";
+	FILE *fp;
+	char buf[80];
+	const char *state;
 
-	case WDOG_SYSTEM_OK:
-		return "System OK";
+	if (!reason)
+		return errno = EINVAL;
 
-	case WDOG_FAILED_SUBSCRIPTION:
-		return "Failed subscription";
+	if (wdt_testmode())
+		state = WDT_STATE_TEST;
+	else
+		state = WDT_STATE;
 
-	case WDOG_FAILED_KICK:
-		return "Failed kick";
-
-	case WDOG_FAILED_UNSUBSCRIPTION:
-		return "Failed unsubscription";
-
-	case WDOG_FAILED_TO_MEET_DEADLINE:
-		return "Failed to meet deadline";
-
-	case WDOG_FORCED_RESET:
-		return "Forced reset";
-
-	case WDOG_FAILED_UNKNOWN:
-	default:
-		break;
+	fp = fopen(state, "r");
+	if (!fp) {
+		if (errno != ENOENT)
+			PERROR("Failed opening %s to read reset cause", state);
+		return 1;
 	}
 
-	return "Unknown failure";
+	while (fgets(buf, sizeof(buf), fp)) {
+		if (sscanf(buf, WDT_REASON_WID ": %d\n", &reason->wid) == 1)
+			continue;
+		if (sscanf(buf, WDT_REASON_LBL ": %s\n", reason->label) == 1)
+			continue;
+		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&reason->cause) == 1)
+			continue;
+		if (sscanf(buf, WDT_REASON_CNT ": %d\n", &reason->counter) == 1)
+			continue;
+	}
+	fclose(fp);
+
+	return 0;
 }
 
 static int save_cause(pid_t pid, wdog_reason_t *reason)
@@ -252,7 +256,7 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
 	fprintf(fp, WDT_REASON_WID ": %d\n", reason->wid);
 	fprintf(fp, WDT_REASON_LBL ": %s\n", reason->label);
 	fprintf(fp, WDT_REASON_CSE ": %d\n", reason->cause);
-	fprintf(fp, WDT_REASON_STR ": %s\n", wdt_reason_str(reason));
+	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(reason));
 	fprintf(fp, WDT_REASON_CNT ": %d\n", reason->counter);
 
 	return fclose(fp);
@@ -337,7 +341,7 @@ static int create_bootstatus(int timeout, int interval)
 	cause = wdt_get_bootstatus();
 
 	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
-	fprintf(fp, WDT_REASON_TMP ": %d\n", timeout);
+	fprintf(fp, WDT_REASON_TMO ": %d\n", timeout);
 	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
 
 	fclose(fp);

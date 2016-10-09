@@ -33,6 +33,7 @@
 #define WDOG_ENABLE_CMD             10
 #define WDOG_STATUS_CMD             11
 #define WDOG_REBOOT_CMD             12
+#define WDOG_RESET_CAUSE_CMD        13
 #define WDOG_CMD_ERROR              255
 
 #define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
@@ -54,21 +55,21 @@ typedef enum {
 
 typedef struct
 {
-   unsigned int  counter;
-   unsigned int  wid;
-   wdog_cause_t  cause;
-   unsigned int  enabled;
-   char          label[16];
+	unsigned int  wid;
+	unsigned int  counter;
+	wdog_cause_t  cause;
+	unsigned int  enabled;
+	char          label[16];
 } wdog_reason_t;
 
 typedef struct {
-	int    cmd;
-	int    error;		/* Set on WDOG_PMON_CMD_ERROR */
-	int    id;		/* Registered ID */
-	pid_t  pid;		/* Process ID */
-	char   label[16];	/* process name or label */
-	int    timeout;		/* msec */
-	int    ack, next_ack;
+	int          cmd;
+	int          error;	/* Set on WDOG_CMD_ERROR */
+	unsigned int id;	/* Registered ID */
+	pid_t        pid;	/* Process ID */
+	int          timeout;	/* msec */
+	int          ack, next_ack;
+	char         label[16];	/* process name or label */
 } wdog_t;
 
 int wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */
@@ -77,7 +78,9 @@ int wdog_get_debug        (int *status);  /* Check if debug is enabled */
 int wdog_enable           (int enable);   /* Attempt to temp. disable */
 int wdog_status           (int *status);  /* Check if enabled */
 
-int wdog_reboot           (pid_t pid, char *label);
+int   wdog_reboot           (pid_t pid, char *label);
+int   wdog_reboot_reason    (wdog_reason_t *reason);
+char *wdog_reboot_reason_str(wdog_reason_t *reason);
 
 int wdog_pmon_ping        (void);
 int wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */
