@@ -140,7 +140,7 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 	}
 
 	if (cmd == WDOG_RESET_CAUSE_CMD)
-		*(wdog_reason_t *)ack = *(wdog_reason_t *)(&req + 2 * sizeof(int));
+		memcpy(ack, &req, sizeof(wdog_reason_t));
 	else if (ack)
 		*ack = req.next_ack;
 	close(sd);

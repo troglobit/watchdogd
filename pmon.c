@@ -194,6 +194,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 	pmon_t *p;
 	ssize_t num;
 	wdog_t req;
+	wdog_reason_t *reason;
 
 	sd = accept(w->fd, NULL, NULL);
 	if (-1 == sd) {
@@ -285,7 +286,8 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		break;
 
 	case WDOG_RESET_CAUSE_CMD:
-		if (wdt_reset_cause((wdog_reason_t *)(&req + 2 * sizeof(int)))) {
+		reason = (wdog_reason_t *)&req;
+		if (wdt_reset_cause(reason)) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		}
