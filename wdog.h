@@ -35,7 +35,7 @@
 #define WDOG_REBOOT_CMD             12
 #define WDOG_RESET_CAUSE_CMD        13
 #define WDOG_CLEAR_CAUSE_CMD        14
-#define WDOG_CMD_ERROR              255
+#define WDOG_CMD_ERROR              -1
 
 #define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
 
