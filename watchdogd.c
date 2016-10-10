@@ -274,8 +274,19 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
 	fprintf(fp, WDT_REASON_CSE ": %d\n", reason->cause);
 	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(reason));
 	fprintf(fp, WDT_REASON_CNT ": %d\n", reason->counter);
+	fclose(fp);
 
-	return fclose(fp);
+	/* Compat, created at boot from RTC contents */
+	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
+        if (fp) {
+                fprintf(fp, "Watchdog ID  : %d\n", reason->wid);
+                fprintf(fp, "Label        : %s\n", reason->label);
+                fprintf(fp, "Reset cause  : %d (%s)\n", reason->cause, wdog_get_reason_str(reason));
+                fprintf(fp, "Counter      : %d\n", reason->counter);
+                fclose(fp);
+        }
+
+	return 0;
 }
 
 int wdt_clear_cause(void)
