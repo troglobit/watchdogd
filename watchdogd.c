@@ -218,11 +218,16 @@ int wdt_reset_cause(wdog_reason_t *reason)
 	else
 		state = WDT_STATE;
 
+	/* Clear contents to handle first boot */
+	memset(reason, 0, sizeof(*reason));
+
 	fp = fopen(state, "r");
 	if (!fp) {
-		if (errno != ENOENT)
+		if (errno != ENOENT) {
 			PERROR("Failed opening %s to read reset cause", state);
-		return 1;
+			return 1;
+		}
+		return 0;
 	}
 
 	while (fgets(buf, sizeof(buf), fp)) {
