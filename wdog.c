@@ -24,6 +24,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#define SYSLOG_NAMES
 #include "wdt.h"
 
 
@@ -182,6 +183,42 @@ int wdog_set_debug(int enable)
 int wdog_get_debug(int *status)
 {
 	return doit(WDOG_GET_DEBUG_CMD, 0, NULL, -1, status);
+}
+
+int __wdog_loglevel(char *level)
+{
+	for (int i = 0; prioritynames[i].c_name; i++) {
+		if (string_match(prioritynames[i].c_name, level))
+			return prioritynames[i].c_val;
+	}
+
+	return atoi(level);
+}
+
+int wdog_set_loglevel(char *level)
+{
+	int val;
+
+	val = __wdog_loglevel(level);
+	if (val < LOG_EMERG || val > LOG_DEBUG)
+		return -1;
+
+	return doit(WDOG_SET_LOGLEVEL_CMD, val, NULL, -1, NULL);
+}
+
+char *wdog_get_loglevel(void)
+{
+	int val;
+
+	if (doit(WDOG_GET_LOGLEVEL_CMD, 0, NULL, -1, &val))
+		return NULL;
+
+	for (int i = 0; prioritynames[i].c_name; i++) {
+		if (prioritynames[i].c_val == val)
+			return prioritynames[i].c_name;
+	}
+
+	return NULL;
 }
 
 int wdog_enable(int enable)

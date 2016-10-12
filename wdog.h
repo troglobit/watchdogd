@@ -35,6 +35,8 @@
 #define WDOG_REBOOT_CMD             12
 #define WDOG_RESET_CAUSE_CMD        13
 #define WDOG_CLEAR_CAUSE_CMD        14
+#define WDOG_SET_LOGLEVEL_CMD       15
+#define WDOG_GET_LOGLEVEL_CMD       16
 #define WDOG_CMD_ERROR              -1
 
 #define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
@@ -75,6 +77,9 @@ typedef struct {
 
 int   wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */
 int   wdog_get_debug        (int *status);  /* Check if debug is enabled */
+
+int   wdog_set_loglevel     (char *level);
+char *wdog_get_loglevel     (void);
 
 int   wdog_enable           (int enable);   /* Attempt to temp. disable */
 int   wdog_status           (int *status);  /* Check if enabled */

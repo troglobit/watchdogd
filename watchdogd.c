@@ -57,6 +57,8 @@ static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
 static uev_t sigpwr_watcher;
 
+extern int __wdog_loglevel(char *level);
+
 
 /*
  * Connect to kernel wdt driver
@@ -438,16 +440,6 @@ static int usage(int status)
 	return status;
 }
 
-static int loglvl(char *level)
-{
-	for (int i = 0; prioritynames[i].c_name; i++) {
-		if (string_match(prioritynames[i].c_name, level))
-			return prioritynames[i].c_val;
-	}
-
-	return atoi(level);
-}
-
 int wdt_debug(int enable)
 {
 	static int oldlevel = 0;
@@ -511,7 +503,7 @@ int main(int argc, char *argv[])
 			return usage(0);
 
 		case 'l':
-			loglevel = loglvl(optarg);
+			loglevel = __wdog_loglevel(optarg);
 			if (-1 == loglevel)
 				return usage(1);
 			break;
