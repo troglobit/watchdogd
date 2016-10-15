@@ -216,9 +216,9 @@ int wdt_reset_cause(wdog_reason_t *reason)
 		return errno = EINVAL;
 
 	if (wdt_testmode())
-		state = WDT_STATE_TEST;
+		state = WDOG_STATE_TEST;
 	else
-		state = WDT_STATE;
+		state = WDOG_STATE;
 
 	/* Clear contents to handle first boot */
 	memset(reason, 0, sizeof(*reason));
@@ -256,9 +256,9 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
 	const char *state;
 
 	if (wdt_testmode())
-		state = WDT_STATE_TEST;
+		state = WDOG_STATE_TEST;
 	else
-		state = WDT_STATE;
+		state = WDOG_STATE;
 
 	fp = fopen(state, "w");
 	if (!fp) {
@@ -376,13 +376,13 @@ static int create_bootstatus(int timeout, int interval)
 	}
 
 	if (wdt_testmode())
-		status = WDT_STATUS_TEST;
+		status = WDOG_STATUS_TEST;
 	else
-		status = WDT_STATUS;
+		status = WDOG_STATUS;
 
 	fp = fopen(status, "w");
 	if (!fp) {
-		PERROR("Failed opening %s", WDT_STATUS);
+		PERROR("Failed opening %s", WDOG_STATUS);
 		return cause;
 	}
 
