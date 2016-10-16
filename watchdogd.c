@@ -425,6 +425,9 @@ static int create_bootstatus(int timeout, int interval)
 	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
 	fclose(fp);
 
+	if (wdt_testmode())
+		goto nocompat;
+
 	/* Compat, created at boot from RTC contents */
 	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
         if (fp) {
@@ -438,6 +441,7 @@ static int create_bootstatus(int timeout, int interval)
         } else
 		PERROR("Failed creating compat boot status");
 
+nocompat:
 	return cause;
 }
 
