@@ -587,7 +587,7 @@ int main(int argc, char *argv[])
 	setlogmask(LOG_UPTO(loglevel));
 	openlog(NULL, log_opts, LOG_DAEMON);
 
-	INFO("Userspace watchdog daemon v%s %s ...", VERSION, wdt_testmode() ? "test mode" : "starting");
+	INFO("watchdogd v%s %s ...", PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
 	uev_init(&ctx);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
