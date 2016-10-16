@@ -160,7 +160,7 @@ static int testit(void)
 static int usage(int code)
 {
 	printf("Usage:\n"
-	       "  %s [-CfhS]\n"
+	       "  %s [-cdefhsvV] [-l LEVEL] [-r MSEC]\n"
 	       "\n"
 	       "Commands:\n"
 	       "  -c, --clear           Clear reset reason\n"
