@@ -23,6 +23,8 @@
 #include "config.h"
 #include "wdog.h"
 
+#define log(fmt, args...) if (verbose) printf(fmt "\n", ##args)
+
 extern char *__progname;
 static int verbose = 0;
 static int count = 1;
@@ -105,9 +107,11 @@ static int testit(void)
 {
 	int id, ack;
 
+	log("Verifying watchdog connectivity");
 	if (wdog_pmon_ping())
 		err(1, "Failed connectivity check");
 
+	log("Subscribing to process supervisor");
 	id = wdog_pmon_subscribe(NULL, tmo, &ack);
 	if (id < 0) {
 		perror("Failed connecting to pmon");
@@ -127,7 +131,11 @@ static int testit(void)
 		sleep(tmo);
 	}
 
+	log("Starting test loop: count %d, false_ack %d, false_unsubscribe %d, disable_enable %d, no_kick %d",
+	    count, false_ack, false_unsubscribe, disable_enable, no_kick);
 	while (count-- > 0) {
+		log("Sleeping %d msec", tmo / 2);
+		log("Kicking watchdog: id %d, ack %d", id, ack);
 		if (wdog_pmon_kick(id, &ack))
 			err(1, "Failed kicking");
 
@@ -142,6 +150,7 @@ static int testit(void)
 		sleep(tmo / 2);
 	}
 
+	log("Unsubscribing: id %d, ack %d", id, ack);
 	if (wdog_pmon_unsubscribe(id, ack))
 		err(1, "Failed unsubscribe");
 
