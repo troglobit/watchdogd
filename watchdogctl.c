@@ -156,7 +156,7 @@ static int testit(void)
 		if (failed_kick)
 			ack += 42;
 		if (premature)
-			usleep((tmo / 2 - 500000) * 1000);
+			usleep(tmo / 2 * 1000 - 500000);
 	}
 
 	log("Unsubscribing: id %d, ack %d", id, ack);
