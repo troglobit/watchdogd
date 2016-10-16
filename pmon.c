@@ -279,6 +279,14 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		req.next_ack = loglevel == LOG_DEBUG;
 		break;
 
+	case WDOG_SET_LOGLEVEL_CMD:
+		loglevel = req.id;
+		break;
+
+	case WDOG_GET_LOGLEVEL_CMD:
+		req.next_ack = loglevel;
+		break;
+
 	case WDOG_REBOOT_CMD:
 		if (wdt_forced_reboot(w->ctx, req.id, req.label, req.timeout)) {
 			req.cmd   = WDOG_CMD_ERROR;
