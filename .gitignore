@@ -33,3 +33,4 @@ watchdogd
 /.config
 /.stamp
 /.unpacked
+/watchdogctl

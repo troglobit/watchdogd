@@ -1,5 +1,7 @@
 ACLOCAL_AMFLAGS     = -I m4
+AM_CFLAGS           = -W -Wall -Wextra -std=gnu99
 
+bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
 dist_man8_MANS      = watchdogd.8
 pkgconfigdir        = $(libdir)/pkgconfig
@@ -15,8 +17,11 @@ watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      meminfo.c		meminfo.h	\
 		      pmon.c		pmon.h
 
-watchdogd_CFLAGS    = -W -Wall -Wextra -std=gnu99 $(uev_CFLAGS) $(lite_CFLAGS)
+watchdogd_CFLAGS    = $(uev_CFLAGS) $(lite_CFLAGS)
 watchdogd_LDADD     = libwdog.la $(uev_LIBS) $(lite_LIBS)
+
+watchdogctl_SOURCES = watchdogctl.c
+watchdogctl_LDADD   = libwdog.la
 
 lib_LTLIBRARIES     = libwdog.la
 pkgincludedir       = $(includedir)/wdog
