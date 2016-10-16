@@ -185,7 +185,7 @@ static int usage(int code)
 	       "\n"
 	       "Tests:\n"
 	       "  --complete-cycle      Verify subscribe, kick, and unsubscribe (no reboot)\n"
-	       "  --disable-enable      Verify WDT disable, and re-enable (reboot)\n"
+	       "  --disable-enable      Verify WDT disable, and re-enable (no reboot)\n"
 	       "  --false-ack           Verify kick with invalid ACK (reboot)\n"
 	       "  --false-unsubscribe   Verify unsubscribe with invalid ACK (reboot)\n"
 	       "  --failed-kick         Verify reboot on missing kick (reboot)\n"
