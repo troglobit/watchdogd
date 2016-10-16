@@ -19,6 +19,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "wdog.h"
@@ -128,13 +129,15 @@ static int testit(void)
 		count += 10;
 	if (no_kick) {
 		count = 0;
-		sleep(tmo);
+		usleep(tmo * 1000);
 	}
 
 	log("Starting test loop: count %d, false_ack %d, false_unsubscribe %d, disable_enable %d, no_kick %d",
 	    count, false_ack, false_unsubscribe, disable_enable, no_kick);
 	while (count-- > 0) {
 		log("Sleeping %d msec", tmo / 2);
+		usleep(tmo / 2 * 1000);
+
 		log("Kicking watchdog: id %d, ack %d", id, ack);
 		if (wdog_pmon_kick(id, &ack))
 			err(1, "Failed kicking");
@@ -146,8 +149,7 @@ static int testit(void)
 		if (failed_kick)
 			ack += 42;
 		if (premature)
-			sleep(tmo / 2 - 500000);
-		sleep(tmo / 2);
+			usleep((tmo / 2 - 500000) * 1000);
 	}
 
 	log("Unsubscribing: id %d, ack %d", id, ack);
