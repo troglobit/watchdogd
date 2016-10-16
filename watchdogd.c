@@ -90,6 +90,11 @@ int wdt_kick(char *msg)
 	if (wdt_testmode())
 		return 0;
 
+	if (fd == -1) {
+		DEBUG("No kick, currently disabled.");
+		return 0;
+	}
+
 	return ioctl(fd, WDIOC_KEEPALIVE, &dummy);
 }
 
@@ -100,6 +105,11 @@ int wdt_set_timeout(int count)
 
 	if (wdt_testmode())
 		return 0;
+
+	if (fd == -1) {
+		DEBUG("Cannot set timeout, currently disabled.");
+		return 0;
+	}
 
 	DEBUG("Setting watchdog timeout to %d sec.", count);
 	if (ioctl(fd, WDIOC_SETTIMEOUT, &arg))
@@ -118,6 +128,11 @@ int wdt_get_timeout(void)
 	if (wdt_testmode())
 		return 0;
 
+	if (fd == -1) {
+		DEBUG("Cannot get timeout, currently disabled.");
+		return 0;
+	}
+
 	err = ioctl(fd, WDIOC_GETTIMEOUT, &count);
 	if (err)
 		count = err;
@@ -134,6 +149,11 @@ int wdt_get_bootstatus(void)
 
 	if (wdt_testmode())
 		return status;
+
+	if (fd == -1) {
+		DEBUG("Cannot get boot status, currently disabled.");
+		return 0;
+	}
 
 	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
 		status = err;
