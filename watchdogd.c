@@ -17,7 +17,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define SYSLOG_NAMES
 #include "wdt.h"
 #include "plugin.h"
 
