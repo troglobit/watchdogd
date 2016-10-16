@@ -223,7 +223,9 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		} else {
 			next_ack(p, &req);
 			DEBUG("%s[%d] next ack: %d", req.label, req.pid, req.next_ack);
-			uev_timer_init(w->ctx, &p->watcher, timeout, p, p->timeout, p->timeout);
+
+			/* Allow for some scheduling slack */
+			uev_timer_init(w->ctx, &p->watcher, timeout, p, p->timeout + 500, p->timeout + 500);
 		}
 		break;
 
