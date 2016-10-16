@@ -72,8 +72,8 @@ int wdt_set_timeout    (int count);
 int wdt_get_timeout    (void);
 int wdt_get_bootstatus (void);
 int wdt_close          (uev_ctx_t *ctx);
-int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason);
-int wdt_forced_reboot  (uev_ctx_t *ctx, pid_t pid, char *label, wdog_cause_t cause);
+int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
+int wdt_forced_reboot  (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 
 static inline int wdt_testmode(void)
 {

@@ -89,6 +89,7 @@ int   wdog_enable           (int enable);   /* Attempt to temp. disable */
 int   wdog_status           (int *status);  /* Check if enabled */
 
 int   wdog_reboot           (pid_t pid, char *label);
+int   wdog_reboot_timeout   (pid_t pid, char *label, int timeout);
 int   wdog_reboot_reason    (wdog_reason_t *reason);
 char *wdog_reboot_reason_str(wdog_reason_t *reason);
 int   wdog_reboot_reason_clr(void);

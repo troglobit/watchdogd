@@ -233,7 +233,30 @@ int wdog_status(int *status)
 
 int wdog_reboot(pid_t pid, char *label)
 {
-	return doit(WDOG_REBOOT_CMD, pid, label, 1, 0);
+	return doit(WDOG_REBOOT_CMD, pid, label, 0, NULL);
+}
+
+/*
+ * Called by init to signal pending reboot
+ *
+ * When a user requests a reboot, init (PID 1) is usually the process
+ * responsible for performing an orderly shutdown, taking the system
+ * down safely: sending SIGTERM to all services, syncing and unmounting
+ * file systems etc.
+ *
+ * This function is what init can use to order watchdogd to save the
+ * reset cause before initiating the shutdown.  When this function has
+ * been called, with a reasonable timeout, watchdogd will go into a
+ * special mode waiting only for SIGTERM.
+ *
+ * The timeout is the amount of time, in milliseconds, that watchdogd
+ * will wait for SIGTERM before exiting and handing over the reboot to
+ * the WDT.  If SIGTERM is received within timeout no warning is sent to
+ * the log and watchdogd simply exits, pending for WDT reboot.
+ */
+int wdog_reboot_timeout(pid_t pid, char *label, int timeout)
+{
+	return doit(WDOG_REBOOT_CMD, pid, label, timeout, NULL);
 }
 
 int wdog_reboot_reason(wdog_reason_t *reason)
@@ -277,8 +300,6 @@ int wdog_reboot_reason_clr(void)
 {
 	return doit(WDOG_CLEAR_CAUSE_CMD, -1, NULL, -1, NULL);
 }
-
-
 
 /**
  * Local Variables:

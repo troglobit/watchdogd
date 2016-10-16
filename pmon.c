@@ -181,10 +181,11 @@ static void timeout(uev_t *w, void *arg, int UNUSED(events))
 
 	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
 
+	memset(&reason, 0, sizeof(reason));
 	reason.wid = p->id;
 	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
 	strlcpy(reason.label, p->label, sizeof(reason.label));
-	wdt_reboot(w->ctx, p->pid, &reason);
+	wdt_reboot(w->ctx, p->pid, &reason, 0);
 }
 
 /* Client connected to domain socket sent a request */
@@ -279,7 +280,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 		break;
 
 	case WDOG_REBOOT_CMD:
-		if (wdt_forced_reboot(w->ctx, req.id, req.label, WDOG_FORCED_RESET)) {
+		if (wdt_forced_reboot(w->ctx, req.id, req.label, req.timeout)) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		}

@@ -55,6 +55,7 @@ static uev_t sigterm_watcher;
 static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
 static uev_t sigpwr_watcher;
+static uev_t timeout_watcher;
 
 extern int __wdog_loglevel(char *level);
 
@@ -299,24 +300,8 @@ int wdt_clear_cause(void)
 	return save_cause(0, &reason);
 }
 
-/*
- * Exit and reboot system -- reason for reboot is stored in some form of
- * semi-persistent backend, using @pid and @label, defined at compile
- * time.  By default the backend will be a regular file in /var/lib/,
- * most likely /var/lib/misc/watchdogd.state -- see the FHS for details
- * http://www.pathname.com/fhs/pub/fhs-2.3.html#VARLIBVARIABLESTATEINFORMATION
- */
-int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason)
+int wdt_exit(uev_ctx_t *ctx)
 {
-	if (!ctx || !reason)
-		return errno = EINVAL;
-
-	INFO("Reboot requested by pid %d, label %s ...", pid, reason->label);
-
-	/* Save reboot cause */
-	reason->counter = reset_counter + 1;
-	save_cause(pid, reason);
-
 	/* Let plugins exit before we leave main loop */
 	wdt_plugins_exit(ctx);
 
@@ -336,14 +321,47 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason)
 	return uev_exit(ctx);
 }
 
-int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, wdog_cause_t cause)
+/*
+ * Callback for timed reboot
+ */
+static void reboot_timeout_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+{
+	wdt_exit(w->ctx);
+}
+
+/*
+ * Exit and reboot system -- reason for reboot is stored in some form of
+ * semi-persistent backend, using @pid and @label, defined at compile
+ * time.  By default the backend will be a regular file in /var/lib/,
+ * most likely /var/lib/misc/watchdogd.state -- see the FHS for details
+ * http://www.pathname.com/fhs/pub/fhs-2.3.html#VARLIBVARIABLESTATEINFORMATION
+ */
+int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
+{
+	if (!ctx || !reason)
+		return errno = EINVAL;
+
+	INFO("Reboot requested by pid %d, label %s ...", pid, reason->label);
+
+	/* Save reboot cause */
+	reason->counter = reset_counter + 1;
+	save_cause(pid, reason);
+
+	if (timeout > 0)
+		return uev_timer_init(ctx, &timeout_watcher, reboot_timeout_cb, NULL, timeout, 0);
+
+	return wdt_exit(ctx);
+}
+
+int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 {
 	wdog_reason_t reason;
 
-	reason.cause = cause;
+	memset(&reason, 0, sizeof(reason));
+	reason.cause = WDOG_FORCED_RESET;
 	strlcpy(reason.label, label, sizeof(reason.label));
 
-	return wdt_reboot(ctx, pid, &reason);
+	return wdt_reboot(ctx, pid, &reason, timeout);
 }
 
 void reboot_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
