@@ -176,6 +176,9 @@ int wdt_enable(int enable)
 {
 	int result = 0;
 
+	if (enabled == enable)
+		return 0;	/* Hello?  Yes, this is dog */
+
 	if (!enable) {
 		/* Attempt to disable HW watchdog */
 		if (fd != -1) {
