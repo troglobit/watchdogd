@@ -301,17 +301,6 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
 	fprintf(fp, WDT_REASON_CNT ": %d\n", reason->counter);
 	fclose(fp);
 
-	/* Compat, created at boot from RTC contents */
-	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
-        if (fp) {
-                fprintf(fp, "Watchdog ID  : %d\n", reason->wid);
-                fprintf(fp, "Label        : %s\n", reason->label);
-                fprintf(fp, "Reset cause  : %d (%s)\n", reason->cause, wdog_get_reason_str(reason));
-                fprintf(fp, "Counter      : %d\n", reason->counter);
-                fclose(fp);
-        } else
-		PERROR("Failed creating compat boot status");
-
 	return 0;
 }
 
@@ -434,8 +423,20 @@ static int create_bootstatus(int timeout, int interval)
 	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
 	fprintf(fp, WDT_REASON_TMO ": %d\n", timeout);
 	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
-
 	fclose(fp);
+
+	/* Compat, created at boot from RTC contents */
+	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
+        if (fp) {
+		if (!wdt_reset_cause(&reason)) {
+			fprintf(fp, "Watchdog ID  : %d\n", reason.wid);
+			fprintf(fp, "Label        : %s\n", reason.label);
+			fprintf(fp, "Reset cause  : %d (%s)\n", reason.cause, wdog_get_reason_str(&reason));
+			fprintf(fp, "Counter      : %d\n", reason.counter);
+		}
+                fclose(fp);
+        } else
+		PERROR("Failed creating compat boot status");
 
 	return cause;
 }
