@@ -132,8 +132,15 @@ static int testit(void)
 		usleep(tmo * 1000);
 	}
 
-	log("Starting test loop: count %d, false_ack %d, false_unsubscribe %d, disable_enable %d, no_kick %d",
-	    count, false_ack, false_unsubscribe, disable_enable, no_kick);
+	log("Starting test loop:\n"
+	    "\tcount             : %d\n"
+	    "\tfalse ack         : %d\n"
+	    "\tfalse unsubscribe : %d\n"
+	    "\tdisable enable    : %d\n"
+	    "\tno kick           : %d\n"
+	    "\tpremature trigger : %d\n", count, false_ack, false_unsubscribe,
+	    disable_enable, no_kick, premature);
+
 	while (count-- > 0) {
 		log("Sleeping %d msec", tmo / 2);
 		usleep(tmo / 2 * 1000);
