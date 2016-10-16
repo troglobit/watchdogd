@@ -496,6 +496,8 @@ int wdt_debug(int enable)
 		}
 	}
 
+	setlogmask(LOG_UPTO(loglevel));
+
 	return 0;
 }
 

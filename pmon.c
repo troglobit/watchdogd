@@ -281,6 +281,7 @@ static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
 
 	case WDOG_SET_LOGLEVEL_CMD:
 		loglevel = req.id;
+		setlogmask(LOG_UPTO(loglevel));
 		break;
 
 	case WDOG_GET_LOGLEVEL_CMD:
