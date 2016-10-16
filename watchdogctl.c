@@ -92,11 +92,11 @@ static int show_status(void)
 			while (fgets(buf, sizeof(buf), fp))
 				fputs(buf, stdout);
 
-			return fclose(fp);
+			fclose(fp);
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
 static int show_version(void)
