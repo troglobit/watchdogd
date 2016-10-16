@@ -114,8 +114,8 @@ to exit gracefully.  If started with the
 .Fl x
 flag
 .Nm
-tries to tell the WDT driver the magic word to close the device node
-without causing the system to reboot.
+writes the magic word before closing the connection to the kernel WDT
+driver, this to prevent causing a system reboot.
 .It INT
 Same as TERM
 .It QUIT
