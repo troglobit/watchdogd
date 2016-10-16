@@ -285,7 +285,8 @@ static int save_cause(pid_t pid, wdog_reason_t *reason)
                 fprintf(fp, "Reset cause  : %d (%s)\n", reason->cause, wdog_get_reason_str(reason));
                 fprintf(fp, "Counter      : %d\n", reason->counter);
                 fclose(fp);
-        }
+        } else
+		PERROR("Failed creating compat boot status");
 
 	return 0;
 }
