@@ -36,6 +36,9 @@ if ENABLE_EXAMPLES
 SUBDIRS            += examples
 endif
 
+## Compat hook
+install-dev: install-pkgincludeHEADERS
+
 ## Generate MD5 checksum file
 MD5 = md5sum
 md5-dist:
