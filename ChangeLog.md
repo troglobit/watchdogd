@@ -4,24 +4,36 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[3.0][UNRELEASED]
------------------
+[3.0][] - 2017-03-XX
+--------------------
 
 This release includes some major changes to the build system and is
-incompatible with previous version due to changes in the command line
+incompatible with previous versions due to changes in the command line
 options.
 
 ### Changes
 - Completely overhauled command line options and arguments.  Some
   options in previous releases were not options but optional arguments,
-  while others were useless options for a daemon.
-  - No more `--logfile=FILE` option, redirect `stderr` instead.
+  while others were useless options for a daemon
+  - Watchdog device node is now an argument not a `-d` option
+  - No more `--logfile=FILE` option, redirect `stderr` instead
+  - `-n` now prevents the daemon from forking to the background
+  - `-f` is now used by the `--filenr` monitor plugin
   - When running foreground, output syslog also to `stderr`, unless
-	the `--syslog` option is given.
-  - XXX: more changes later, e.g. device, safe-exit, etc.
-
-### Fixes
-- XXX: Fix outstanding issues found by Coverity Scan
+    the `-s` or `--syslog` option is given
+  - `-l, --loglevel` replaces `--verbose` option
+  - Use BusyBox options `-T` and `-t` for WDT timeout and kick, this
+    replaces the previous `-w` and `-k` options
+- No more support for an external supervisor using `USR1` and `USR2`
+- Conversion to GNU Configure and Build system
+- Added `pkg-config` support to `libwdog`
+- Save reset cause in `/var/lib/watchdogd.state`
+- Updates to `libwdog` API, including a compatiblity mode for current
+  customers using `watchdogd` 2.0 with a supervisor patch
+- Added `libwdog` example clients
+- Added customer compat `/var/run/supervisor.status`
+- Support for delayed reboot in user API, `wdog_reboot_timeout()`
+- Added `watchdogctl` tool to interact with daemon
 
 
 [2.0.1][] - 2016-06-12
@@ -89,7 +101,9 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/2.0...HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.0...HEAD
+[3.0]:        https://github.com/troglobit/watchdogd/compare/2.0.1...3.0
+[2.0.1]:      https://github.com/troglobit/watchdogd/compare/2.0...2.0.1
 [2.0]:        https://github.com/troglobit/watchdogd/compare/1.6...2.0
 [1.6]:        https://github.com/troglobit/watchdogd/compare/1.5...1.6
 
