@@ -19,6 +19,14 @@
 
 #include "wdt.h"
 #include "plugin.h"
+#ifdef HAVE_FINIT_FINIT_H
+# include <paths.h>
+# include <unistd.h>
+# include <sys/un.h>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <finit/finit.h>
+#endif
 
 #define WDT_REASON_PID "PID                 "
 #define WDT_REASON_WID "Watchdog ID         "
@@ -67,6 +75,50 @@ int wdt_init(void)
 {
 	if (wdt_testmode())
 		return 0;
+
+#ifdef HAVE_FINIT_FINIT_H
+	/*
+	 * If we're called in a system with Finit running, tell it to
+	 * disable its built-in watchdog daemon.
+	 */
+	int sd;
+	int retry = 3;
+	size_t len;
+	struct sockaddr_un sun = {
+		.sun_family = AF_UNIX,
+		.sun_path   = INIT_SOCKET,
+	};
+	struct init_request rq = {
+		.magic    = INIT_MAGIC,
+		.cmd      = INIT_CMD_WDOG_HELLO,
+		.runlevel = getpid(),
+	};
+
+	sd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (-1 == sd) {
+		PERROR("Cannot open UNIX domain socket");
+		return -1;
+	}
+
+	while (connect(sd, (struct sockaddr*)&sun, sizeof(sun)) == -1) {
+		if (retry == 0)
+			goto error;
+		retry--;
+		sleep(1);
+	}
+
+	len = sizeof(rq);
+	if (write(sd, &rq, len) != len)
+		goto error;
+
+	if (read(sd, &rq, len) != len)
+		goto error;
+	goto exit;
+error:
+	perror("Failed communicating with finit");
+exit:
+	close(sd);
+#endif
 
 	fd = open(devnode, O_WRONLY);
 	if (fd == -1) {

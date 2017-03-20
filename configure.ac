@@ -13,9 +13,12 @@ AC_CONFIG_FILES([Makefile libwdog.pc examples/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
-AC_HEADER_STDC
 AC_PROG_LN_S
 AC_PROG_INSTALL
+
+# Check for header files
+AC_HEADER_STDC
+AC_CHECK_HEADERS([finit/finit.h])
 
 # Check for required libraries
 PKG_CHECK_MODULES([uev],  [libuev >= 1.4.0])
