@@ -23,16 +23,15 @@ watchdogd is an advanced system and process supervisor daemon.  It can
 monitor critical system resources, supervise the heartbeat of processes
 and record deadline transgressions before safely rebooting your system.
 
-When the system boots back up watchdogd queries the system to determine
-the cause of the (re)boot and records it in a logfile for later analysis
-by an operator or network management system (NMS).
+When the system comes back up after a (re)boot, watchdogd queries the
+system to determine the cause and records it in a logfile for later
+analysis by an operator or network management system (NMS).
 
 ### What is a watchdog timer?
 
-A watchdog timer (WDT) is something most motherboards of laptops and
-servers today are equipped with.  It is basically a small timer that is
-connected to the reset circuitry so that it can reset the board when the
-timer expires.
+A watchdog timer (WDT) is something most server and laptop motherboards
+today are equipped with.  Basically it is a small timer connected to the
+reset circuitry so that it can reset the board if the timer expires.
 
 The Linux kernel provides a common userspace interface `/dev/watchdog`,
 created automatically when the appropriate driver module is loaded.  If
@@ -51,9 +50,10 @@ when they get stuck.
 
 ### What can watchdogd do?
 
-Without arguments *watchdogd* simply runs in the background, "kicking"
-the WDT (via the driver).  However, with few command line options it can
-also detect system problems such as:
+Without arguments *watchdogd* runs in the background, monitoring the the
+CPU, and as long as there is CPU time it "kicks" the WDT chip (via the
+driver).  However, with few command line options it can also monitor
+other aspect of the system, such as:
 
 - Load average
 - Memory leaks
