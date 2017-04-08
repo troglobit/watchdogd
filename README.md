@@ -2,8 +2,8 @@ Advanced System & Process Supervisor
 ====================================
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
-<a href="https://openclipart.org/detail/276115/super-dog"><img
-   align="right" src="SuperDog-300px.png" title="SuperDog Clipart by SeriousTux"></a>
+<a href="https://www.clipartof.com/435776"><img align="right" src="logo.png"
+   alt="http://toonclips.com/design/788" title="Copyright © Ron Leishman"></a>
 
 
 Table of Contents
@@ -280,7 +280,10 @@ The [original code][] in uClinux-dist has no license and is available in
 the public domain, whereas this version is distributed under the ISC
 license.  See the file [LICENSE][] for more details on this.
 
-The `watchdogd` [logo][], "SuperDog", is courtesy of [snoopingasusual][].
+The [logo][], "Watch Dog Detective Taking Notes", is licensed for use by
+the `watchdogd` project, copyright © [Ron Leishman][].  If you want to
+use this, or other clipart by Ron, contact https://www.clipartof.com,
+they have excellent customer service!
 
 
 Contributing
@@ -316,8 +319,8 @@ more details, see the file [CONTRIBUTING][contrib].
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [contrib]:         https://github.com/troglobit/watchdogd/blob/master/CONTRIBUTING.md
 [Joachim Nilsson]: http://troglobit.com
-[logo]:            https://openclipart.org/detail/276115/super-dog
-[snoopingasusual]: https://openclipart.org/user-detail/snoopingasusual
+[logo]:            https://www.clipartof.com/435776
+[Ron Leishman]:    http://toonclips.com/design/788
 
 <!--
   -- Local Variables:
