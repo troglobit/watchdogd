@@ -29,6 +29,8 @@ When the system comes back up after a (re)boot, watchdogd queries the
 system to determine the cause and records it in a logfile for later
 analysis by an operator or network management system (NMS).
 
+> If you have an embedded system -- you need a watchdog daemon.
+
 ### What is a watchdog timer?
 
 Most server and laptop motherboards today come equipped with a watchdog
@@ -37,22 +39,19 @@ that it can reset the board if the timer expires.  The system watchdog
 driver, and this daemon, periodically "kick", or reset the timer to
 prevent it from firing.
 
-Many, if not all, embedded systems rely ony this to handle malfunctions.
+Most embedded systems utilise watchdog timers as a way to automatically
+recover from malfunctions.
 
 The Linux kernel provides a common userspace interface `/dev/watchdog`,
 created automatically when the appropriate watchdog driver is loaded.
 If your board does not have a WDT, the kernel provides a "softdog"
 module which in many cases can be good enough.
 
-The idea is to have a watchdog daemon in userspace that runs in the
-background of your system.  When there is no more CPU time for the
-watchdog daemon to run it will fail to "kick" the WDT.  This will in
-turn cause the WDT to reboot the system.
-
-> If you have an embedded system -- you need a watchdog daemon.
-
-Most embedded systems utilise this as a way to automatically recover
-when they get stuck.
+The idea of a watchdog daemon in userspace is to run in the background
+of your system.  When there is no more CPU time for the watchdog daemon
+to run it will fail to "kick" the WDT.  This will in turn cause the WDT
+to reboot the system.  This background process can of course also be
+used to monitor other aspects of the system.
 
 ### What can watchdogd do?
 
