@@ -18,7 +18,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include "../wdog.h"
+#include "wdog.h"
 
 extern char *__progname;
 extern int   __wdog_testmode;
