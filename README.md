@@ -71,6 +71,7 @@ other aspect of the system, such as:
 Usage
 -----
 
+```shell
     watchdogd [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
     
     Options:
@@ -90,7 +91,8 @@ Usage
       
       -v, --version            Display version and exit
       -h, --help               Display this help message and exit
-    
+```
+
 By default, with any arguments given on the command line, `watchdogd`
 opens `/dev/watchdog`, forks to the background and then tries to to set
 a 20 sec WDT timeout.  It then kicks every 10 sec.  See below, in the
@@ -98,7 +100,9 @@ Operation section, for more information.
 
 **Example**
 
+```shell
     watchdogd -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2
+```
 
 Most WDT drivers only support 120 sec as lowest timeout, but `watchdogd`
 tries to set 20 sec timeout.  Example values above are recommendations.
@@ -155,27 +159,25 @@ value with `errno` set on error.  The `wdog_pmon_subscribe()` call
 returns a positive integer (including zero) for the watchdog `id`.
 
 ```C
-
     /*
      * Enable or disable watchdogd at runtime.
-	 */
+     */
     int wdog_enable           (int enable);
-	int wdog_status           (int *enabled);
-	
+    int wdog_status           (int *enabled);
+    
     /*
-	 * Check if watchdogd API is actively responding,
-	 * returns %TRUE(1) or %FALSE(0)
-	 */
-	int wdog_pmon_ping        (void);
+     * Check if watchdogd API is actively responding,
+     * returns %TRUE(1) or %FALSE(0)
+     */
+    int wdog_pmon_ping        (void);
 
     /*
      * Register with pmon, timeout in msec.  Return value is the `id`
      * to be used with the `ack` in subsequent kick()/unsubscribe()
      */
-	int wdog_pmon_subscribe   (char *label, int timeout, int *ack);
-	int wdog_pmon_unsubscribe (int id, int ack);
-	int wdog_pmon_kick        (int id, int *ack);
-
+    int wdog_pmon_subscribe   (char *label, int timeout, int *ack);
+    int wdog_pmon_unsubscribe (int id, int ack);
+    int wdog_pmon_kick        (int id, int *ack);
 ```
 
 It is highly recommended to use an event loop like libev, [libuev][], or
@@ -189,7 +191,6 @@ For other applications, identify your main loop, its max period time and
 instrument it like this:
 
 ```C
-
     int ack, wid;
     
     /* Library will use process' name on NULL first arg. */
@@ -202,7 +203,6 @@ instrument it like this:
             wdog_pmon_kick(wid, &ack);
             ...
     }
-
 ```
 
 This simple example subscribes to the watchdog with a 10 sec timeout.
@@ -258,8 +258,10 @@ Hence, the regular `./configure && make` is usually sufficient to build
 `watchdogd`.  But, if libraries are installed in non-standard locations
 you may need to provide their paths:
 
+```shell
     PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
     make
+```
 
 To build the source from GIT, see below.
 
@@ -283,9 +285,11 @@ Contributing
 If you find bugs or want to contribute fixes or features, check out the
 code from GitHub:
 
-	git clone https://github.com/troglobit/watchdogd
-	cd watchdogd
-	./autogen.sh
+```shell
+    git clone https://github.com/troglobit/watchdogd
+    cd watchdogd
+    ./autogen.sh
+```
 
 The `autogen.sh` script runs `autoconf`, `automake`, et al to create the
 configure script and such generated files not part of the VCS tree.  For
