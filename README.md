@@ -21,15 +21,16 @@ Table of Contents
 Introduction
 ------------
 
-watchdogd is an advanced system and process supervisor daemon.  It can
-monitor critical system resources, supervise the heartbeat of processes
-and record deadline transgressions before safely rebooting your system.
+`watchdogd(8)` is an advanced system and process supervisor daemon.
+It can monitor critical system resources, supervise the heartbeat of
+processes, record deadline transgressions, and reset the system.
 
-When the system comes back up after a (re)boot, watchdogd queries the
-system to determine the cause and records it in a logfile for later
-analysis by an operator or network management system (NMS).
+When a system comes back up after a reset, `watchdogd` determines the
+reset cause and records it in a logfile for later analysis by an
+operator or network management system (NMS).  This information can in
+turn then be used to put the system in an operational safe state, or
+non-operational safe state.
 
-> If you have an embedded system -- you need a watchdog daemon.
 
 ### What is a watchdog timer?
 
@@ -53,9 +54,10 @@ to run it will fail to "kick" the WDT.  This will in turn cause the WDT
 to reboot the system.  This background process can of course also be
 used to monitor other aspects of the system.
 
+
 ### What can watchdogd do?
 
-Without arguments *watchdogd* runs in the background, monitoring the the
+Without arguments `watchdogd` runs in the background, monitoring the the
 CPU, and as long as there is CPU time it "kicks" the WDT chip (via the
 driver).  However, with few command line options it can also monitor
 other aspect of the system, such as:
@@ -91,40 +93,40 @@ Usage
     
 By default, with any arguments given on the command line, `watchdogd`
 opens `/dev/watchdog`, forks to the background and then tries to to set
-a 20 sec WDT timeout.  It then kicks every 10 sec.  If it fails setting
-the 20 sec WDT timeout it attempts to read back the lowest possible WDT
-timeout and kicks every half that interval.
+a 20 sec WDT timeout.  It then kicks every 10 sec.  See below, in the
+Operation section, for more information.
 
 **Example**
 
     watchdogd -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2
 
-Most WDT drivers only support 120 sec as lowest timeout, but watchdogd
-tries to set 20 sec timeout.  Example values above are recommendations
+Most WDT drivers only support 120 sec as lowest timeout, but `watchdogd`
+tries to set 20 sec timeout.  Example values above are recommendations.
 
-watchdogd runs at the default UNIX priority (nice) level.
+`watchdogd` runs at the default UNIX priority (nice) level, unless the
+process monitor is activated, in which case it runs at an elevated real
+time priority.
 
 
 Features
 --------
 
-To force a kernel watchdog reboot, watchdogd supports `SIGPWR`.  What it
-does is to set the WDT timer to the lowest possible value (1 sec), close
-the connection to `/dev/watchdog`, and wait for WDT reboot.  It waits at
-most 3x the WDT timeout before announcing HW WDT failure and forcing a
-reboot.
+To force a kernel watchdog reboot, `watchdogd` supports `SIGPWR`, used
+by some `init(1)` systems to delegate a reboot.  What it does is to set
+the WDT timer to the lowest possible value (1 sec), close the connection
+to `/dev/watchdog`, and wait for WDT reboot.  It waits at most 3x the
+WDT timeout before announcing HW WDT failure and forcing a reboot.
 
-watchdogd supports monitoring of several system resources, all of which
-are disabled by default.  First, system load average monitoring can be
-enabled with the `-a 0.8,0.9` command line argument.  Second, the memory
-leak detector `-m 0.9,0.95`.  Third, the file descriptor leak detector
-`-f 0.8,0.95`.  All of which are *very* useful on an embedded system!
+`watchdogd(8)` supports optional monitoring of several system resources.
+First, system load average monitoring can be enabled with `-a 0.8,0.9`.
+Second, the memory leak detector `-m 0.9,0.95`.  Third, file descriptor
+leak detector `-f 0.8,0.95`.  All *very* useful on an embedded system.
 
 The two values, separated by a comma, are the warning and reboot levels
 in percent.  For the loadavg monitoring it is important to know that the
-trigger levels are normalized.  This means watchdogd does not care how
+trigger levels are normalized.  This means `watchdogd` does not care how
 many CPU cores your system has online.  If the kernel `/proc/loadavg`
-file shows `3.9 3.0 2.5` on a four-core CPU, watchdogd will consider
+file shows `3.9 3.0 2.5` on a four-core CPU, `watchdogd` will consider
 this as a load of `0.98 0.75 0.63`, i.e. divided by four.  Only the one
 (1) and five (5) minute average values are used.  For more information
 on the UNIX load average, see this [StackOverflow question][loadavg].
@@ -135,10 +137,10 @@ detected by reading the file `/proc/meminfo`, looking for the
 file descriptor usage, see [this article][filenr].  For more info on the
 details of memory usage, see [this article][meminfo].
 
-Also, watchdogd v2.0 comes with a process monitor, pmon.  It must be
-enabled and a monitored client must connect using the API for pmon to
-start.  As soon pmon starts it raises the real-time priority of
-watchdogd to 98 to be able to ensure proper monitoring of its clients.
+`watchdogd` v2.0 comes with a process monitor, pmon.  It must be enabled
+and a monitored client must connect using the API for pmon to start.  As
+soon pmon starts it raises the real-time priority of watchdogd to 98 to
+be able to ensure proper monitoring of its clients.
 
 
 Pmon API
@@ -217,19 +219,19 @@ used by the automatic tests.
 Operation
 ---------
 
-By default, watchdogd forks off a daemon in the background, opens the
+By default, `watchdogd` forks off a daemon in the background, opens the
 `/dev/watchdog` device, attempts to set the default WDT timeout to 20
 seconds and then goes into an endless loop where it kicks the watchdog
 every 10 seconds.
 
-If the device driver does not support setting the WDT timeout watchdogd
+If a device driver does not support setting the WDT timeout, `watchdogd`
 attempts to query the actual (possibly hard coded) watchdog timeout and
 then uses half that time as the kick interval.
 
-When watchdogd backgrounds itself syslog is implicitly used for all
+When `watchdogd` backgrounds itself syslog is implicitly used for all
 informational and debug messages.  If a user requests to run the daemon
-in the foreground watchdogd will use STDERR/STDOUT, unless the user
-gives the `--syslog`, or `-L`, argument to force use of syslog.
+in the foreground `watchdogd` will also log to `STDERR` and `STDOUT`,
+unless the user gives the `--syslog` argument to force use of syslog.
 
 
 Debugging
@@ -244,15 +246,16 @@ full debug output to stderr or the syslog, depending on how you start
 Build & Install
 ---------------
 
-watchdogd is tailored for Linux systems and should build against any
-(old) C libray.  However, watchdogd v2.1 and later require two external
-libraries that were previously a built-in, [libite][] and [libuEv][].
-Neither of them should present any surprises, both use de facto standard
-configure script and support `pkg-config` which watchdogd use to locate
-requried libraries and header files.
+`watchdogd` is tailored for Linux systems and should build against any
+(old) C libray.  However, `watchdogd` v2.1 and later require two
+external libraries that were previously a built-in, [libite][]
+and [libuEv][].  Neither of them should present any surprises, both use
+de facto standard `configure` scripts and support `pkg-config` which the
+`watchdogd` `configure` script use to locate requried libraries and
+header files.
 
 Hence, the regular `./configure && make` is usually sufficient to build
-watchdogd.  But, if libraries are installed in non-standard locations
+`watchdogd`.  But, if libraries are installed in non-standard locations
 you may need to provide their paths:
 
     PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
