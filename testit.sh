@@ -17,7 +17,7 @@ fi
 sleep 1
 
 echo "Starting watchdogd ..."
-./watchdogd $ARGD -n -p --test-mode &
+./src/watchdogd $ARGD -n -p --test-mode &
 WDOG=$!
 sleep 5
 
