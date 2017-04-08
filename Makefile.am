@@ -1,5 +1,4 @@
 ACLOCAL_AMFLAGS     = -I m4
-AM_CFLAGS           = -W -Wall -Wextra -std=gnu99
 DISTCLEANFILES      = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d *.sock
 
 doc_DATA            = README.md LICENSE

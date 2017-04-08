@@ -1,3 +1,4 @@
+AM_CFLAGS           = -W -Wall -Wextra -std=gnu99
 bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
 
