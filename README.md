@@ -1,5 +1,5 @@
-Advanced System & Process Supervisor
-====================================
+System & Process Supervisor for Linux
+=====================================
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 <a href="https://www.clipartof.com/435776"><img align="right" src="logo.png"
