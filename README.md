@@ -3,8 +3,9 @@ Advanced System & Process Supervisor
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 <div align="right">
-  <img width="300" src="SuperDog-300px.png" alt="SuperDog Clipart"><br />
-  Free clipart by [SeriousTux](https://openclipart.org/detail/276115/super-dog)
+  <a href="https://openclipart.org/detail/276115/super-dog"><img
+     src="SuperDog-300px.png" alt="SuperDog Clipart"></a><br />
+   by SeriousTux
 </div>
 
 Table of Contents
