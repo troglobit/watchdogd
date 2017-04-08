@@ -46,4 +46,4 @@ script:
   - tree /tmp
   - ldd /tmp/sbin/watchdogd
   - LD_LIBRARY_PATH=/tmp/lib /tmp/sbin/watchdogd -h
-  - LD_LIBRARY_PATH=/tmp/lib ./testit.sh
+  - LD_LIBRARY_PATH=/tmp/lib ./src/testit.sh
