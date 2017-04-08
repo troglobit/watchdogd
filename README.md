@@ -2,6 +2,8 @@ Advanced System & Process Supervisor
 ====================================
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
+<img align="right" width="300" src="SuperDog-300px.png" alt="https://openclipart.org/detail/276115/super-dog">
+
 Table of Contents
 -----------------
 
@@ -29,14 +31,18 @@ analysis by an operator or network management system (NMS).
 
 ### What is a watchdog timer?
 
-A watchdog timer (WDT) is something most server and laptop motherboards
-today are equipped with.  Basically it is a small timer connected to the
-reset circuitry so that it can reset the board if the timer expires.
+Most server and laptop motherboards today come equipped with a watchdog
+timer (WDT).  It is a small timer connected to the reset circuitry so
+that it can reset the board if the timer expires.  The system watchdog
+driver, and this daemon, periodically "kick", or reset the timer to
+prevent it from firing.
+
+Many, if not all, embedded systems rely ony this to handle malfunctions.
 
 The Linux kernel provides a common userspace interface `/dev/watchdog`,
-created automatically when the appropriate driver module is loaded.  If
-your board does not have a WDT the kernel provides a "softdog" module
-which could be good enough.
+created automatically when the appropriate watchdog driver is loaded.
+If your board does not have a WDT, the kernel provides a "softdog"
+module which in many cases can be good enough.
 
 The idea is to have a watchdog daemon in userspace that runs in the
 background of your system.  When there is no more CPU time for the
