@@ -2,11 +2,9 @@ Advanced System & Process Supervisor
 ====================================
 [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
-<div align="right">
-  <a href="https://openclipart.org/detail/276115/super-dog"><img
-     src="SuperDog-300px.png" alt="SuperDog Clipart"></a><br />
-   by SeriousTux
-</div>
+<a href="https://openclipart.org/detail/276115/super-dog"><img
+   align="right" src="SuperDog-300px.png" title="SuperDog Clipart by SeriousTux"></a>
+
 
 Table of Contents
 -----------------
@@ -282,6 +280,8 @@ The [original code][] in uClinux-dist has no license and is available in
 the public domain, whereas this version is distributed under the ISC
 license.  See the file [LICENSE][] for more details on this.
 
+The `watchdogd` [logo][], "SuperDog", is courtesy of [snoopingasusual][].
+
 
 Contributing
 ------------
@@ -316,6 +316,8 @@ more details, see the file [CONTRIBUTING][contrib].
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [contrib]:         https://github.com/troglobit/watchdogd/blob/master/CONTRIBUTING.md
 [Joachim Nilsson]: http://troglobit.com
+[logo]:            https://openclipart.org/detail/276115/super-dog
+[snoopingasusual]: https://openclipart.org/user-detail/snoopingasusual
 
 <!--
   -- Local Variables:
