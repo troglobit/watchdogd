@@ -16,6 +16,8 @@ watchdogctl_SOURCES = watchdogctl.c
 watchdogctl_LDADD   = libwdog.la
 
 lib_LTLIBRARIES     = libwdog.la
+pkgconfigdir        = $(libdir)/pkgconfig
+pkgconfig_DATA      = libwdog.pc
 pkgincludedir       = $(includedir)/wdog
 pkginclude_HEADERS  =           wdog.h  compat.h
 libwdog_la_SOURCES  = wdog.c	wdog.h  compat.h

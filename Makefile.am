@@ -3,8 +3,6 @@ DISTCLEANFILES      = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d *.so
 
 doc_DATA            = README.md LICENSE
 EXTRA_DIST          = README.md LICENSE ChangeLog.md
-pkgconfigdir        = $(libdir)/pkgconfig
-pkgconfig_DATA      = libwdog.pc
 DIST_SUBDIRS        = examples
 SUBDIRS             = src
 if ENABLE_EXAMPLES
@@ -12,7 +10,8 @@ SUBDIRS            += examples
 endif
 
 ## Compat hook
-install-dev: install-pkgincludeHEADERS
+install-dev:
+	@make -C src install-pkgincludeHEADERS
 
 ## Generate MD5 checksum file
 MD5 = md5sum
