@@ -67,22 +67,10 @@ static uev_t timeout_watcher;
 
 extern int __wdog_loglevel(char *level);
 
-
-/*
- * Connect to kernel wdt driver
- */
-int wdt_init(void)
+static int finit_wdog_handover(void)
 {
-	if (wdt_testmode())
-		return 0;
-
 #ifdef HAVE_FINIT_FINIT_H
-	/*
-	 * If we're called in a system with Finit running, tell it to
-	 * disable its built-in watchdog daemon.
-	 */
-	int sd;
-	int retry = 3;
+	int sd, retry = 3;
 	size_t len;
 	struct sockaddr_un sun = {
 		.sun_family = AF_UNIX,
@@ -95,30 +83,50 @@ int wdt_init(void)
 	};
 
 	sd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (-1 == sd) {
-		PERROR("Cannot open UNIX domain socket");
+	if (-1 == sd)
 		return -1;
-	}
 
+	/*
+	 * Try connecting to Finit, we should get a reply immediately,
+	 * if nobody is home we close the connection and continue.
+	 */
 	while (connect(sd, (struct sockaddr*)&sun, sizeof(sun)) == -1) {
-		if (retry == 0)
-			goto error;
-		retry--;
+		if (retry-- == 0)
+			return close(sd);
 		sleep(1);
 	}
 
 	len = sizeof(rq);
-	if (write(sd, &rq, len) != len)
-		goto error;
+	if (write(sd, &rq, len) != len) {
+		close(sd);
+		return -1;
+	}
 
-	if (read(sd, &rq, len) != len)
-		goto error;
-	goto exit;
-error:
-	perror("Failed communicating with finit");
-exit:
-	close(sd);
+	if (read(sd, &rq, len) != len) {
+		close(sd);
+		return -1;
+	}
+
+	return close(sd);
+#else
+	return 0;
 #endif
+}
+
+/*
+ * Connect to kernel wdt driver
+ */
+int wdt_init(void)
+{
+	if (wdt_testmode())
+		return 0;
+
+	/*
+	 * If we're called in a system with Finit running, tell it to
+	 * disable its built-in watchdog daemon.
+	 */
+	if (finit_wdog_handover())
+		PERROR("Failed communicating watchdog handover with finit");
 
 	fd = open(devnode, O_WRONLY);
 	if (fd == -1) {
