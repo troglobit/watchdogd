@@ -9,7 +9,7 @@ watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      meminfo.c		meminfo.h	\
 		      pmon.c		pmon.h
 
-watchdogd_CFLAGS    = $(uev_CFLAGS) $(lite_CFLAGS)
+watchdogd_CFLAGS    = $(uev_CFLAGS) $(lite_CFLAGS) $(AM_CFLAGS)
 watchdogd_LDADD     = $(uev_LIBS)   $(lite_LIBS) libwdog.la
 
 watchdogctl_SOURCES = watchdogctl.c
@@ -21,6 +21,6 @@ pkgconfig_DATA      = libwdog.pc
 pkgincludedir       = $(includedir)/wdog
 pkginclude_HEADERS  =           wdog.h  compat.h
 libwdog_la_SOURCES  = wdog.c	wdog.h  compat.h
-libwdog_la_CFLAGS   = $(lite_CFLAGS)
+libwdog_la_CFLAGS   = $(lite_CFLAGS) $(AM_CFLAGS)
 libwdog_la_LDFLAGS  = -version-info 1:0:0
 
