@@ -271,19 +271,16 @@ To build the source from GIT, see below.
 Origin & References
 -------------------
 
-watchdogd is a heavily refactored and improved version of the original
-watchdogd by Michele d'Amico, which was adapted to [uClinux-dist][] by
-Mike Frysinger.  It is maintained by [Joachim Nilsson][] collaboratively
-at [GitHub][].
+`watchdogd(8)` is an improved version of the original, created by
+Michele d'Amico and adapted to [uClinux-dist][] by Mike Frysinger.  It
+is maintained by [Joachim Nilsson][] collaboratively at [GitHub][].
 
-The [original code][] in uClinux-dist has no license and is available in
-the public domain, whereas this version is distributed under the ISC
-license.  See the file [LICENSE][] for more details on this.
+The [original code][] in uClinux-dist is available in the public domain,
+whereas this version is distributed under the ISC license.  See the
+file [LICENSE][] for more details on this.
 
 The [logo][], "Watch Dog Detective Taking Notes", is licensed for use by
-the `watchdogd` project, copyright © [Ron Leishman][].  If you want to
-use this, or other clipart by Ron, contact https://www.clipartof.com,
-they have excellent customer service!
+the `watchdogd` project, copyright © [Ron Leishman][].
 
 
 Contributing
