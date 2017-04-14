@@ -1,6 +1,6 @@
 System & Process Supervisor for Linux
 =====================================
-[![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
+[![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
 
 <a href="https://www.clipartof.com/435776"><img align="right" src="logo.png"
    alt="http://toonclips.com/design/788" title="Copyright © Ron Leishman"></a>
@@ -307,6 +307,8 @@ more details, see the file [CONTRIBUTING][contrib].
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
 [libite]:          https://github.com/troglobit/libite/
 [libuEv]:          https://github.com/troglobit/libuev/
+[License]:         https://en.wikipedia.org/wiki/ISC_license
+[License Badge]:   https://img.shields.io/badge/License-ISC-blue.svg
 [Travis]:          https://travis-ci.org/troglobit/watchdogd
 [Travis Status]:   https://travis-ci.org/troglobit/watchdogd.png?branch=master
 [Coverity Scan]:   https://scan.coverity.com/projects/6458
