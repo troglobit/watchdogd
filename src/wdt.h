@@ -46,6 +46,16 @@
 #define WDT_TIMEOUT_DEFAULT  20
 #define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
 
+#define WDT_REASON_PID "PID                 "
+#define WDT_REASON_WID "Watchdog ID         "
+#define WDT_REASON_LBL "Label               "
+#define WDT_REASON_CSE "Reset cause         "
+#define WDT_REASON_STR "Reason              "
+#define WDT_REASON_CNT "Counter             "
+#define WDT_REASON_WDT "Reset cause (WDIOF) "
+#define WDT_REASON_TMO "Timeout (sec)       "
+#define WDT_REASON_INT "Kick interval       "
+
 #define ERROR(fmt, args...)  syslog(LOG_ERR,     fmt, ##args)
 #define PERROR(fmt, args...) syslog(LOG_ERR,     fmt ": %s", ##args, strerror(errno))
 #define DEBUG(fmt, args...)  syslog(LOG_DEBUG,   fmt, ##args)

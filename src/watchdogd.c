@@ -28,16 +28,6 @@
 # include <finit/finit.h>
 #endif
 
-#define WDT_REASON_PID "PID                 "
-#define WDT_REASON_WID "Watchdog ID         "
-#define WDT_REASON_LBL "Label               "
-#define WDT_REASON_CSE "Reset cause         "
-#define WDT_REASON_STR "Reason              "
-#define WDT_REASON_CNT "Counter             "
-#define WDT_REASON_WDT "Reset cause (WDIOF) "
-#define WDT_REASON_TMO "Timeout (sec)       "
-#define WDT_REASON_INT "Kick interval       "
-
 /* Global daemon settings */
 int magic   = 0;
 int enabled = 1;
@@ -52,6 +42,10 @@ int __wdt_testmode = 0;
 /* Reset cause */
 wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
 unsigned int reset_counter = 0;
+
+extern int reset_cause_set   (pid_t pid, wdog_reason_t *reason);
+extern int reset_cause_get   (           wdog_reason_t *reason);
+extern int reset_cause_clear (void);
 
 /* Local variables */
 static int fd = -1;
@@ -97,12 +91,12 @@ static int finit_wdog_handover(void)
 	}
 
 	len = sizeof(rq);
-	if (write(sd, &rq, len) != len) {
+	if (write(sd, &rq, len) != (ssize_t)len) {
 		close(sd);
 		return -1;
 	}
 
-	if (read(sd, &rq, len) != len) {
+	if (read(sd, &rq, len) != (ssize_t)len) {
 		close(sd);
 		return -1;
 	}
@@ -291,85 +285,20 @@ void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
  */
 int wdt_reset_cause(wdog_reason_t *reason)
 {
-	FILE *fp;
-	char buf[80];
-	const char *state;
-
-	if (!reason)
-		return errno = EINVAL;
-
-	if (wdt_testmode())
-		state = WDOG_STATE_TEST;
-	else
-		state = WDOG_STATE;
-
-	/* Clear contents to handle first boot */
-	memset(reason, 0, sizeof(*reason));
-
-	fp = fopen(state, "r");
-	if (!fp) {
-		if (errno != ENOENT) {
-			PERROR("Failed opening %s to read reset cause", state);
-			return 1;
-		}
-		return 0;
-	}
-
-	while (fgets(buf, sizeof(buf), fp)) {
-		if (sscanf(buf, WDT_REASON_WID ": %d\n", &reason->wid) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_LBL ": %s\n", reason->label) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&reason->cause) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_CNT ": %d\n", &reason->counter) == 1)
-			continue;
-	}
-	fclose(fp);
-
-	return 0;
+	return reset_cause_get(reason);
 }
 
 /*
- * TODO: Add different types of backends, e.g. RTC alarm registers
+ * TODO: Add different types of reset_causes, e.g. RTC alarm registers
  */
 static int save_cause(pid_t pid, wdog_reason_t *reason)
 {
-	FILE *fp;
-	const char *state;
-
-	if (wdt_testmode())
-		state = WDOG_STATE_TEST;
-	else
-		state = WDOG_STATE;
-
-	fp = fopen(state, "w");
-	if (!fp) {
-		PERROR("Failed opening %s to save reset cause %s[%d]: %s",
-		       state, reason->label, pid, wdog_reboot_reason_str(reason));
-		return 1;
-	}
-
-	if (!reason->label[0])
-		strlcpy(reason->label, "XBAD_LABEL", sizeof(reason->label));
-
-	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
-	fprintf(fp, WDT_REASON_WID ": %d\n", reason->wid);
-	fprintf(fp, WDT_REASON_LBL ": %s\n", reason->label);
-	fprintf(fp, WDT_REASON_CSE ": %d\n", reason->cause);
-	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(reason));
-	fprintf(fp, WDT_REASON_CNT ": %d\n", reason->counter);
-	fclose(fp);
-
-	return 0;
+	return reset_cause_set(pid, reason);
 }
 
 int wdt_clear_cause(void)
 {
-	wdog_reason_t reason;
-
-	memset(&reason, 0, sizeof(reason));
-	return save_cause(0, &reason);
+	return reset_cause_clear();
 }
 
 int wdt_exit(uev_ctx_t *ctx)
