@@ -53,8 +53,11 @@ module which in many cases can be good enough.
 The idea of a watchdog daemon in userspace is to run in the background
 of your system.  When there is no more CPU time for the watchdog daemon
 to run it will fail to "kick" the WDT.  This will in turn cause the WDT
-to reboot the system.  This background process can of course also be
-used to monitor other aspects of the system.
+to reboot the system.  When it does `watchdogd` have already saved the
+reset cause for your post mortem.
+
+As a background process, `watchdogd` can of course also be used to
+monitor other aspects of the system ...
 
 
 ### What can watchdogd do?
