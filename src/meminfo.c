@@ -42,7 +42,7 @@ typedef struct {
  * embedded system there may not be a swap, so memory leaks can be quite
  * nasty.  On a "regular" system you do not want to run out of swap.
  */
-static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+static void cb(uev_t *w, void *arg, int events)
 {
 	char buf[80];
 	FILE *fp;

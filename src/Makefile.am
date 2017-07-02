@@ -1,4 +1,4 @@
-AM_CFLAGS           = -W -Wall -Wextra -std=gnu99
+AM_CFLAGS           = -W -Wall -Wextra -Wno-unused-parameter -std=gnu99
 bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
 dist_man8_MANS      = watchdogd.8

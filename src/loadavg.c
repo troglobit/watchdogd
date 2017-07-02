@@ -35,7 +35,7 @@ static double num_cores(void)
 	return (double)num;
 }
 
-static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+static void cb(uev_t *w, void *arg, int events)
 {
 	double num = num_cores();
 	double avg, load[3];

@@ -174,7 +174,7 @@ static void next_ack(pmon_t *p, wdog_t *req)
 }
 
 /* Client timed out.  Store its label in reset-cause, sync and reboot */
-static void timeout(uev_t *w, void *arg, int UNUSED(events))
+static void timeout(uev_t *w, void *arg, int events)
 {
 	pmon_t *p = (pmon_t *)arg;
 	wdog_reason_t reason;
@@ -189,7 +189,7 @@ static void timeout(uev_t *w, void *arg, int UNUSED(events))
 }
 
 /* Client connected to domain socket sent a request */
-static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+static void cb(uev_t *w, void *arg, int events)
 {
 	int sd;
 	pmon_t *p;
@@ -358,7 +358,7 @@ error:
 	return -1;
 }
 
-int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
+int pmon_init(uev_ctx_t *ctx, int T)
 {
 	size_t i;
 
@@ -389,7 +389,7 @@ int pmon_init(uev_ctx_t *ctx, int UNUSED(T))
 	return uev_io_init(ctx, &watcher, cb, NULL, sd, UEV_READ);
 }
 
-int pmon_exit(uev_ctx_t *UNUSED(ctx))
+int pmon_exit(uev_ctx_t *ctx)
 {
 	size_t i;
 

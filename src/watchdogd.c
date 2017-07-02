@@ -275,7 +275,7 @@ int wdt_close(uev_ctx_t *ctx)
 	return uev_exit(ctx);
 }
 
-void exit_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+void exit_cb(uev_t *w, void *arg, int events)
 {
 	wdt_close(w->ctx);
 }
@@ -325,7 +325,7 @@ int wdt_exit(uev_ctx_t *ctx)
 /*
  * Callback for timed reboot
  */
-static void reboot_timeout_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+static void reboot_timeout_cb(uev_t *w, void *arg, int events)
 {
 	wdt_exit(w->ctx);
 }
@@ -365,7 +365,7 @@ int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 	return wdt_reboot(ctx, pid, &reason, timeout);
 }
 
-void reboot_cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+void reboot_cb(uev_t *w, void *arg, int events)
 {
 	wdt_forced_reboot(w->ctx, 1, "init", WDOG_FORCED_RESET);
 }
@@ -434,7 +434,7 @@ nocompat:
 	return cause;
 }
 
-static void period_cb(uev_t *UNUSED(w), void *UNUSED(arg), int UNUSED(event))
+static void period_cb(uev_t *w, void *arg, int event)
 {
 	wdt_kick("Kicking watchdog.");
 }

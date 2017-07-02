@@ -26,7 +26,7 @@ static double warning  = 0.0;
 static double critical = 0.0;
 
 
-static void cb(uev_t *w, void *UNUSED(arg), int UNUSED(events))
+static void cb(uev_t *w, void *arg, int events)
 {
 	char *ptr, buf[80];
 	FILE *fp;
