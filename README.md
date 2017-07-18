@@ -67,7 +67,7 @@ CPU, and as long as there is CPU time it "kicks" the WDT chip (via the
 driver).  However, with few command line options it can also monitor
 other aspect of the system, such as:
 
-- Load average
+- Load average (normalized)
 - Memory leaks
 - File descriptor leaks
 - Process live locks
@@ -77,25 +77,25 @@ Usage
 -----
 
 ```shell
-    watchdogd [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
-    
-    Options:
-      -n, --foreground         Start in foreground (background is default)
-      -s, --syslog             Use syslog, even if running in foreground
-      -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
-      
-      -T, --timeout=SEC        HW watchdog timer (WDT) timeout in SEC seconds
-      -t, --interval=SEC       WDT kick interval in SEC seconds, default: 10
-      -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
-      
-      -a, --load-average=W,R   Enable normalized load average check WARN,REBOOT
-      -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT
-      -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT
-      -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
-                               Default RT prio when active: SCHED_RR @98
-      
-      -v, --version            Display version and exit
-      -h, --help               Display this help message and exit
+watchdogd [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
+
+Options:
+  -n, --foreground         Start in foreground (background is default)
+  -s, --syslog             Use syslog, even if running in foreground
+  -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
+  
+  -T, --timeout=SEC        HW watchdog timer (WDT) timeout in SEC seconds
+  -t, --interval=SEC       WDT kick interval in SEC seconds, default: 10
+  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
+  
+  -a, --load-average=W,R   Enable normalized load average check WARN,REBOOT
+  -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT
+  -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT
+  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
+                           Default RT prio when active: SCHED_RR @98
+  
+  -v, --version            Display version and exit
+  -h, --help               Display this help message and exit
 ```
 
 By default, with any arguments given on the command line, `watchdogd`
@@ -106,7 +106,7 @@ Operation section, for more information.
 **Example**
 
 ```shell
-    watchdogd -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2
+watchdogd -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2
 ```
 
 Most WDT drivers only support 120 sec as lowest timeout, but `watchdogd`
@@ -165,25 +165,25 @@ value with `errno` set on error.  The `wdog_pmon_subscribe()` call
 returns a positive integer (including zero) for the watchdog `id`.
 
 ```C
-    /*
-     * Enable or disable watchdogd at runtime.
-     */
-    int wdog_enable           (int enable);
-    int wdog_status           (int *enabled);
-    
-    /*
-     * Check if watchdogd API is actively responding,
-     * returns %TRUE(1) or %FALSE(0)
-     */
-    int wdog_pmon_ping        (void);
+/*
+ * Enable or disable watchdogd at runtime.
+ */
+int wdog_enable           (int enable);
+int wdog_status           (int *enabled);
 
-    /*
-     * Register with pmon, timeout in msec.  Return value is the `id`
-     * to be used with the `ack` in subsequent kick()/unsubscribe()
-     */
-    int wdog_pmon_subscribe   (char *label, int timeout, int *ack);
-    int wdog_pmon_unsubscribe (int id, int ack);
-    int wdog_pmon_kick        (int id, int *ack);
+/*
+ * Check if watchdogd API is actively responding,
+ * returns %TRUE(1) or %FALSE(0)
+ */
+int wdog_pmon_ping        (void);
+
+/*
+ * Register with pmon, timeout in msec.  Return value is the `id`
+ * to be used with the `ack` in subsequent kick()/unsubscribe()
+ */
+int wdog_pmon_subscribe   (char *label, int timeout, int *ack);
+int wdog_pmon_unsubscribe (int id, int ack);
+int wdog_pmon_kick        (int id, int *ack);
 ```
 
 It is highly recommended to use an event loop like libev, [libuev][], or
@@ -197,18 +197,18 @@ For other applications, identify your main loop, its max period time and
 instrument it like this:
 
 ```C
-    int ack, wid;
-    
-    /* Library will use process' name on NULL first arg. */
-    wid = wdog_pmon_subscribe(NULL, 10000, &ack);
-    if (-1 == wid)
-            ;      /* Error handling */
-    
-    while (1) {
-            ...
-            wdog_pmon_kick(wid, &ack);
-            ...
-    }
+int ack, wid;
+
+/* Library will use process' name on NULL first arg. */
+wid = wdog_pmon_subscribe(NULL, 10000, &ack);
+if (-1 == wid)
+        ;      /* Error handling */
+
+while (1) {
+        ...
+        wdog_pmon_kick(wid, &ack);
+        ...
+}
 ```
 
 This simple example subscribes to the watchdog with a 10 sec timeout.
@@ -265,8 +265,8 @@ Hence, the regular `./configure && make` is usually sufficient to build
 you may need to provide their paths:
 
 ```shell
-    PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
-    make
+PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
+make
 ```
 
 To build the source from GIT, see below.
@@ -294,9 +294,9 @@ If you find bugs or want to contribute fixes or features, check out the
 code from GitHub:
 
 ```shell
-    git clone https://github.com/troglobit/watchdogd
-    cd watchdogd
-    ./autogen.sh
+git clone https://github.com/troglobit/watchdogd
+cd watchdogd
+./autogen.sh
 ```
 
 The `autogen.sh` script runs `autoconf`, `automake`, et al to create the
