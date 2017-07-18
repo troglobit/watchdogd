@@ -76,7 +76,7 @@ other aspect of the system, such as:
 Usage
 -----
 
-```shell
+```
 watchdogd [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
 
 Options:
