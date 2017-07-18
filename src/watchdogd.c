@@ -455,7 +455,7 @@ static int usage(int status)
                "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
 	       "\n"
-	       "  -a, --load-average=W,R   Enable load average check, WARN,REBOOT\n"
+	       "  -a, --load-average=W,R   Enable normalized load average check, WARN,REBOOT\n"
 	       "  -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT\n"
 	       "  -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT\n"
 	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"

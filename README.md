@@ -88,7 +88,7 @@ Usage
       -t, --interval=SEC       WDT kick interval in SEC seconds, default: 10
       -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
       
-      -a, --load-average=W,R   Enable load average check WARN,REBOOT
+      -a, --load-average=W,R   Enable normalized load average check WARN,REBOOT
       -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT
       -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT
       -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
@@ -127,9 +127,10 @@ to `/dev/watchdog`, and wait for WDT reboot.  It waits at most 3x the
 WDT timeout before announcing HW WDT failure and forcing a reboot.
 
 `watchdogd(8)` supports optional monitoring of several system resources.
-First, system load average monitoring can be enabled with `-a 0.8,0.9`.
-Second, the memory leak detector `-m 0.9,0.95`.  Third, file descriptor
-leak detector `-f 0.8,0.95`.  All *very* useful on an embedded system.
+First, system load average (normalized) monitoring can be enabled with
+`-a 0.8,0.9`.  Second, the memory leak detector `-m 0.9,0.95`.  Third,
+file descriptor leak detector `-f 0.8,0.95`.  All *very* useful on an
+embedded system.
 
 The two values, separated by a comma, are the warning and reboot levels
 in percent.  For the loadavg monitoring it is important to know that the
