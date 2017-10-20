@@ -20,7 +20,7 @@ AC_PROG_INSTALL
 AC_HEADER_STDC
 AC_CHECK_HEADERS([finit/finit.h])
 
-# Check for required libraries
+# Check for required library versions
 PKG_CHECK_MODULES([uev],  [libuev >= 1.4.0])
 PKG_CHECK_MODULES([lite], [libite >= 1.5.0])
 
