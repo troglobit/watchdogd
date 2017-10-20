@@ -40,8 +40,8 @@ int __wdt_testmode = 0;
 #endif
 
 /* Reset cause */
-wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
-unsigned int reset_counter = 0;
+static wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
+static unsigned int reset_counter = 0;
 
 extern int reset_cause_set   (pid_t pid, wdog_reason_t *reason);
 extern int reset_cause_get   (           wdog_reason_t *reason);
