@@ -65,6 +65,9 @@ int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 	char buf[16], *ptr;
 	double value;
 
+	if (!desc)
+		desc = "unknown plugin";
+
 	if (!arg) {
 		ERROR("%s argument missing.", desc);
 		return 1;
@@ -84,7 +87,9 @@ int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 		ERROR("%s argument invalid or too small.", desc);
 		return 1;
 	}
-	*warning = value;
+
+	if (warning)
+		*warning = value;
 
 	/* Second argument, if given, is warning */
 	if (ptr) {
@@ -95,9 +100,11 @@ int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 		/* Backwards compat, when only warning is given */
 		value += 0.1;
 	}
-	*critical = value;
 
-	DEBUG("%s monitor: %.2f, %.2f", desc, *warning, *critical);
+	if (critical)
+		*critical = value;
+
+	DEBUG("%s monitor: %.2f, %.2f", desc, warning ? *warning : 0.0, critical ? *critical : 0.0);
 
 	return 0;
 }
