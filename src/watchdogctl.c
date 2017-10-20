@@ -201,25 +201,25 @@ int main(int argc, char *argv[])
 	int c;
 	struct option long_options[] = {
 		/* Options/Commands */
-		{"clear",             0, 0, 'c'},
-		{"disable",           0, 0, 'd'},
-		{"enable",            0, 0, 'e'},
-		{"force-reset",       0, 0, 'f'},
-		{"loglevel",          1, 0, 'l'},
-		{"help",              0, 0, 'h'},
-		{"reboot",            1, 0, 'r'},
-		{"status",            0, 0, 's'},
-		{"verbose",           0, 0, 'V'},
-		{"version",           0, 0, 'v'},
+		{ "clear",             0, 0, 'c' },
+		{ "disable",           0, 0, 'd' },
+		{ "enable",            0, 0, 'e' },
+		{ "force-reset",       0, 0, 'f' },
+		{ "loglevel",          1, 0, 'l' },
+		{ "help",              0, 0, 'h' },
+		{ "reboot",            1, 0, 'r' },
+		{ "status",            0, 0, 's' },
+		{ "verbose",           0, 0, 'V' },
+		{ "version",           0, 0, 'v' },
 		/* Tests */
-		{"complete-cycle",    0, 0, 200},
-		{"disable-enable",    0, 0, 201},
-		{"false-ack",         0, 0, 202},
-		{"false-unsubscribe", 0, 0, 203},
-		{"failed-kick",       0, 0, 204},
-		{"no-kick",           0, 0, 205},
-		{"premature-trigger", 0, 0, 206},
-		{NULL, 0, 0, 0}
+		{ "complete-cycle",    0, 0, 200 },
+		{ "disable-enable",    0, 0, 201 },
+		{ "false-ack",         0, 0, 202 },
+		{ "false-unsubscribe", 0, 0, 203 },
+		{ "failed-kick",       0, 0, 204 },
+		{ "no-kick",           0, 0, 205 },
+		{ "premature-trigger", 0, 0, 206 },
+		{ NULL, 0, 0, 0 }
 	};
 
 	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?", long_options, NULL)) != EOF) {
