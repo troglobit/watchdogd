@@ -96,13 +96,10 @@ int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 		value = strtod(ptr, NULL);
 		if (value <= 0)
 			goto error;
-	} else {
-		/* Backwards compat, when only warning is given */
-		value += 0.1;
-	}
 
-	if (critical)
-		*critical = value;
+		if (critical)
+			*critical = value;
+	}
 
 	DEBUG("%s monitor: %.2f, %.2f", desc, warning ? *warning : 0.0, critical ? *critical : 0.0);
 
