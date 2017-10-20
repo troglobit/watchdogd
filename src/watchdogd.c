@@ -19,6 +19,8 @@
 
 #include "wdt.h"
 #include "plugin.h"
+#include "rc.h"
+
 #ifdef HAVE_FINIT_FINIT_H
 # include <paths.h>
 # include <unistd.h>
@@ -43,10 +45,6 @@ int __wdt_testmode = 0;
 static wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
 static unsigned int reset_counter = 0;
 
-extern int reset_cause_set   (pid_t pid, wdog_reason_t *reason);
-extern int reset_cause_get   (           wdog_reason_t *reason);
-extern int reset_cause_clear (void);
-
 /* Local variables */
 static int fd = -1;
 static char devnode[42] = WDT_DEVNODE;
@@ -58,8 +56,6 @@ static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
 static uev_t sigpwr_watcher;
 static uev_t timeout_watcher;
-
-extern int __wdog_loglevel(char *level);
 
 static int finit_wdog_handover(void)
 {
@@ -494,6 +490,8 @@ int wdt_debug(int enable)
 
 	return 0;
 }
+
+extern int __wdog_loglevel(char *level);
 
 int main(int argc, char *argv[])
 {
