@@ -4,36 +4,47 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[3.0][] - 2017-03-XX
+[3.0][] - 2017-10-XX
 --------------------
 
-This release includes some major changes to the build system and is
-incompatible with previous versions due to changes in the command line
-options.
+This release includes major changes to both the build system and the
+`watchdogd` command line interface, making it incompatible with previous
+versions.  Therefore the major version number has been bumped.
+
+Application writes can now ask `pkgconfig` for `CFLAGS` and `LIBS` to
+use the PMON interface in `libwdog.so`
+
+Reset cause is now queried and saved in `/var/lib/watchdogd.state` at
+boot.  Use the new `watchdogctl` tool to interact with and query status
+from the daemon.
 
 ### Changes
-- Completely overhauled command line options and arguments.  Some
-  options in previous releases were not options but optional arguments,
-  while others were useless options for a daemon
+- Added `watchdogctl` tool to interact with daemon
+- New official Watch Dog Detective logo, courtesy of Ron Leishman
+- Completely overhauled `watchdogd` command line options and arguments.
+  Some options in previous releases were not options but optional
+  arguments, while others were useless options for a daemon:
   - Watchdog device node is now an argument not a `-d` option
   - No more `--logfile=FILE` option, redirect `stderr` instead
   - `-n` now prevents the daemon from forking to the background
   - `-f` is now used by the `--filenr` monitor plugin
-  - When running foreground, output syslog also to `stderr`, unless
-    the `-s` or `--syslog` option is given
+  - When running in the foreground, output syslog also to `stderr`,
+    unless the `-s`, or `--syslog`, option is given
   - `-l, --loglevel` replaces `--verbose` option
   - Use BusyBox options `-T` and `-t` for WDT timeout and kick, this
     replaces the previous `-w` and `-k` options
-- No more support for an external supervisor using `USR1` and `USR2`
+- No more support for attaching an external supervisor process using
+  `SIGUSR1` and `SIGUSR2`
 - Conversion to GNU Configure and Build system
 - Added `pkg-config` support to `libwdog`
-- Save reset cause in `/var/lib/watchdogd.state`
+- Save reset cause in `/var/lib/watchdogd.state` by default
+- Possible to disble default reset cause backend and plug in your own.
+  See `src/rc.h` for the API required of your own backend
 - Updates to `libwdog` API, including a compatiblity mode for current
-  customers using `watchdogd` 2.0 with a supervisor patch
+  customer(s) using `watchdogd` 2.0 with a supervisor patch
 - Added `libwdog` example clients
-- Added customer compat `/var/run/supervisor.status`
+- Added customer specific compat `/var/run/supervisor.status`
 - Support for delayed reboot in user API, `wdog_reboot_timeout()`
-- Added `watchdogctl` tool to interact with daemon
 
 
 [2.0.1][] - 2016-06-12
