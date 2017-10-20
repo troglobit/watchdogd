@@ -7,8 +7,10 @@ watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      filenr.c		filenr.h	\
 		      loadavg.c		loadavg.h	\
 		      meminfo.c		meminfo.h	\
-		      pmon.c		pmon.h		\
-		      rcfile.c
+		      pmon.c		pmon.h
+if RCFILE
+watchdogd_SOURCES  += rcfile.c
+endif
 
 watchdogd_CFLAGS    = $(uev_CFLAGS) $(lite_CFLAGS) $(AM_CFLAGS)
 watchdogd_LDADD     = $(uev_LIBS)   $(lite_LIBS) libwdog.la

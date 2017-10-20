@@ -32,8 +32,17 @@ AM_CONDITIONAL([ENABLE_EXAMPLES], [test "$enable_examples" = yes])
 
 AC_ARG_ENABLE(test-mode,
         AS_HELP_STRING([--disable-test-mode], [Disable test mode, for extra safety, default: enabled]))
+
+AC_ARG_ENABLE(rcfile,
+        AS_HELP_STRING([--disable-rcfile], [Disable reset cause file store backend, default: enabled]))
+
 AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
 	AC_DEFINE(TESTMODE_DISABLED,  1, [Disable test mode])])
+
+AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
+	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])
+
+AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
 
 # Generate all files
 AC_OUTPUT
