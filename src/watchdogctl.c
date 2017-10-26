@@ -19,11 +19,13 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "config.h"
 #include "wdog.h"
 
+#define OPT_T "t:"
 #define log(fmt, args...) if (verbose) printf(fmt "\n", ##args)
 
 extern char *__progname;
@@ -166,95 +168,28 @@ static int testit(void)
 	return 0;
 }
 
-static int usage(int code)
+static int run_test(char *arg)
 {
-	printf("Usage:\n"
-	       "  %s [-cdefhsvV] [-l LEVEL] [-r MSEC]\n"
-	       "\n"
-	       "Commands:\n"
-	       "  -c, --clear           Clear reset reason\n"
-	       "  -d, --disable         Disable watchdog\n"
-	       "  -e, --enable          Re-enable watchdog\n"
-	       "  -f, --force-reset     Forced reset\n"
-	       "  -h, --help            Display this help text and exit\n"
-	       "  -l, --loglevel=LVL    Adjust daemon log level: none, err, info, notice, debug\n"
-	       "  -r, --reboot=MSEC     Lke forced reset, but delays reboot MSEC milliseconds\n"
-	       "  -s, --status          Show watchdog and supervisor status\n"
-	       "  -v, --version         Show program version\n"
-	       "  -V, --verbose         Verbose output, otherwise clear/disable etc. are silent\n"
-	       "\n"
-	       "Tests:\n"
-	       "  --complete-cycle      Verify subscribe, kick, and unsubscribe (no reboot)\n"
-	       "  --disable-enable      Verify WDT disable, and re-enable (no reboot)\n"
-	       "  --false-ack           Verify kick with invalid ACK (reboot)\n"
-	       "  --false-unsubscribe   Verify unsubscribe with invalid ACK (reboot)\n"
-	       "  --failed-kick         Verify reboot on missing kick (reboot)\n"
-	       "  --no-kick             Verify reboot on missing first kick (reboot)\n"
-	       "  --premature-trigger   Verify no premature trigger after re-enable (reboot)\n"
-	       "\n", __progname);
-
-	return code;
-}
-
-int main(int argc, char *argv[])
-{
-	int c;
-	struct option long_options[] = {
-		/* Options/Commands */
-		{ "clear",             0, 0, 'c' },
-		{ "disable",           0, 0, 'd' },
-		{ "enable",            0, 0, 'e' },
-		{ "force-reset",       0, 0, 'f' },
-		{ "loglevel",          1, 0, 'l' },
-		{ "help",              0, 0, 'h' },
-		{ "reboot",            1, 0, 'r' },
-		{ "status",            0, 0, 's' },
-		{ "verbose",           0, 0, 'V' },
-		{ "version",           0, 0, 'v' },
-		/* Tests */
-		{ "complete-cycle",    0, 0, 200 },
-		{ "disable-enable",    0, 0, 201 },
-		{ "false-ack",         0, 0, 202 },
-		{ "false-unsubscribe", 0, 0, 203 },
-		{ "failed-kick",       0, 0, 204 },
-		{ "no-kick",           0, 0, 205 },
-		{ "premature-trigger", 0, 0, 206 },
-		{ NULL, 0, 0, 0 }
+	int op = -1;
+	struct { char *arg; int op; } opts[] = {
+		{ "complete-cycle",    200 },
+		{ "disable-enable",    201 },
+		{ "false-ack",         202 },
+		{ "false-unsubscribe", 203 },
+		{ "failed-kick",       204 },
+		{ "no-kick",           205 },
+		{ "premature-trigger", 206 },
+		{ NULL, 0 }
 	};
 
-	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?", long_options, NULL)) != EOF) {
-		switch (c) {
-		case 'c':
-			return do_clear();
-
-		case 'd':
-			return do_enable(0);
-
-		case 'e':
-			return do_enable(1);
-
-		case 'f':
-			return do_reset(0);
-
-		case 'l':
-			return set_loglevel(optarg);
-
-		case 'h':
-			return usage(0);
-
-		case 'r':
-			return do_reset(atoi(optarg));
-
-		case 's':
-			return show_status();
-
-		case 'V':
-			verbose = 1;
+	for (int i = 0; opts[i].arg; i++) {
+		if (!strcmp(opts[i].arg, arg)) {
+			op = opts[i].op;
 			break;
+		}
+	}
 
-		case 'v':
-			return show_version();
-
+	switch (op) {
 		case 200:
 			return testit();
 
@@ -281,6 +216,96 @@ int main(int argc, char *argv[])
 		case 206:
 			premature = 1;
 			return testit();
+	}
+
+	return -1;
+}
+
+static int usage(int code)
+{
+	printf("Usage:\n"
+	       "  %s [-cdefhsvV] [-l LEVEL] [-r MSEC]\n"
+	       "\n"
+	       "Commands:\n"
+	       "  -c, --clear           Clear reset reason\n"
+	       "  -d, --disable         Disable watchdog\n"
+	       "  -e, --enable          Re-enable watchdog\n"
+	       "  -f, --force-reset     Forced reset\n"
+	       "  -h, --help            Display this help text and exit\n"
+	       "  -l, --loglevel=LVL    Adjust daemon log level: none, err, info, notice, debug\n"
+	       "  -r, --reboot=MSEC     Lke forced reset, but delays reboot MSEC milliseconds\n"
+	       "  -s, --status          Show watchdog and supervisor status\n"
+	       "  -t, --test=TEST       Run built-in PMON test, see below\n"
+	       "  -v, --version         Show program version\n"
+	       "  -V, --verbose         Verbose output, otherwise clear/disable etc. are silent\n"
+	       "\n"
+	       "Tests:\n"
+	       "  complete-cycle        Verify subscribe, kick, and unsubscribe (no reboot)\n"
+	       "  disable-enable        Verify WDT disable, and re-enable (no reboot)\n"
+	       "  false-ack             Verify kick with invalid ACK (reboot)\n"
+	       "  false-unsubscribe     Verify unsubscribe with invalid ACK (reboot)\n"
+	       "  failed-kick           Verify reboot on missing kick (reboot)\n"
+	       "  no-kick               Verify reboot on missing first kick (reboot)\n"
+	       "  premature-trigger     Verify no premature trigger after re-enable (reboot)\n"
+	       "\n", __progname);
+
+	return code;
+}
+
+int main(int argc, char *argv[])
+{
+	int c;
+	struct option long_options[] = {
+		/* Options/Commands */
+		{ "clear",             0, 0, 'c' },
+		{ "disable",           0, 0, 'd' },
+		{ "enable",            0, 0, 'e' },
+		{ "force-reset",       0, 0, 'f' },
+		{ "loglevel",          1, 0, 'l' },
+		{ "help",              0, 0, 'h' },
+		{ "reboot",            1, 0, 'r' },
+		{ "status",            0, 0, 's' },
+		{ "test",              1, 0, 't' },
+		{ "verbose",           0, 0, 'V' },
+		{ "version",           0, 0, 'v' },
+		{ NULL, 0, 0, 0 }
+	};
+
+	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?" OPT_T, long_options, NULL)) != EOF) {
+		switch (c) {
+		case 'c':
+			return do_clear();
+
+		case 'd':
+			return do_enable(0);
+
+		case 'e':
+			return do_enable(1);
+
+		case 'f':
+			return do_reset(0);
+
+		case 'l':
+			return set_loglevel(optarg);
+
+		case 'h':
+			return usage(0);
+
+		case 'r':
+			return do_reset(atoi(optarg));
+
+		case 's':
+			return show_status();
+
+		case 't':
+			return run_test(optarg);
+
+		case 'V':
+			verbose = 1;
+			break;
+
+		case 'v':
+			return show_version();
 
 		default:
 			warn("Unknown or currently unsupported.");
