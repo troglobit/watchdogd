@@ -174,6 +174,11 @@ int wdt_set_timeout(int count)
 		return 0;
 	}
 
+	if (!wdt_capability(WDIOF_SETTIMEOUT)) {
+		WARN("WDT does not support setting timeout.");
+		return 1;
+	}
+
 	DEBUG("Setting watchdog timeout to %d sec.", count);
 	if (ioctl(fd, WDIOC_SETTIMEOUT, &arg))
 		return 1;
