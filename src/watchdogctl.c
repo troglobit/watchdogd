@@ -158,6 +158,7 @@ static int testit(void)
 		if (failed_kick)
 			ack += 42;
 		if (premature)
+			/* => 2000 / 2 * 1000 - 500000 = 500 ms */
 			usleep(tmo / 2 * 1000 - 500000);
 	}
 
@@ -246,7 +247,7 @@ static int usage(int code)
 	       "  false-unsubscribe     Verify unsubscribe with invalid ACK (reboot)\n"
 	       "  failed-kick           Verify reboot on missing kick (reboot)\n"
 	       "  no-kick               Verify reboot on missing first kick (reboot)\n"
-	       "  premature-trigger     Verify no premature trigger after re-enable (reboot)\n"
+	       "  premature-trigger     Verify no premature trigger before unsubscribe (reboot)\n"
 	       "\n", __progname);
 
 	return code;
