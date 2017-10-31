@@ -72,7 +72,7 @@ static int set_loglevel(char *arg)
 	int result = wdog_set_loglevel(arg);
 
 	if (verbose)
-		printf("%s\n", wdog_get_loglevel());
+		printf("loglevel: %s\n", wdog_get_loglevel());
 
 	return result;
 }
