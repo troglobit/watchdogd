@@ -38,16 +38,17 @@ non-operational safe state.
 
 Most server and laptop motherboards today come equipped with a watchdog
 timer (WDT).  It is a small timer connected to the reset circuitry so
-that it can reset the board if the timer expires.  The system watchdog
-driver, and this daemon, periodically "kick", or reset the timer to
-prevent it from firing.
+that it can reset the board if the timer expires.  The WDT driver, and
+this daemon, periodically "kick" (reset) the timer to prevent it from
+firing.
 
 Most embedded systems utilise watchdog timers as a way to automatically
-recover from malfunctions.
+recover from malfunctions: lock-ups, live-locks, CPU overload.  With a
+bit of logic sprinkled on top the cause can more easily be tracked down.
 
 The Linux kernel provides a common userspace interface `/dev/watchdog`,
 created automatically when the appropriate watchdog driver is loaded.
-If your board does not have a WDT, the kernel provides a "softdog"
+If your board does not have a WDT, the kernel provides a `softdog.ko`
 module which in many cases can be good enough.
 
 The idea of a watchdog daemon in userspace is to run in the background
