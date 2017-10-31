@@ -254,7 +254,8 @@ static int usage(int code)
 
 int main(int argc, char *argv[])
 {
-	int c;
+	int c, result = 0;
+	char *test = NULL;
 	struct option long_options[] = {
 		/* Options/Commands */
 		{ "clear",             0, 0, 'c' },
@@ -274,46 +275,59 @@ int main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?" OPT_T, long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'c':
-			return do_clear();
+			result += do_clear();
+			break;
 
 		case 'd':
-			return do_enable(0);
+			result += do_enable(0);
+			break;
 
 		case 'e':
-			return do_enable(1);
+			result += do_enable(1);
+			break;
 
 		case 'f':
-			return do_reset(0);
+			result += do_reset(0);
+			break;
 
 		case 'l':
-			return set_loglevel(optarg);
+			result += set_loglevel(optarg);
+			break;
 
 		case 'h':
-			return usage(0);
+			result += usage(0);
+			break;
 
 		case 'r':
-			return do_reset(atoi(optarg));
+			result += do_reset(atoi(optarg));
+			break;
 
 		case 's':
-			return show_status();
+			result += show_status();
+			break;
 
 		case 't':
-			return run_test(optarg);
+			test = optarg;
+			break;
 
 		case 'V':
 			verbose = 1;
 			break;
 
 		case 'v':
-			return show_version();
+			result += show_version();
+			break;
 
 		default:
-			warn("Unknown or currently unsupported.");
+			warnx("Unknown or currently unsupported option '%c'.", c);
 			return usage(1);
 		}
 	}
 
-	return 0;
+	if (test)
+		result += run_test(test);
+
+	return result;
 }
 
 /**
