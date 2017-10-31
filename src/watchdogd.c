@@ -636,6 +636,15 @@ int main(int argc, char *argv[])
 	cause = wdt_get_bootstatus(&__info);
 	INFO("%s: %s, capabilities 0x%04x", devnode, __info.identity, __info.options);
 
+	/* Check capabilities */
+	if (magic && !wdt_capability(WDIOF_MAGICCLOSE)) {
+		WARN("Safe exit requested, but WDT does not support disabling it.");
+		magic = 0;
+	}
+
+	if (!wdt_capability(WDIOF_POWERUNDER))
+		WARN("WDT does not support detecting PWR fail condition.  Will be treated as WDT timeout.");
+
 	/* Set requested WDT timeout right before we enter the event loop. */
 	if (wdt_set_timeout(timeout))
 		PERROR("Failed setting HW watchdog timeout: %d", timeout);
