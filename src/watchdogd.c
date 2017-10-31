@@ -114,7 +114,7 @@ int wdt_capability(uint32_t flag)
 /*
  * Connect to kernel wdt driver
  */
-int wdt_init(void)
+int wdt_init(struct watchdog_info *info)
 {
 	if (wdt_testmode())
 		return 0;
@@ -130,6 +130,11 @@ int wdt_init(void)
 	if (fd == -1) {
 		DEBUG("Failed opening watchdog device %s: %s", devnode, strerror(errno));
 		return 1;
+	}
+
+	if (info) {
+		memset(info, 0, sizeof(*info));
+		ioctl(fd, WDIOC_GETSUPPORT, info);
 	}
 
 	return 0;
@@ -200,7 +205,7 @@ int wdt_get_timeout(void)
 	return count;
 }
 
-int wdt_get_bootstatus(struct watchdog_info *info)
+int wdt_get_bootstatus(void)
 {
 	int status = 0;
 	int err;
@@ -212,9 +217,6 @@ int wdt_get_bootstatus(struct watchdog_info *info)
 		DEBUG("Cannot get boot status, currently disabled.");
 		return 0;
 	}
-
-	if (info)
-		status += ioctl(fd, WDIOC_GETSUPPORT, info);
 
 	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
 		status += err;
@@ -249,7 +251,7 @@ int wdt_enable(int enable)
 			fd = -1;
 		}
 	} else {
-		result += wdt_init();
+		result += wdt_init(NULL);
 	}
 
 	result += wdt_plugins_enable(enable);
@@ -627,13 +629,13 @@ int main(int argc, char *argv[])
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
 	setup_signals(&ctx);
 
-	if (wdt_init()) {
+	if (wdt_init(&__info)) {
 		PERROR("Failed connecting to kernel watchdog driver");
 		return 1;
 	}
 
 	/* Read boot cause from watchdog ... */
-	cause = wdt_get_bootstatus(&__info);
+	cause = wdt_get_bootstatus();
 	INFO("%s: %s, capabilities 0x%04x", devnode, __info.identity, __info.options);
 
 	/* Check capabilities */

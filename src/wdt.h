@@ -80,7 +80,7 @@ int wdt_clear_cause    (void);
 int wdt_kick           (char *msg);
 int wdt_set_timeout    (int count);
 int wdt_get_timeout    (void);
-int wdt_get_bootstatus (struct watchdog_info *info);
+int wdt_get_bootstatus (void);
 int wdt_close          (uev_ctx_t *ctx);
 int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
 int wdt_forced_reboot  (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
