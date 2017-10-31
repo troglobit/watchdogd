@@ -377,9 +377,8 @@ static void setup_signals(uev_ctx_t *ctx)
 	uev_signal_init(ctx, &sigpwr_watcher, reboot_cb, NULL, SIGPWR);
 }
 
-static int create_bootstatus(int timeout, int interval)
+static int create_bootstatus(int cause, int timeout, int interval)
 {
-	int cause = 0;
 	FILE *fp;
 	char *status;
 	wdog_reason_t reason;
@@ -398,11 +397,10 @@ static int create_bootstatus(int timeout, int interval)
 	fp = fopen(status, "w");
 	if (!fp) {
 		PERROR("Failed opening %s", WDOG_STATUS);
-		return cause;
+		return -1;
 	}
 
-	cause = wdt_get_bootstatus();
-	if (cause & WDIOF_POWERUNDER)
+	if (wdt_capability(WDIOF_POWERUNDER) && (cause & WDIOF_POWERUNDER))
 		wdt_clear_cause();
 
 	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
@@ -411,7 +409,7 @@ static int create_bootstatus(int timeout, int interval)
 	fclose(fp);
 
 	if (wdt_testmode())
-		goto nocompat;
+		return 0;
 
 	/* Compat, created at boot from RTC contents */
 	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
@@ -423,11 +421,12 @@ static int create_bootstatus(int timeout, int interval)
 			fprintf(fp, "Counter      : %d\n", reason.counter);
 		}
                 fclose(fp);
-        } else
+        } else {
 		PERROR("Failed creating compat boot status");
+		return -1;
+	}
 
-nocompat:
-	return cause;
+	return 0;
 }
 
 static void period_cb(uev_t *w, void *arg, int event)
@@ -500,7 +499,7 @@ int main(int argc, char *argv[])
 	int T;
 	int background = 1;
 	int use_syslog = 1;
-	int c, status;
+	int c, status, cause;
 	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
 	struct option long_options[] = {
 		{"load-average",  1, 0, 'a'},
@@ -663,12 +662,12 @@ int main(int argc, char *argv[])
 			period = 1;
 	}
 
+	/* ... save boot cause in /var/run/watchdogd.status */
+	create_bootstatus(cause, real_timeout, period);
+
 	/* Calculate period (T) in milliseconds for libuEv */
 	T = period * 1000;
 	DEBUG("Watchdog kick interval set to %d sec.", period);
-
-	/* Read boot cause from watchdog and save in /var/run/watchdogd.status */
-	create_bootstatus(real_timeout, period);
 
 	/* Every period (T) seconds we kick the wdt */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
