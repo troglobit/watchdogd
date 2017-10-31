@@ -41,6 +41,9 @@ int period = -1;
 int __wdt_testmode = 0;
 #endif
 
+/* WDT info */
+static struct watchdog_info __info;
+
 /* Reset cause */
 static wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
 static unsigned int reset_counter = 0;
@@ -101,6 +104,11 @@ static int finit_wdog_handover(void)
 #else
 	return 0;
 #endif
+}
+
+int wdt_capability(uint32_t flag)
+{
+	return (__info.options & flag) == flag;
 }
 
 /*
@@ -192,7 +200,7 @@ int wdt_get_timeout(void)
 	return count;
 }
 
-int wdt_get_bootstatus(void)
+int wdt_get_bootstatus(struct watchdog_info *info)
 {
 	int status = 0;
 	int err;
@@ -205,8 +213,11 @@ int wdt_get_bootstatus(void)
 		return 0;
 	}
 
+	if (info)
+		status += ioctl(fd, WDIOC_GETSUPPORT, info);
+
 	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
-		status = err;
+		status += err;
 
 	if (!err && status) {
 		if (status & WDIOF_POWERUNDER)
@@ -632,6 +643,10 @@ int main(int argc, char *argv[])
 		PERROR("Failed connecting to kernel watchdog driver");
 		return 1;
 	}
+
+	/* Read boot cause from watchdog ... */
+	cause = wdt_get_bootstatus(&__info);
+	INFO("%s: %s, capabilities 0x%04x", devnode, __info.identity, __info.options);
 
 	/* Set requested WDT timeout right before we enter the event loop. */
 	if (wdt_set_timeout(timeout))
