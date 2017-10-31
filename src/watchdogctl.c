@@ -26,7 +26,7 @@
 #include "wdog.h"
 
 #define OPT_T "t:"
-#define log(fmt, args...) if (verbose) printf(fmt "\n", ##args)
+#define log(fmt, args...) if (verbose) fprintf(stderr, fmt "\n", ##args)
 
 extern char *__progname;
 static int verbose = 0;
