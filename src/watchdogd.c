@@ -287,20 +287,9 @@ void exit_cb(uev_t *w, void *arg, int events)
 	wdt_close(w->ctx);
 }
 
-/*
- * TODO: Add different types of backends, e.g. RTC alarm registers
- */
 int wdt_reset_cause(wdog_reason_t *reason)
 {
 	return reset_cause_get(reason);
-}
-
-/*
- * TODO: Add different types of reset_causes, e.g. RTC alarm registers
- */
-static int save_cause(pid_t pid, wdog_reason_t *reason)
-{
-	return reset_cause_set(pid, reason);
 }
 
 int wdt_clear_cause(void)
@@ -353,7 +342,7 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 
 	/* Save reboot cause */
 	reason->counter = reset_counter + 1;
-	save_cause(pid, reason);
+	reset_cause_set(pid, reason);
 
 	if (timeout > 0)
 		return uev_timer_init(ctx, &timeout_watcher, reboot_timeout_cb, NULL, timeout, 0);
@@ -372,7 +361,7 @@ int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 	return wdt_reboot(ctx, pid, &reason, timeout);
 }
 
-void reboot_cb(uev_t *w, void *arg, int events)
+static void reboot_cb(uev_t *w, void *arg, int events)
 {
 	wdt_forced_reboot(w->ctx, 1, "init", WDOG_FORCED_RESET);
 }
