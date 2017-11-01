@@ -6,6 +6,11 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
+* watchdogctl:
+  - add clear reset cause command
+  - add set timeout command
+  - add commands to enable/disable plugins
+  - split commands and options like initctl
 * Man page
 * Basic Debian packaging, including systemd and finit support
 * Remove GLIBCisms, e.g. __progname
