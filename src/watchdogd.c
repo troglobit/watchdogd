@@ -253,8 +253,15 @@ int wdt_enable(int enable)
 	if (!enable) {
 		/* Attempt to disable HW watchdog */
 		if (fd != -1) {
+			if (!wdt_capability(WDIOF_MAGICCLOSE)) {
+				ERROR("WDT cannot be disabled, aborting operation.");
+				return 1;
+			}
+
+			INFO("Attempting to disable HW watchdog timer.");
 			if (-1 == write(fd, "V", 1))
 				PERROR("Failed disabling HW watchdog, system will likely reboot now");
+
 			close(fd);
 			fd = -1;
 		}
