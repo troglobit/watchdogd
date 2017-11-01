@@ -131,7 +131,7 @@ static int testit(void)
 		count += 10;
 	if (no_kick) {
 		count = 0;
-		usleep(tmo * 1000);
+		usleep(tmo * 1000 * 5);
 	}
 
 	log("Starting test loop:\n"
