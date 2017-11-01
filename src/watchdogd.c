@@ -393,6 +393,15 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	char *status;
 	wdog_reason_t reason;
 
+	/*
+	 * Clear latest reset cause log IF and only IF:
+	 *  - WDT reports power failure as cause of latest boot
+	 *
+	 * Otherwise we simply log the boot
+	 */
+	if (cause & WDIOF_POWERUNDER)
+		wdt_clear_cause();
+
 	memset(&reason, 0, sizeof(reason));
 	if (!wdt_reset_cause(&reason)) {
 		reset_cause   = reason.cause;
@@ -409,9 +418,6 @@ static int create_bootstatus(int cause, int timeout, int interval)
 		PERROR("Failed opening %s", WDOG_STATUS);
 		return -1;
 	}
-
-	if (wdt_capability(WDIOF_POWERUNDER) && (cause & WDIOF_POWERUNDER))
-		wdt_clear_cause();
 
 	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
 	fprintf(fp, WDT_REASON_TMO ": %d\n", timeout);
