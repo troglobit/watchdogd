@@ -159,7 +159,7 @@ int wdt_kick(char *msg)
 	}
 
 	if (!wdt_capability(WDIOF_CARDRESET))
-		INFO("WDT kick ...");
+		LOG("WDT kick ...");
 
 	return ioctl(fd, WDIOC_KEEPALIVE, &dummy);
 }
@@ -231,13 +231,13 @@ int wdt_get_bootstatus(void)
 
 	if (!err && status) {
 		if (status & WDIOF_POWERUNDER)
-			INFO("Reset cause: POWER-ON");
+			LOG("Reset cause: POWER-ON");
 		if (status & WDIOF_FANFAULT)
-			INFO("Reset cause: FAN-FAULT");
+			LOG("Reset cause: FAN-FAULT");
 		if (status & WDIOF_OVERHEAT)
-			INFO("Reset cause: CPU-OVERHEAT");
+			LOG("Reset cause: CPU-OVERHEAT");
 		if (status & WDIOF_CARDRESET)
-			INFO("Reset cause: WATCHDOG");
+			LOG("Reset cause: WATCHDOG");
 	}
 
 	return status;
@@ -280,7 +280,7 @@ int wdt_close(uev_ctx_t *ctx)
 			if (-1 == write(fd, "V", 1))
 				PERROR("Failed disabling HW watchdog before exit, system will likely reboot now");
 		} else {
-			INFO("Exiting, watchdog still active.  Expect reboot!");
+			LOG("Exiting, watchdog still active.  Expect reboot!");
 			/* Be nice, sync any buffered data to disk first. */
 			sync();
 		}
@@ -316,7 +316,7 @@ int wdt_exit(uev_ctx_t *ctx)
 	sync();
 
 	if (fd != -1) {
-		INFO("Forced watchdog reboot.");
+		LOG("Forced watchdog reboot.");
 		wdt_set_timeout(1);
 		close(fd);
 	}
@@ -348,7 +348,7 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 	if (!ctx || !reason)
 		return errno = EINVAL;
 
-	INFO("Reboot requested by pid %d, label %s ...", pid, reason->label);
+	LOG("Reboot requested by pid %d, label %s ...", pid, reason->label);
 
 	/* Save reboot cause */
 	reason->counter = reset_counter + 1;
@@ -631,7 +631,7 @@ int main(int argc, char *argv[])
 	setlogmask(LOG_UPTO(loglevel));
 	openlog(NULL, log_opts, LOG_DAEMON);
 
-	INFO("watchdogd v%s %s ...", PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
+	LOG("watchdogd v%s %s ...", PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
 	uev_init(&ctx);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
@@ -715,7 +715,7 @@ int main(int argc, char *argv[])
 			reboot_in -= real_timeout;
 		}
 
-		INFO("HW WDT dit not reboot, forcing reboot now ...");
+		LOG("HW WDT did not reboot, forcing reboot now ...");
 		reboot(RB_AUTOBOOT);
 	}
 

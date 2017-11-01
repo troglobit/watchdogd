@@ -244,10 +244,11 @@ unless the user gives the `--syslog` argument to force use of syslog.
 Debugging
 ---------
 
-The code has both `INFO()` and `DEBUG()` statements sprinkled almost
+The code base has `LOG()`, `INFO()` and `DEBUG()` statements almost
 everywhere.  Use the `--loglevel=debug` command line option to enable
 full debug output to stderr or the syslog, depending on how you start
-`watchdogd`.
+`watchdogd`.  The default log level is `notice`, which enables `LOG()`,
+`WARN()` and error messages.
 
 
 Build & Install
