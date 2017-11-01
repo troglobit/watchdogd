@@ -50,9 +50,9 @@
 #define WDT_REASON_WID "Watchdog ID         "
 #define WDT_REASON_LBL "Label               "
 #define WDT_REASON_CSE "Reset cause         "
-#define WDT_REASON_STR "Reason              "
+#define WDT_REASON_STR "Reset cause reason  "
 #define WDT_REASON_CNT "Counter             "
-#define WDT_REASON_WDT "Reset cause (WDIOF) "
+#define WDT_REASON_WDT "Boot status (WDIOF) "
 #define WDT_REASON_TMO "Timeout (sec)       "
 #define WDT_REASON_INT "Kick interval       "
 
