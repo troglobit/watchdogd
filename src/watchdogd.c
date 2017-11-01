@@ -645,12 +645,12 @@ int main(int argc, char *argv[])
 
 	/* Check capabilities */
 	if (magic && !wdt_capability(WDIOF_MAGICCLOSE)) {
-		WARN("Safe exit requested, but WDT does not support disabling it.");
+		WARN("WDT cannot be disabled, disabling safe exit.");
 		magic = 0;
 	}
 
 	if (!wdt_capability(WDIOF_POWERUNDER))
-		WARN("WDT does not support detecting PWR fail condition.  Will be treated as WDT timeout.");
+		WARN("WDT does not support PWR fail condition, treating as card reset.");
 
 	/* Set requested WDT timeout right before we enter the event loop. */
 	if (wdt_set_timeout(timeout))
