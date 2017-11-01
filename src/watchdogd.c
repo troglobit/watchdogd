@@ -158,6 +158,9 @@ int wdt_kick(char *msg)
 		return 0;
 	}
 
+	if (!wdt_capability(WDIOF_CARDRESET))
+		INFO("WDT kick ...");
+
 	return ioctl(fd, WDIOC_KEEPALIVE, &dummy);
 }
 
