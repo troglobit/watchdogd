@@ -466,7 +466,7 @@ static int usage(int status)
                "Options:\n"
                "  -n, --foreground         Start in foreground (background is default)\n"
 	       "  -s, --syslog             Use syslog, even if running in foreground\n"
-	       "  -l, --loglevel=LVL       Log level: none, err, info, notice*, debug\n"
+	       "  -l, --loglevel=LVL       Log level: none, err, warn, notice*, info, debug\n"
 	       "\n"
                "  -T, --timeout=SEC        HW watchdog timer (WDT) timeout, in SEC seconds\n"
                "  -t, --interval=SEC       WDT kick interval, in SEC seconds, default: %d\n"
@@ -479,7 +479,7 @@ static int usage(int status)
 	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"
 	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
-	       "  -v, --version            Display version and exit\n"
+	       "  -V, --version            Display version and exit\n"
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
 	       "WARN,REBOOT ranges are 0-1, even for load average, where number of CPUs\n"
@@ -533,18 +533,18 @@ int main(int argc, char *argv[])
 		{"meminfo",       1, 0, 'm'},
 		{"filenr",        1, 0, 'f'},
 		{"pmon",          2, 0, 'p'},
-		{"safe-exit",     0, 0, 'e'},
+		{"safe-exit",     0, 0, 'x'},
 		{"syslog",        0, 0, 's'},
 #ifndef TESTMODE_DISABLED
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
 #endif
-		{"version",       0, 0, 'v'},
+		{"version",       0, 0, 'V'},
 		{"timeout",       1, 0, 'T'},
 		{NULL, 0, 0, 0}
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:f:Fhl:Lm:np::sSt:T:Vvx?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "a:f:Fhl:Lm:np::sSt:T:Vx?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -607,7 +607,7 @@ int main(int argc, char *argv[])
 			timeout = atoi(optarg);
 			break;
 
-		case 'v':
+		case 'V':
 			printf("v%s\n", VERSION);
 			return 0;
 
