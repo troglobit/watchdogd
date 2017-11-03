@@ -79,7 +79,7 @@ Usage
 -----
 
 ```
-watchdogd [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [/dev/watchdog]
+watchdogd [-hnsVx] [-a WARN[,REBOOT]] [-T SEC] [-t SEC] [/dev/watchdog]
 
 Options:
   -n, --foreground         Start in foreground (background is default)
@@ -96,7 +96,7 @@ Options:
   -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
                            Default RT prio when active: SCHED_RR @98
   
-  -v, --version            Display version and exit
+  -V, --version            Display version and exit
   -h, --help               Display this help message and exit
 ```
 

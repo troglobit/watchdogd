@@ -314,11 +314,11 @@ int main(int argc, char *argv[])
 			test = optarg;
 			break;
 
-		case 'V':
+		case 'v':
 			verbose = 1;
 			break;
 
-		case 'v':
+		case 'V':
 			result += show_version();
 			break;
 
