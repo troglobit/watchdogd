@@ -28,6 +28,13 @@
 #define OPT_T "t:"
 #define log(fmt, args...) if (verbose) fprintf(stderr, fmt "\n", ##args)
 
+struct command {
+	char  *cmd;
+	int  (*cb)(char *arg);
+	int    type;
+	char  *arg;
+};
+
 extern char *__progname;
 static int verbose = 0;
 static int count = 1;
@@ -40,15 +47,16 @@ static int no_kick = 0;
 static int failed_kick = 0;
 static int premature = 0;
 
-static int do_clear(void)
+static int do_clear(char *arg)
 {
 	return wdog_reboot_reason_clr();
 }
 
-static int do_enable(int ena)
+static int do_enable(char *arg)
 {
-	int result = wdog_enable(ena);
+	int result;
 
+	result = wdog_enable(atoi(arg));
 	if (verbose) {
 		int status = 0;
 
@@ -59,8 +67,12 @@ static int do_enable(int ena)
 	return result;
 }
 
-static int do_reset(int msec)
+static int do_reset(char *arg)
 {
+	int msec = 0;
+
+	if (arg)
+		msec = atoi(arg);
 	if (msec < 0)
 		errx(1, "Invalid reboot timeout (%d)", msec);
 
@@ -69,15 +81,16 @@ static int do_reset(int msec)
 
 static int set_loglevel(char *arg)
 {
-	int result = wdog_set_loglevel(arg);
+	int result;
 
+	result = wdog_set_loglevel(arg);
 	if (verbose)
 		printf("loglevel: %s\n", wdog_get_loglevel());
 
 	return result;
 }
 
-static int show_status(void)
+static int show_status(char *arg)
 {
 	FILE *fp;
 	char *file[] = {
@@ -101,7 +114,7 @@ static int show_status(void)
 	return 0;
 }
 
-static int show_version(void)
+static int show_version(char *arg)
 {
 	return puts(PACKAGE_VERSION) != EOF;
 }
@@ -225,7 +238,7 @@ static int run_test(char *arg)
 static int usage(int code)
 {
 	printf("Usage:\n"
-	       "  %s [-cdefhsvV] [-l LEVEL] [-r MSEC]\n"
+	       "  %s [OPTIONS] [COMMAND]\n"
 	       "\n"
 	       "Options:\n"
 	       "  -h, --help         Display this help text and exit\n"
@@ -244,13 +257,16 @@ static int usage(int code)
 	       "  test    [TEST]     Run built-in process monitor (PMON) test, see below\n"
 	       "\n"
 	       "Tests:\n"
-	       "  complete-cycle     Verify subscribe, kick, and unsubscribe (no reboot)\n"
+	       "  complete-cycle**   Verify subscribe, kick, and unsubscribe (no reboot)\n"
 	       "  disable-enable     Verify WDT disable, and re-enable (no reboot)\n"
 	       "  false-ack          Verify kick with invalid ACK (reboot)\n"
 	       "  false-unsubscribe  Verify unsubscribe with invalid ACK (reboot)\n"
 	       "  failed-kick        Verify reboot on missing kick (reboot)\n"
 	       "  no-kick            Verify reboot on missing first kick (reboot)\n"
 	       "  premature-trigger  Verify no premature trigger before unsubscribe (reboot)\n"
+	       "____\n"
+	       "*  default log level\n"
+	       "** default test\n"
 	       "\n", __progname);
 
 	return code;
@@ -258,69 +274,35 @@ static int usage(int code)
 
 int main(int argc, char *argv[])
 {
-	int c, result = 0;
-	char *test = NULL;
+	int c;
 	struct option long_options[] = {
-		/* Options/Commands */
-		{ "clear",             0, 0, 'c' },
-		{ "disable",           0, 0, 'd' },
-		{ "enable",            0, 0, 'e' },
-		{ "force-reset",       0, 0, 'f' },
-		{ "loglevel",          1, 0, 'l' },
 		{ "help",              0, 0, 'h' },
-		{ "reboot",            1, 0, 'r' },
-		{ "status",            0, 0, 's' },
-		{ "test",              1, 0, 't' },
-		{ "verbose",           0, 0, 'V' },
-		{ "version",           0, 0, 'v' },
+		{ "verbose",           0, 0, 'v' },
+		{ "version",           0, 0, 'V' },
 		{ NULL, 0, 0, 0 }
+	};
+	struct command command[] = {
+		{ "clear",             do_clear,     0, NULL },
+		{ "disable",           do_enable,    0, "0"  },
+		{ "enable",            do_enable,    0, "1"  },
+		{ "force-reset",       do_reset,     0, NULL },
+		{ "loglevel",          set_loglevel, 1, NULL },
+		{ "reboot",            do_reset,     1, NULL },
+		{ "status",            show_status,  0, NULL },
+		{ "test",              run_test,     1, NULL },
 	};
 
 	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?" OPT_T, long_options, NULL)) != EOF) {
 		switch (c) {
-		case 'c':
-			result += do_clear();
-			break;
-
-		case 'd':
-			result += do_enable(0);
-			break;
-
-		case 'e':
-			result += do_enable(1);
-			break;
-
-		case 'f':
-			result += do_reset(0);
-			break;
-
-		case 'l':
-			result += set_loglevel(optarg);
-			break;
-
 		case 'h':
-			result += usage(0);
-			break;
-
-		case 'r':
-			result += do_reset(atoi(optarg));
-			break;
-
-		case 's':
-			result += show_status();
-			break;
-
-		case 't':
-			test = optarg;
-			break;
+			return usage(0);
 
 		case 'v':
 			verbose = 1;
 			break;
 
 		case 'V':
-			result += show_version();
-			break;
+			return show_version(NULL);
 
 		default:
 			warnx("Unknown or currently unsupported option '%c'.", c);
@@ -328,10 +310,34 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (test)
-		result += run_test(test);
+	if (optind >= argc)
+		return show_status(NULL);
 
-	return result;
+	while (optind < argc) {
+		char *cmd;
+
+		cmd = argv[optind++];
+		if (optind < argc)
+			optarg = argv[optind];
+		else
+			optarg = NULL;
+
+		for (c = 0; command[c].cmd; c++) {
+			if (strcmp(command[c].cmd, cmd))
+				continue;
+
+			switch (command[c].type) {
+			case 1:
+				optind++;
+				return command[c].cb(optarg);
+
+			default:
+				return command[c].cb(command[c].arg);
+			}
+		}
+	}
+
+	return usage(1);
 }
 
 /**
