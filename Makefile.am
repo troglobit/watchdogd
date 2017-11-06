@@ -4,7 +4,7 @@ DISTCLEANFILES      = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d *.so
 doc_DATA            = README.md LICENSE
 EXTRA_DIST          = README.md LICENSE ChangeLog.md
 DIST_SUBDIRS        = examples
-SUBDIRS             = src
+SUBDIRS             = src man
 if ENABLE_EXAMPLES
 SUBDIRS            += examples
 endif
