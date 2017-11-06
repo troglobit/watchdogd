@@ -1,0 +1,78 @@
+.\" mdoc format
+.Dd 6 November, 2017
+.Dt WATCHDOGD 8
+.Os
+.Sh NAME
+.Nm watchdogd
+.Nd System & Process Supervisor for Linux
+.Sh SYNOPSIS
+.Nm
+.Op Fl hnsVvx
+.Op Fl T Ar SEC
+.Op Fl t Ar SEC
+.Op Fl l Ar LEVEL
+.Op Fl a Ar WARN,REBOOT
+.Op Fl m Ar WARN,REBOOT
+.Op Fl f Ar WARN,REBOOT
+.Op Fl p Op PRIO
+.Op /dev/watchdogN
+.Sh DESCRIPTION
+.Nm
+is an advanced system and process supervisor daemon, primarily intended
+for embedded Linux and server systems.  It can monitor critical system
+resources, supervise the heartbeat of processes, record their deadline
+transgressions, and reset the system.
+.Pp
+When a system comes back up after a reset,
+.Nm
+determines the reset cause and records it in a logfile for later
+analysis by an operator or network management system (NMS).  This
+information can in turn then be used to put the system in an operational
+safe state, or non-operational safe state.
+.Pp
+Use
+.Xr watchdogctl 1
+to query status and control
+.Nm .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl n, -foreground
+Start in foreground, necessary when started by systemd or Finit.
+.It Fl s, -syslog
+Use syslog, even if running in foreground.
+.It Fl l, -loglevel Ar LEVEL
+Log level, default notice.
+.It Fl T, -timeout Ar SEC
+Watchdog timer (WDT) timeout, in seconds.
+.It Fl t, -interval Ar SEC
+Watchdog kick interval, in seconds.
+.It Fl x, -safe-exit
+Disable watchdog (WDT) on normal exit.  Not supported in all WDT drivers
+due to HW limitations.  Some drivers emulate support by keeping an
+in-kernel thread to continue kicking the WDT.
+.It Fl a, -load-averate Ar WARN,REBOOT
+Enable normalized load average supervision.
+.It Fl m, -meminfo Ar WARN,REBOOT
+Enable system memory leak supervision.
+.It Fl p, -pmon Op PRIORTY
+Enable process monitor, run at elevated RT priority when active
+(monitoring at least one process).  Default RT priorty: 98.
+.It Fl V, -version
+Show version information.
+.It Fl h, -help
+Show help message.
+.El
+.Sh FILES
+.Bl -tag -width /var/lib/watchdogd.state -compact
+.It Pa /dev/watchdog
+.It Pa /var/lib/watchdogd.state
+.It Pa /run/watchdogd.sock
+.It Pa /run/watchdogd.status
+.El
+.Sh SEE ALSO
+.Xr watchdogctl 1
+.Sh AUTHORS
+.Nm
+is an improved version of the original, created by Michele d'Amico and
+adapted to uClinux-dist by Mike Frysinger.  It is maintained by Joachim
+Nilsson collaboratively at GitHub.
