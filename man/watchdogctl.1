@@ -1,0 +1,83 @@
+.\" mdoc format
+.Dd 6 November, 2017
+.Dt WATCHDOGCTL 1
+.Os
+.Sh NAME
+.Nm watchdogctl
+.Nd Status and control tool for watchdogd
+.Sh SYNOPSIS
+.Nm
+.Op Fl hvV
+.Op clear
+.Op debug
+.Op disable | enable
+.Op log Ar LEVEL
+.Op reboot Op MSEC
+.Op status
+.Op test Op TEST
+.Sh DESCRIPTION
+.Nm
+provides a safe way of querying status and controlling 
+.Xr watchdogd 8 .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl v, -verbose
+Enable verbose mode, commands are otherwise silent.
+.It Fl V, -version
+Show version information.
+.It Fl h, -help
+Show help message.
+.El
+.Sh COMMANDS
+.Bl -tag -width Ds
+.It Cm clear
+Clear reset cause.
+.It Cm debug
+Toggle daemon debug log level.  See also the
+.Cm log
+command.
+.It Cm disble | enable
+Temporarily disable, or enable, daemon.
+.It Cm log Ar LEVEL
+Change daemon log level, see also
+.Cm debug .
+.It Cm reboot Op MSEC
+Reboot system using WDT, with an optional millisecond delay.
+.It Cm status
+Query status of daemon and show last reset cause, default.
+.It Cm test Op TEST
+Run built-in test of process monitor (PMON) functionality in daemon.
+The default test runs a complete cycle:
+.Pp
+.Bl -tag -width false-unsubscribe -compact -offset indent
+.It Cm complete-cycle
+Verify subscribe, kick, and unsubscribe (no reboot)
+.It Cm disable-enable
+Verify WDT disable, and re-enable (no reboot)
+.It Cm false-ack
+Verify kick with invalid ACK (reboot)
+.It Cm false-unsubscribe
+Verify unsubscribe with invalid ACK (reboot)
+.It Cm failed-kick
+Verify reboot on missing kick (reboot)
+.It Cm no-kick
+Verify reboot on missing first kick (reboot)
+.It Cm premature-trigger
+Verify no premature trigger before unsubscribe (reboot)
+.El
+.It Cm version
+Show version information.
+.El
+.Sh FILES
+.Bl -tag -width /var/lib/watchdogd.state -compact
+.It Pa /var/lib/watchdogd.state
+.It Pa /run/watchdogd.sock
+.It Pa /run/watchdogd.status
+.El
+.Sh SEE ALSO
+.Xr watchdogctl 1
+.Sh AUTHORS
+.Nm watchdogd
+is an improved version of the original, created by Michele d'Amico and
+adapted to uClinux-dist by Mike Frysinger.  It is maintained by Joachim
+Nilsson collaboratively at GitHub.
