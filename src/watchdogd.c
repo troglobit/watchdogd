@@ -434,6 +434,7 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	if (wdt_testmode())
 		return 0;
 
+#ifdef COMPAT_SUPERVISOR
 	/* Compat, created at boot from RTC contents */
 	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
         if (fp) {
@@ -448,6 +449,7 @@ static int create_bootstatus(int cause, int timeout, int interval)
 		PERROR("Failed creating compat boot status");
 		return -1;
 	}
+#endif /* COMPAT_SUPERVISOR */
 
 	return 0;
 }

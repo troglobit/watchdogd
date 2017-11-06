@@ -25,6 +25,10 @@ PKG_CHECK_MODULES([uev],  [libuev >= 1.4.0])
 PKG_CHECK_MODULES([lite], [libite >= 1.5.0])
 
 # Check for configure switches
+AC_ARG_ENABLE([compat],
+	[AS_HELP_STRING([--enable-compat], [Enable compat supervisor.status])],,
+	[enable_compat=no], [])
+
 AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [build examples])],
 	[enable_examples=yes], [])
@@ -37,6 +41,9 @@ AC_ARG_ENABLE(builtin-tests,
 
 AC_ARG_ENABLE(rcfile,
         AS_HELP_STRING([--disable-rcfile], [Disable reset cause file store backend, default: enabled]))
+
+AS_IF([test "x$enable_compat" = "xyes"], [
+	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
 
 AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
 	AC_DEFINE(TESTMODE_DISABLED,  1, [Disable test mode])])
