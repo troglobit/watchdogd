@@ -26,7 +26,7 @@ addons:
       description: "Watchdog daemon for embedded Linux systems with pmon API"
     notification_email: troglobit@gmail.com
     build_command_prepend: "./autogen.sh && PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure"
-    build_command:   "make clean all"
+    build_command: "make clean all"
     branch_pattern: dev
 
 install:
@@ -46,4 +46,5 @@ script:
   - tree /tmp
   - ldd /tmp/sbin/watchdogd
   - LD_LIBRARY_PATH=/tmp/lib /tmp/sbin/watchdogd -h
+  - LD_LIBRARY_PATH=/tmp/lib /tmp/bin/watchdogctl -h
   - LD_LIBRARY_PATH=/tmp/lib ./src/testit.sh
