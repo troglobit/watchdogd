@@ -261,6 +261,9 @@ static int usage(int code)
 	       "  status             Show watchdog and supervisor status\n"
 #ifndef PMON_TESTS_DISABLED
 	       "  test    [TEST]     Run built-in process monitor (PMON) test, see below\n"
+#endif
+	       "  version            Show program version\n"
+#ifndef PMON_TESTS_DISABLED
 	       "\n"
 	       "Tests:\n"
 	       "  complete-cycle**   Verify subscribe, kick, and unsubscribe (no reboot)\n"
@@ -301,6 +304,8 @@ int main(int argc, char *argv[])
 #ifndef PMON_TESTS_DISABLED
 		{ "test",              run_test,     1, NULL },
 #endif
+		{ "version",           show_version, 0, NULL },
+		{ NULL,                NULL,         0, NULL }
 	};
 
 	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?" OPT_T, long_options, NULL)) != EOF) {
