@@ -11,7 +11,9 @@ Before Release
   - add commands to enable/disable plugins
 * Man page
 * Basic Debian packaging, including systemd and finit support
-* Remove GLIBCisms, e.g. __progname
+* Remove GLIBCisms, e.g. `__progname` (err, we rely on this to be
+  able to register "unknown" processes with PMON).  As of 1496fb6
+  `watchdogd` builds on Alpine Linux, so maybe this item is done?
 
 General
 -------
