@@ -30,17 +30,17 @@ AC_ARG_ENABLE([compat],
 	[enable_compat=no], [])
 
 AC_ARG_ENABLE([examples],
-	[AS_HELP_STRING([--enable-examples], [build examples])],
+	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
 	[enable_examples=yes], [])
 AM_CONDITIONAL([ENABLE_EXAMPLES], [test "$enable_examples" = yes])
 
 AC_ARG_ENABLE(test-mode,
-        AS_HELP_STRING([--disable-test-mode], [Disable test mode, for extra safety, default: enabled]))
+        AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
 AC_ARG_ENABLE(builtin-tests,
-        AS_HELP_STRING([--disable-builtin-tests], [Disable built-in PMON tests, for extra safety, default: enabled]))
+        AS_HELP_STRING([--disable-builtin-tests], [Disable built-in PMON tests]))
 
 AC_ARG_ENABLE(rcfile,
-        AS_HELP_STRING([--disable-rcfile], [Disable reset cause file store backend, default: enabled]))
+        AS_HELP_STRING([--disable-rcfile], [Disable file store reset cause backend]))
 
 AS_IF([test "x$enable_compat" = "xyes"], [
 	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
