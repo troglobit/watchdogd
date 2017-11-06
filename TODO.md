@@ -9,7 +9,6 @@ Before Release
 * watchdogctl:
   - add set timeout command
   - add commands to enable/disable plugins
-* Support building without any of the built-in tests
 * Man page
 * Basic Debian packaging, including systemd and finit support
 * Remove GLIBCisms, e.g. __progname

@@ -37,15 +37,18 @@ struct command {
 
 extern char *__progname;
 static int verbose = 0;
+
+#ifndef PMON_TESTS_DISABLED
 static int count = 1;
 static int tmo   = 2000;	/* At least 2 sec timeout! */
-
 static int false_ack = 0;
 static int false_unsubscribe = 0;
 static int disable_enable = 0;
 static int no_kick = 0;
 static int failed_kick = 0;
 static int premature = 0;
+#endif /* PMON_TESTS_DISABLED */
+
 
 static int do_clear(char *arg)
 {
@@ -119,6 +122,7 @@ static int show_version(char *arg)
 	return puts(PACKAGE_VERSION) != EOF;
 }
 
+#ifndef PMON_TESTS_DISABLED
 static int testit(void)
 {
 	int id, ack;
@@ -234,6 +238,7 @@ static int run_test(char *arg)
 
 	return -1;
 }
+#endif /* PMON_TESTS_DISABLED */
 
 static int usage(int code)
 {
@@ -254,6 +259,7 @@ static int usage(int code)
 	       "  log LVL            Adjust log level: none, err, warn, notice*, info, debug\n"
 	       "  reboot  [MSEC]     Reboot, with optional MSEC (milliseconds) delay\n"
 	       "  status             Show watchdog and supervisor status\n"
+#ifndef PMON_TESTS_DISABLED
 	       "  test    [TEST]     Run built-in process monitor (PMON) test, see below\n"
 	       "\n"
 	       "Tests:\n"
@@ -264,9 +270,12 @@ static int usage(int code)
 	       "  failed-kick        Verify reboot on missing kick (reboot)\n"
 	       "  no-kick            Verify reboot on missing first kick (reboot)\n"
 	       "  premature-trigger  Verify no premature trigger before unsubscribe (reboot)\n"
+#endif /* PMON_TESTS_DISABLED */
 	       "____\n"
 	       "*  default log level\n"
+#ifndef PMON_TESTS_DISABLED
 	       "** default test\n"
+#endif
 	       "\n", __progname);
 
 	return code;
@@ -289,7 +298,9 @@ int main(int argc, char *argv[])
 		{ "loglevel",          set_loglevel, 1, NULL },
 		{ "reboot",            do_reset,     1, NULL },
 		{ "status",            show_status,  0, NULL },
+#ifndef PMON_TESTS_DISABLED
 		{ "test",              run_test,     1, NULL },
+#endif
 	};
 
 	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?" OPT_T, long_options, NULL)) != EOF) {
