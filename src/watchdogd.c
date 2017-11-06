@@ -460,11 +460,11 @@ static void period_cb(uev_t *w, void *arg, int event)
 static int usage(int status)
 {
 	printf("Usage:\n"
-	       "  %s [-hnsVvx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
+	       "  %s [-hnsVx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
 	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
-               "  -n, --foreground         Start in foreground (background is default)\n"
+               "  -n, --foreground         Start in foreground, background is default\n"
 	       "  -s, --syslog             Use syslog, even if running in foreground\n"
 	       "  -l, --loglevel=LVL       Log level: none, err, warn, notice*, info, debug\n"
 	       "\n"
