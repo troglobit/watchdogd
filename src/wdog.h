@@ -21,6 +21,10 @@
 #include <paths.h>
 #include <unistd.h>
 
+#ifndef _PATH_PRESERVE
+#define _PATH_PRESERVE              "/var/lib"
+#endif
+
 #define WDOG_PMON_BASENAME          "watchdogd.sock"
 #define WDOG_PMON_PATH              _PATH_VARRUN WDOG_PMON_BASENAME
 #define WDOG_PMON_TEST              _PATH_TMP    WDOG_PMON_BASENAME
