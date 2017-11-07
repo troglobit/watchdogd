@@ -685,7 +685,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* If user did not provide '-k' argument, set to half actual timeout */
+	/* If user did not provide '-t' interval, set to half WDT timeout */
 	if (-1 == period) {
 		if (real_timeout < 0)
 			period = WDT_KICK_DEFAULT;
@@ -703,13 +703,13 @@ int main(int argc, char *argv[])
 	T = period * 1000;
 	DEBUG("Watchdog kick interval set to %d sec.", period);
 
-	/* Every period (T) seconds we kick the wdt */
+	/* Every period (T) seconds we kick the WDT */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
 	/* Start all enabled plugins */
 	wdt_plugins_init(&ctx, T);
 
-	/* Only create pidfile when we're done with all set up. */
+	/* Create pidfile when we're done with all set up. */
 	if (pidfile(NULL) && !wdt_testmode())
 		PERROR("Cannot create pidfile");
 
