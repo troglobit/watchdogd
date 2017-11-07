@@ -6,6 +6,9 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
+* watchdogd:
+  - Add support for syslog "MARK" from plugins.  
+    E.g., "meminfo - MemTotal: 8120568 kB, MemFree: 2298932 kB
 * watchdogctl:
   - add set timeout command
   - add commands to enable/disable plugins
