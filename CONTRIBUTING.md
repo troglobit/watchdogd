@@ -9,7 +9,7 @@ For email questions/requests/alerts there is always the risk of memory
 exhaustion on the part of the maintainer(s).
 
 If you are unsure of what to do, or how to implement an idea or bugfix,
-open an issue with `"[RFC: Unsure if this is a bug ... ?"`, or similar,
+open an issue with `"RFC: Unsure if this is a bug ... ?"`, or similar,
 so we can discuss it.  Talking about the code first is the best way to
 get started before submitting a pull request.
 
@@ -81,9 +81,3 @@ Bill & Ted; [be excellent to each other][conduct].
 [gitbook]:  https://git-scm.com/book/ch5-2.html
 [rambling]: http://stopwritingramblingcommitmessages.com/
 [conduct]:  https://github.com/troglobit/watchdogd/blob/master/CODE-OF-CONDUCT.md
-
-<!--
-  -- Local Variables:
-  -- mode: markdown
-  -- End:
-  -->
