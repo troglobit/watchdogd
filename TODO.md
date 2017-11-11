@@ -9,6 +9,7 @@ Before Release
 * watchdogd:
   - Add support for syslog "MARK" from plugins.  
     E.g., "meminfo - MemTotal: 8120568 kB, MemFree: 2298932 kB
+  - Add support for running a script callback on WARN,REBOOT
 * watchdogctl:
   - add set timeout command
   - add commands to enable/disable plugins
