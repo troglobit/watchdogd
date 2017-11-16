@@ -28,17 +28,14 @@ PKG_CHECK_MODULES([lite], [libite >= 1.5.0])
 AC_ARG_ENABLE([compat],
 	[AS_HELP_STRING([--enable-compat], [Enable compat supervisor.status])],,
 	[enable_compat=no], [])
-
 AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
 	[enable_examples=yes], [])
-AM_CONDITIONAL([ENABLE_EXAMPLES], [test "$enable_examples" = yes])
 
 AC_ARG_ENABLE(test-mode,
         AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
 AC_ARG_ENABLE(builtin-tests,
         AS_HELP_STRING([--disable-builtin-tests], [Disable built-in PMON tests]))
-
 AC_ARG_ENABLE(rcfile,
         AS_HELP_STRING([--disable-rcfile], [Disable file store reset cause backend]))
 
@@ -55,6 +52,7 @@ AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
 	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])
 
 AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
+AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 
 # Generate all files
 AC_OUTPUT

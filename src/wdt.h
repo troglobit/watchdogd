@@ -59,7 +59,7 @@
 #define ERROR(fmt, args...)  syslog(LOG_ERR,     fmt, ##args)
 #define PERROR(fmt, args...) syslog(LOG_ERR,     fmt ": %s", ##args, strerror(errno))
 #define DEBUG(fmt, args...)  syslog(LOG_DEBUG,   fmt, ##args)
-#define LOG(fmt, args...)   syslog(LOG_NOTICE,  fmt, ##args)
+#define LOG(fmt, args...)    syslog(LOG_NOTICE,  fmt, ##args)
 #define INFO(fmt, args...)   syslog(LOG_INFO,    fmt, ##args)
 #define WARN(fmt, args...)   syslog(LOG_WARNING, fmt, ##args)
 
