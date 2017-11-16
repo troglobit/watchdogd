@@ -31,6 +31,9 @@ AC_ARG_ENABLE([compat],
 AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
 	[enable_examples=yes], [])
+AC_ARG_ENABLE([syslog-mark],
+	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
+	[enable_syslog_mark=yes], [])
 
 AC_ARG_ENABLE(test-mode,
         AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
@@ -41,6 +44,9 @@ AC_ARG_ENABLE(rcfile,
 
 AS_IF([test "x$enable_compat" = "xyes"], [
 	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
+
+AS_IF([test "x$enable_syslog_mark" = "xyes"], [
+	AC_DEFINE(SYSLOG_MARK, 1, [Enable periodic syslog MARK by monitor plugins])])
 
 AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
 	AC_DEFINE(TESTMODE_DISABLED,  1, [Disable test mode])])

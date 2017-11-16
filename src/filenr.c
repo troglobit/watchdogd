@@ -53,8 +53,11 @@ static void cb(uev_t *w, void *arg, int events)
 
 	sscanf(buf, "%d\t%d\%d", &curr, &un, &max);
 	level = (double)(curr - un) / max;
-	DEBUG("Current file-nr: %d max: %d, level: %.0f%%, warning: %.0f%%, critical: %.0f%%",
-	      curr, max, level * 100, warning * 100, critical * 100);
+
+#ifdef SYSLOG_MARK
+	LOG("Current file-nr: %d max: %d, level: %.0f%%, warning: %.0f%%, critical: %.0f%%",
+	    curr, max, level * 100, warning * 100, critical * 100);
+#endif
 
 	if (level > warning) {
 		if (critical > 0.0 && level > critical) {

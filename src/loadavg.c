@@ -46,8 +46,10 @@ static void cb(uev_t *w, void *arg, int events)
 		return;
 	}
 
-	DEBUG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
-	      load[0], load[1], load[2], (int)num);
+#ifdef SYSLOG_MARK
+	LOG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
+	    load[0], load[1], load[2], (int)num);
+#endif
 
 	/* Compensate for number of CPU cores */
 	load[0] /= num;

@@ -89,9 +89,11 @@ static void cb(uev_t *w, void *arg, int events)
 	}
 	fclose(fp);
 
-	DEBUG("Total RAM: %u kB, free: %u kB, cached: %u kB, Total Swap: %u kB, free: %u kB, cached: %u kB",
-	      meminfo[MEMTOTAL].val, meminfo[MEMFREE].val, meminfo[MEMCACHED].val,
-	      meminfo[SWAPTOTAL].val, meminfo[SWAPFREE].val, meminfo[SWAPCACHED].val);
+#ifdef SYSLOG_MARK
+	LOG("Total RAM: %u kB, free: %u kB, cached: %u kB, Total Swap: %u kB, free: %u kB, cached: %u kB",
+	    meminfo[MEMTOTAL].val, meminfo[MEMFREE].val, meminfo[MEMCACHED].val,
+	    meminfo[SWAPTOTAL].val, meminfo[SWAPFREE].val, meminfo[SWAPCACHED].val);
+#endif
 
 	/* Enable trigger warnings by default only on systems without swap */
 	if (meminfo[SWAPTOTAL].val == 0) {
