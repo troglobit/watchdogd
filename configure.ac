@@ -31,6 +31,9 @@ AC_ARG_ENABLE([compat],
 AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
 	[enable_examples=yes], [])
+AC_ARG_ENABLE([filenr],
+	[AS_HELP_STRING([--enable-filenr=SEC], [Enable file descriptor monitor])],
+	[enable_filenr=$enableval], [enable_filenr=no])
 AC_ARG_ENABLE([syslog-mark],
 	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
 	[enable_syslog_mark=yes], [])
@@ -45,6 +48,9 @@ AC_ARG_ENABLE(rcfile,
 AS_IF([test "x$enable_compat" = "xyes"], [
 	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
 
+AS_IF([test "x$enable_filenr" != "xno"], [
+	AC_DEFINE_UNQUOTED(FILENR_PERIOD, $enable_filenr, [Enable file descriptor monitor])])
+
 AS_IF([test "x$enable_syslog_mark" = "xyes"], [
 	AC_DEFINE(SYSLOG_MARK, 1, [Enable periodic syslog MARK by monitor plugins])])
 
@@ -57,6 +63,7 @@ AS_IF([test "x$enable_builtin_tests" != "xno"], enable_builtin_tests="yes",[
 AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
 	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])
 
+AM_CONDITIONAL(FILENR_PLUGIN, [test "x$enable_filenr" != "xno"])
 AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 

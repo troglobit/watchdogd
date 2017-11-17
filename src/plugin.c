@@ -22,8 +22,10 @@
  */
 void wdt_plugins_init(uev_ctx_t *ctx, int T)
 {
+#ifdef FILENR_PERIOD
 	/* Start file descriptor monitor */
 	filenr_init(ctx, T);
+#endif
 
 	/* Start load average monitor, if enabled */
 	loadavg_init(ctx, T);

@@ -553,10 +553,12 @@ int main(int argc, char *argv[])
 			    return usage(1);
 			break;
 
+#ifdef FILENR_PERIOD
 		case 'f':
 			if (filenr_set(optarg))
 				return usage(1);
 			break;
+#endif
 
 		case 'h':
 			return usage(0);
