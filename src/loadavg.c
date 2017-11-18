@@ -77,12 +77,12 @@ static void cb(uev_t *w, void *arg, int events)
 int loadavg_init(uev_ctx_t *ctx, int T)
 {
 	if (warning == 0.0 && critical == 0.0) {
-		INFO("Load average monitoring disabled.");
+		INFO("Load average monitor disabled.");
 		return 1;
 	}
 
-	INFO("Starting load average monitor, warning: %.2f, reboot: %.2f",
-	     warning, critical);
+	INFO("Load average monitor, period %d sec, warning: %.2f%%, reboot: %.2f%%",
+	     T, warning * 100, critical * 100);
 
 	return uev_timer_init(ctx, &watcher, cb, NULL, T * 1000, T * 1000);
 }

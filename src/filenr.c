@@ -73,12 +73,12 @@ static void cb(uev_t *w, void *arg, int events)
 int filenr_init(uev_ctx_t *ctx, int T)
 {
 	if (warning == 0.0 && critical == 0.0) {
-		INFO("File descriptor monitoring disabled.");
+		INFO("File descriptor leak monitor disabled.");
 		return 1;
 	}
 
-	INFO("Starting file descriptor monitor, warning: %.0f%%, reboot: %.0f%%",
-	     warning * 100, critical * 100);
+	INFO("File descriptor leak monitor, period %d sec, warning: %.2f%%, reboot: %.2f%%",
+	     T, warning * 100, critical * 100);
 
 	return uev_timer_init(ctx, &watcher, cb, NULL, T * 1000, T * 1000);
 }
