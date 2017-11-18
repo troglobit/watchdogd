@@ -55,12 +55,15 @@ AS_IF([test "x$enable_compat" = "xyes"], [
 	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
 
 AS_IF([test "x$enable_loadavg" != "xno"], [
+	AS_IF([test "x$enable_loadavg" = "xyes"], [enable_loadavg=300])
 	AC_DEFINE_UNQUOTED(LOADAVG_PERIOD, $enable_loadavg, [Enable CPU load average monitor])])
 
 AS_IF([test "x$enable_filenr" != "xno"], [
+	AS_IF([test "x$enable_filenr" = "xyes"], [enable_filenr=300])
 	AC_DEFINE_UNQUOTED(FILENR_PERIOD, $enable_filenr, [Enable file descriptor leak monitor])])
 
 AS_IF([test "x$enable_meminfo" != "xno"], [
+	AS_IF([test "x$enable_meminfo" = "xyes"], [enable_meminfo=300])
 	AC_DEFINE_UNQUOTED(MEMINFO_PERIOD, $enable_meminfo, [Enable memory leak monitor])])
 
 AS_IF([test "x$enable_syslog_mark" = "xyes"], [

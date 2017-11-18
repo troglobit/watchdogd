@@ -84,7 +84,7 @@ int loadavg_init(uev_ctx_t *ctx, int T)
 	INFO("Starting load average monitor, warning: %.2f, reboot: %.2f",
 	     warning, critical);
 
-	return uev_timer_init(ctx, &watcher, cb, NULL, T, T);
+	return uev_timer_init(ctx, &watcher, cb, NULL, T * 1000, T * 1000);
 }
 
 /*

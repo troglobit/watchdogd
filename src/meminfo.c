@@ -127,7 +127,7 @@ int meminfo_init(uev_ctx_t *ctx, int T)
 	INFO("Starting memory leak monitor, warning: %.0f%%, reboot: %.0f%%",
 	     warning * 100, critical * 100);
 
-	return uev_timer_init(ctx, &watcher, cb, NULL, T, T);
+	return uev_timer_init(ctx, &watcher, cb, NULL, T * 1000, T * 1000);
 }
 
 /*

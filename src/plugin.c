@@ -24,17 +24,17 @@ void wdt_plugins_init(uev_ctx_t *ctx, int T)
 {
 #ifdef FILENR_PERIOD
 	/* Start file descriptor monitor */
-	filenr_init(ctx, T);
+	filenr_init(ctx, FILENR_PERIOD);
 #endif
 
 #ifdef LOADAVG_PERIOD
 	/* Start load average monitor, if enabled */
-	loadavg_init(ctx, T);
+	loadavg_init(ctx, LOADAVG_PERIOD);
 #endif
 
 #ifdef MEMINFO_PERIOD
 	/* Start memory leak monitor */
-	meminfo_init(ctx, T);
+	meminfo_init(ctx, MEMINFO_PERIOD);
 #endif
 
 	/* Start process monitor */
