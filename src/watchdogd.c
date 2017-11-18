@@ -515,6 +515,13 @@ int wdt_debug(int enable)
 	return 0;
 }
 
+#ifdef FILENR_PERIOD
+#define FILENR "f:"
+#else
+#define FILENR ""
+#endif
+#define PLUGIN_FLAGS FILENR
+
 extern int __wdog_loglevel(char *level);
 
 int main(int argc, char *argv[])
@@ -533,7 +540,9 @@ int main(int argc, char *argv[])
 		{"interval",      1, 0, 't'},
 		{"loglevel",      1, 0, 'l'},
 		{"meminfo",       1, 0, 'm'},
+#ifdef FILENR_PERIOD
 		{"filenr",        1, 0, 'f'},
+#endif
 		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 'x'},
 		{"syslog",        0, 0, 's'},
@@ -546,7 +555,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, "a:f:Fhl:Lm:np::sSt:T:Vx?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "a:Fhl:Lm:np::sSt:T:Vx?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
