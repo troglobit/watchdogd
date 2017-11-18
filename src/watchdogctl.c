@@ -257,7 +257,7 @@ static int usage(int code)
 	       "  disable            Disable watchdog\n"
 	       "  enable             Re-enable watchdog\n"
 //	       "  force-reset        Forced reset, alias to `reboot 0`\n"
-	       "  log LVL            Adjust log level: none, err, warn, notice*, info, debug\n"
+	       "  loglevel LVL       Adjust log level: none, err, warn, notice*, info, debug\n"
 	       "  reboot  [MSEC]     Reboot, with optional MSEC (milliseconds) delay\n"
 	       "  status             Show watchdog and supervisor status\n"
 #ifndef PMON_TESTS_DISABLED
