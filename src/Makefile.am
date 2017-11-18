@@ -5,6 +5,9 @@ dist_man8_MANS      = watchdogd.8
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      plugin.c          plugin.h	\
 		      pmon.c		pmon.h
+if FINIT
+watchdogd_SOURCES  += finit.c
+endif
 if FILENR_PLUGIN
 watchdogd_SOURCES  += filenr.c		filenr.h
 endif

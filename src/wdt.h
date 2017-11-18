@@ -97,6 +97,12 @@ static inline int wdt_testmode(void)
 #endif
 }
 
+#ifdef HAVE_FINIT_FINIT_H
+int     wdt_handover(int *exist);
+#else
+#define wdt_handover(exist) 0
+#endif
+
 #endif /* WDT_H_ */
 
 /**

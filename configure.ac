@@ -18,7 +18,7 @@ AC_PROG_INSTALL
 
 # Check for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS([finit/finit.h])
+AC_CHECK_HEADERS([finit/finit.h], [finit=yes], [finit=no])
 
 # Check for required library versions
 PKG_CHECK_MODULES([uev],  [libuev >= 2.1.0])
@@ -81,6 +81,7 @@ AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
 AM_CONDITIONAL(LOADAVG_PLUGIN, [test "x$enable_loadavg" != "xno"])
 AM_CONDITIONAL(FILENR_PLUGIN, [test "x$enable_filenr" != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$enable_meminfo" != "xno"])
+AM_CONDITIONAL(FINIT, [test "x$finit" = "xyes"])
 AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 

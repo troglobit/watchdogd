@@ -21,15 +21,6 @@
 #include "plugin.h"
 #include "rc.h"
 
-#ifdef HAVE_FINIT_FINIT_H
-# include <paths.h>
-# include <unistd.h>
-# include <sys/un.h>
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <finit/finit.h>
-#endif
-
 /* Global daemon settings */
 int magic   = 0;
 int enabled = 1;
@@ -60,51 +51,6 @@ static uev_t sigquit_watcher;
 static uev_t sigpwr_watcher;
 static uev_t timeout_watcher;
 
-static int finit_wdog_handover(void)
-{
-#ifdef HAVE_FINIT_FINIT_H
-	int sd, retry = 3;
-	size_t len;
-	struct sockaddr_un sun = {
-		.sun_family = AF_UNIX,
-		.sun_path   = INIT_SOCKET,
-	};
-	struct init_request rq = {
-		.magic    = INIT_MAGIC,
-		.cmd      = INIT_CMD_WDOG_HELLO,
-		.runlevel = getpid(),
-	};
-
-	sd = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (-1 == sd)
-		return -1;
-
-	/*
-	 * Try connecting to Finit, we should get a reply immediately,
-	 * if nobody is home we close the connection and continue.
-	 */
-	while (connect(sd, (struct sockaddr*)&sun, sizeof(sun)) == -1) {
-		if (retry-- == 0)
-			return close(sd);
-		sleep(1);
-	}
-
-	len = sizeof(rq);
-	if (write(sd, &rq, len) != (ssize_t)len) {
-		close(sd);
-		return -1;
-	}
-
-	if (read(sd, &rq, len) != (ssize_t)len) {
-		close(sd);
-		return -1;
-	}
-
-	return close(sd);
-#else
-	return 0;
-#endif
-}
 
 int wdt_capability(uint32_t flag)
 {
@@ -116,6 +62,8 @@ int wdt_capability(uint32_t flag)
  */
 int wdt_init(struct watchdog_info *info)
 {
+	int finit = 0;
+
 	if (wdt_testmode())
 		return 0;
 
@@ -123,7 +71,7 @@ int wdt_init(struct watchdog_info *info)
 	 * If we're called in a system with Finit running, tell it to
 	 * disable its built-in watchdog daemon.
 	 */
-	if (finit_wdog_handover())
+	if (wdt_handover(&finit))
 		PERROR("Failed communicating watchdog handover with finit");
 
 	fd = open(devnode, O_WRONLY);
@@ -131,6 +79,9 @@ int wdt_init(struct watchdog_info *info)
 		DEBUG("Failed opening watchdog device %s: %s", devnode, strerror(errno));
 		return 1;
 	}
+
+	if (finit)
+		ioctl(fd, WDIOC_KEEPALIVE, &finit);
 
 	if (info) {
 		memset(info, 0, sizeof(*info));
