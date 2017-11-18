@@ -4,10 +4,12 @@ sbin_PROGRAMS       = watchdogd
 dist_man8_MANS      = watchdogd.8
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      plugin.c          plugin.h	\
-		      loadavg.c		loadavg.h	\
 		      pmon.c		pmon.h
 if FILENR_PLUGIN
 watchdogd_SOURCES  += filenr.c		filenr.h
+endif
+if LOADAVG_PLUGIN
+watchdogd_SOURCES  += loadavg.c		loadavg.h
 endif
 if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c		meminfo.h

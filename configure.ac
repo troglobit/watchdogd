@@ -31,6 +31,9 @@ AC_ARG_ENABLE([compat],
 AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
 	[enable_examples=yes], [])
+AC_ARG_ENABLE([loadavg],
+	[AS_HELP_STRING([--enable-loadavg=SEC], [Enable CPU load average monitor])],
+	[enable_loadavg=$enableval], [enable_loadavg=no])
 AC_ARG_ENABLE([filenr],
 	[AS_HELP_STRING([--enable-filenr=SEC], [Enable file descriptor leak monitor])],
 	[enable_filenr=$enableval], [enable_filenr=no])
@@ -51,6 +54,9 @@ AC_ARG_ENABLE(rcfile,
 AS_IF([test "x$enable_compat" = "xyes"], [
 	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
 
+AS_IF([test "x$enable_loadavg" != "xno"], [
+	AC_DEFINE_UNQUOTED(LOADAVG_PERIOD, $enable_loadavg, [Enable CPU load average monitor])])
+
 AS_IF([test "x$enable_filenr" != "xno"], [
 	AC_DEFINE_UNQUOTED(FILENR_PERIOD, $enable_filenr, [Enable file descriptor leak monitor])])
 
@@ -69,6 +75,7 @@ AS_IF([test "x$enable_builtin_tests" != "xno"], enable_builtin_tests="yes",[
 AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
 	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])
 
+AM_CONDITIONAL(LOADAVG_PLUGIN, [test "x$enable_loadavg" != "xno"])
 AM_CONDITIONAL(FILENR_PLUGIN, [test "x$enable_filenr" != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$enable_meminfo" != "xno"])
 AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
