@@ -5,10 +5,12 @@ dist_man8_MANS      = watchdogd.8
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      plugin.c          plugin.h	\
 		      loadavg.c		loadavg.h	\
-		      meminfo.c		meminfo.h	\
 		      pmon.c		pmon.h
 if FILENR_PLUGIN
 watchdogd_SOURCES  += filenr.c		filenr.h
+endif
+if MEMINFO_PLUGIN
+watchdogd_SOURCES  += meminfo.c		meminfo.h
 endif
 if RCFILE
 watchdogd_SOURCES  += rcfile.c

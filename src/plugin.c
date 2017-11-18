@@ -30,8 +30,10 @@ void wdt_plugins_init(uev_ctx_t *ctx, int T)
 	/* Start load average monitor, if enabled */
 	loadavg_init(ctx, T);
 
+#ifdef MEMINFO_PERIOD
 	/* Start memory leak monitor */
 	meminfo_init(ctx, T);
+#endif
 
 	/* Start process monitor */
 	pmon_init(ctx, T);

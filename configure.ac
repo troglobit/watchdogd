@@ -34,6 +34,9 @@ AC_ARG_ENABLE([examples],
 AC_ARG_ENABLE([filenr],
 	[AS_HELP_STRING([--enable-filenr=SEC], [Enable file descriptor leak monitor])],
 	[enable_filenr=$enableval], [enable_filenr=no])
+AC_ARG_ENABLE([meminfo],
+	[AS_HELP_STRING([--enable-meminfo=SEC], [Enable memory leak monitor])],
+	[enable_meminfo=$enableval], [enable_meminfo=no])
 AC_ARG_ENABLE([syslog-mark],
 	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
 	[enable_syslog_mark=yes], [])
@@ -51,6 +54,9 @@ AS_IF([test "x$enable_compat" = "xyes"], [
 AS_IF([test "x$enable_filenr" != "xno"], [
 	AC_DEFINE_UNQUOTED(FILENR_PERIOD, $enable_filenr, [Enable file descriptor leak monitor])])
 
+AS_IF([test "x$enable_meminfo" != "xno"], [
+	AC_DEFINE_UNQUOTED(MEMINFO_PERIOD, $enable_meminfo, [Enable memory leak monitor])])
+
 AS_IF([test "x$enable_syslog_mark" = "xyes"], [
 	AC_DEFINE(SYSLOG_MARK, 1, [Enable periodic syslog MARK by monitor plugins])])
 
@@ -64,6 +70,7 @@ AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
 	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])
 
 AM_CONDITIONAL(FILENR_PLUGIN, [test "x$enable_filenr" != "xno"])
+AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$enable_meminfo" != "xno"])
 AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 

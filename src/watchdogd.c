@@ -520,7 +520,12 @@ int wdt_debug(int enable)
 #else
 #define FILENR ""
 #endif
-#define PLUGIN_FLAGS FILENR
+#ifdef MEMINFO_PERIOD
+#define MEMINFO "m:"
+#else
+#define MEMINFO ""
+#endif
+#define PLUGIN_FLAGS FILENR MEMINFO
 
 extern int __wdog_loglevel(char *level);
 
@@ -539,7 +544,9 @@ int main(int argc, char *argv[])
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 't'},
 		{"loglevel",      1, 0, 'l'},
+#ifdef MEMINFO_PERIOD
 		{"meminfo",       1, 0, 'm'},
+#endif
 #ifdef FILENR_PERIOD
 		{"filenr",        1, 0, 'f'},
 #endif
@@ -555,7 +562,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
-	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "a:Fhl:Lm:np::sSt:T:Vx?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "a:Fhl:Lnp::sSt:T:Vx?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
 			if (loadavg_set(optarg))
@@ -578,10 +585,12 @@ int main(int argc, char *argv[])
 				return usage(1);
 			break;
 
+#ifdef MEMINFO_PERIOD
 		case 'm':
 			if (meminfo_set(optarg))
 				return usage(1);
 			break;
+#endif
 
 		case 'F':	/* BusyBox watchdogd compat. */
 		case 'n':	/* Run in foreground */
