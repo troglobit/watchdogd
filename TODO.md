@@ -6,13 +6,6 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
-* Add configure options to enable each monitor plugin, with
-  an optional period time, default every five minutes:
-
-        --enable-loadavg=SEC     # default every 5 minutes
-        --enable-meminfo=SEC
-        --enable-filenr=SEC
-
 * watchdogd:
   - Add support for running a script callback on WARN,REBOOT
 * watchdogctl:
