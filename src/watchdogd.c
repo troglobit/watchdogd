@@ -604,7 +604,7 @@ int main(int argc, char *argv[])
 			break;
 
 		default:
-			printf("Unrecognized option \"-%c\".\n", c);
+			ERROR("Unrecognized option '-%c'.\n", optopt);
 			return usage(1);
 		}
 	}
