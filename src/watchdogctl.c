@@ -248,7 +248,7 @@ static int usage(int code)
 	       "\n"
 	       "Options:\n"
 	       "  -h, --help         Display this help text and exit\n"
-	       "  -v, --verbose      Verbose output, otherwise coommands are silent\n"
+	       "  -v, --verbose      Verbose output, otherwise commands are silent\n"
 	       "  -V, --version      Show program version\n"
 	       "\n"
 	       "Commands:\n"
