@@ -20,6 +20,7 @@
 #include <sys/un.h>
 
 #include "plugin.h"
+#include "private.h"
 #include "wdog.h"
 #include "pmon.h"
 

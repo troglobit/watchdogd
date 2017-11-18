@@ -26,6 +26,7 @@
 
 #define SYSLOG_NAMES
 #include "wdt.h"
+#include "private.h"
 
 
 static int api_init(void)

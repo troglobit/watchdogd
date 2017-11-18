@@ -40,6 +40,8 @@
 
 #include "lite/lite.h"
 #include "uev/uev.h"
+
+#include "private.h"
 #include "wdog.h"
 
 #define WDT_DEVNODE          _PATH_DEV      "watchdog"

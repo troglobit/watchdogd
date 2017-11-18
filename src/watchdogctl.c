@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "config.h"
+#include "private.h"
 #include "wdog.h"
 
 #define OPT_T "t:"
