@@ -8,14 +8,14 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl hnsVvx
-.Op Fl T Ar SEC
-.Op Fl t Ar SEC
-.Op Fl l Ar LEVEL
+.Op Fl a Ar WARN Op ,REBOOT
 .Op Fl e Ar CMD
-.Op Fl a Ar WARN,REBOOT
-.Op Fl m Ar WARN,REBOOT
-.Op Fl f Ar WARN,REBOOT
+.Op Fl f Ar WARN Op ,REBOOT
+.Op Fl l Ar LEVEL
+.Op Fl m Ar WARN Op ,REBOOT
 .Op Fl p Op PRIO
+.Op Fl t Ar SEC
+.Op Fl T Ar SEC
 .Op /dev/watchdogN
 .Sh DESCRIPTION
 .Nm
@@ -37,37 +37,39 @@ to query status and control
 .Nm .
 .Sh OPTIONS
 .Bl -tag -width Ds
-.It Fl n, -foreground
-Start in foreground, necessary when started by systemd or Finit.
-.It Fl s, -syslog
-Use syslog, even if running in foreground.
-.It Fl l, -loglevel Ar LEVEL
-Log level, default notice.
-.It Fl T, -timeout Ar SEC
-Watchdog timer (WDT) timeout, in seconds.
-.It Fl t, -interval Ar SEC
-Watchdog kick interval, in seconds.
-.It Fl x, -safe-exit
-Disable watchdog (WDT) on normal exit.  Not supported in all WDT drivers
-due to HW limitations.  Some drivers emulate support by keeping an
-in-kernel thread to continue kicking the WDT.
+.It Fl a, -load-averate Ar WARN Op ,REBOOT
+Enable normalized load average supervision.  REBOOT is optional, when
+omitted the plugin will not reboot.
 .It Fl e, -script Ar CMD
 Script or command to run as monitor plugin callback.  When given the
 .Ar CMD
 will be called instead of reboot when the REBOOT watermark is reached by
 a monitor plugin.  Hence, it is up to the script to perform a reboot if
 that is needed.
-.It Fl a, -load-averate Ar WARN,REBOOT
-Enable normalized load average supervision.
-.It Fl m, -meminfo Ar WARN,REBOOT
-Enable system memory leak supervision.
+.It Fl h, -help
+Show help message.
+.It Fl l, -loglevel Ar LEVEL
+Log level, default notice.
+.It Fl m, -meminfo Ar WARN Op ,REBOOT
+Enable system memory leak supervision.  REBOOT is optional, when omitted
+the plugin will not reboot.
+.It Fl n, -foreground
+Start in foreground, necessary when started by systemd or Finit.
 .It Fl p, -pmon Op PRIORTY
 Enable process monitor, run at elevated RT priority when active
 (monitoring at least one process).  Default RT priorty: 98.
+.It Fl s, -syslog
+Use syslog, even if running in foreground.
+.It Fl t, -interval Ar SEC
+Watchdog kick interval, in seconds.
+.It Fl T, -timeout Ar SEC
+Watchdog timer (WDT) timeout, in seconds.
 .It Fl V, -version
 Show version information.
-.It Fl h, -help
-Show help message.
+.It Fl x, -safe-exit
+Disable watchdog (WDT) on normal exit.  Not supported in all WDT drivers
+due to HW limitations.  Some drivers emulate support by keeping an
+in-kernel thread to continue kicking the WDT.
 .El
 .Sh FILES
 .Bl -tag -width /var/lib/watchdogd.state -compact
