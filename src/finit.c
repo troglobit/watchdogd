@@ -16,6 +16,7 @@
  */
 
 #include <paths.h>
+#include <poll.h>
 #include <unistd.h>
 #include <sys/un.h>
 #include <sys/types.h>
@@ -31,6 +32,7 @@ int wdt_handover(int *exist)
 {
 	int sd, rc = -1, retry = 3;
 	size_t len;
+	struct pollfd pfd;
 	struct sockaddr_un sun;
 	struct init_request rq = {
 		.magic    = INIT_MAGIC,
@@ -59,7 +61,16 @@ int wdt_handover(int *exist)
 		*exist = 1;
 
 	len = sizeof(rq);
+	pfd.fd = sd;
+	pfd.events = POLLOUT;
+	if (poll(&pfd, 1, 3000) <= 0)
+		goto err;
+
 	if (write(sd, &rq, len) != (ssize_t)len)
+		goto err;
+
+	pfd.events = POLLIN;
+	if (poll(&pfd, 1, 3000) <= 0)
 		goto err;
 
 	if (read(sd, &rq, len) != (ssize_t)len)
