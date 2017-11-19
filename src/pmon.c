@@ -106,7 +106,7 @@ static pmon_t *allocate(pid_t pid, char *label, int timeout)
 	for (i = 0; i < NELEMS(process); i++) {
 		if (process[i].id == -1) {
 			p = &process[i];
-			p->id = i + 1; /* Reserve id:0 for watchdogd itself */
+			p->id = i;
 			p->pid = pid;
 			p->timeout = timeout;
 			p->ack = 40;
