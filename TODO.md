@@ -3,11 +3,6 @@ Goal of watchdogd
 
 Monitor the health of the system and its processes.
 
-Before Release
---------------
-
-* Basic Debian packaging, including systemd and finit support
-
 
 General
 -------
