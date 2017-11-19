@@ -6,8 +6,6 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
-* watchdogd:
-  - Add support for running a script callback on WARN,REBOOT
 * Basic Debian packaging, including systemd and finit support
 
 
