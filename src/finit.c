@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <finit/finit.h>
+#include <lite/lite.h>
 #include "wdt.h"
 
 /*
@@ -30,10 +31,7 @@ int wdt_handover(int *exist)
 {
 	int sd, rc = -1, retry = 3;
 	size_t len;
-	struct sockaddr_un sun = {
-		.sun_family = AF_UNIX,
-		.sun_path   = INIT_SOCKET,
-	};
+	struct sockaddr_un sun;
 	struct init_request rq = {
 		.magic    = INIT_MAGIC,
 		.cmd      = INIT_CMD_WDOG_HELLO,
@@ -48,6 +46,9 @@ int wdt_handover(int *exist)
 	 * Try connecting to Finit, we should get a reply immediately,
 	 * if nobody is at home we close the connection and continue.
 	 */
+	memset(&sun, 0, sizeof(sun));
+	sun.sun_family = AF_UNIX;
+	strlcpy(sun.sun_path, INIT_SOCKET, sizeof(sun.sun_path));
 	while (connect(sd, (struct sockaddr*)&sun, sizeof(sun)) == -1) {
 		if (retry-- == 0)
 			goto err;
