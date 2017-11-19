@@ -250,11 +250,6 @@ int wdt_close(uev_ctx_t *ctx)
 	return uev_exit(ctx);
 }
 
-void exit_cb(uev_t *w, void *arg, int events)
-{
-	wdt_close(w->ctx);
-}
-
 int wdt_reset_cause(wdog_reason_t *reason)
 {
 	return reset_cause_get(reason);
@@ -327,6 +322,11 @@ int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 	strlcpy(reason.label, label, sizeof(reason.label));
 
 	return wdt_reboot(ctx, pid, &reason, timeout);
+}
+
+static void exit_cb(uev_t *w, void *arg, int events)
+{
+	wdt_close(w->ctx);
 }
 
 static void reboot_cb(uev_t *w, void *arg, int events)
