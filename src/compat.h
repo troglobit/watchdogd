@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <unistd.h>
+
 static inline int wdog_debug(int enable)
 {
 	return wdog_set_debug(enable);
