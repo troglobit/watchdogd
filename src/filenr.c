@@ -35,7 +35,7 @@ static void cb(uev_t *w, void *arg, int events)
 
 	fp = fopen(PROC_FILE, "r");
 	if (!fp) {
-		DEBUG("Cannot read %s, maybe /proc is not mounted yet", PROC_FILE);
+		PERROR("Cannot read %s, maybe /proc is not mounted", PROC_FILE);
 		return;
 	}
 
@@ -57,7 +57,7 @@ static void cb(uev_t *w, void *arg, int events)
 #ifdef SYSLOG_MARK
 //	LOG("Current file-nr: %d max: %d, level: %.0f%%, warning: %.0f%%, critical: %.0f%%",
 //	    curr, max, level * 100, warning * 100, critical * 100);
-	LOG("File nr: %d, max: %d", curr, max);
+	LOG("File nr: %d/%d", curr, max);
 #endif
 
 	if (level > warning) {
@@ -89,7 +89,7 @@ int filenr_init(uev_ctx_t *ctx, int T)
  */
 int filenr_set(char *arg)
 {
-	return wdt_plugin_arg("File descriptor", arg, &warning, &critical);
+	return wdt_plugin_arg("File descriptor leak", arg, &warning, &critical);
 }
 
 /**
