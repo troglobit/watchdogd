@@ -82,6 +82,7 @@ Usage
 watchdogd [-hnsVx] [-a WARN[,REBOOT]] [-T SEC] [-t SEC] [/dev/watchdog]
 
 Options:
+  -e, --script=CMD         Script or command to run as monitor plugin callback
   -n, --foreground         Start in foreground (background is default)
   -s, --syslog             Use syslog, even if running in foreground
   -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
@@ -89,6 +90,7 @@ Options:
   -T, --timeout=SEC        HW watchdog timer (WDT) timeout in SEC seconds
   -t, --interval=SEC       WDT kick interval in SEC seconds, default: 10
   -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
+                           "magic" exit may not be supported by HW/driver
   
   -a, --load-average=W,R   Enable normalized load average check WARN,REBOOT
   -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT
@@ -135,13 +137,18 @@ file descriptor leak detector `-f 0.8,0.95`.  All *very* useful on an
 embedded system.
 
 The two values, separated by a comma, are the warning and reboot levels
-in percent.  For the loadavg monitoring it is important to know that the
-trigger levels are normalized.  This means `watchdogd` does not care how
-many CPU cores your system has online.  If the kernel `/proc/loadavg`
-file shows `3.9 3.0 2.5` on a four-core CPU, `watchdogd` will consider
-this as a load of `0.98 0.75 0.63`, i.e. divided by four.  Only the one
-(1) and five (5) minute average values are used.  For more information
-on the UNIX load average, see this [StackOverflow question][loadavg].
+in percent.  The latter is optional, if omitted reboot is disabled.  The
+reboot is also disabled if `-e CMD` is given, then the script `CMD` is
+run instead, both at warning and reboot level, and it is up to the
+script to perform a reboot if needed.
+
+For the loadavg monitoring it is important to know that the trigger
+levels are normalized.  This means `watchdogd` does not care how many
+CPU cores your system has online.  If the kernel `/proc/loadavg` file
+shows `3.9 3.0 2.5` on a four-core CPU, `watchdogd` will consider this
+as a load of `0.98 0.75 0.63`, i.e. divided by four.  Only the one (1)
+and five (5) minute average values are used.  For more information on
+the UNIX load average, see this [StackOverflow question][loadavg].
 
 The RAM usage monitor only triggers on systems without swap.  This is
 detected by reading the file `/proc/meminfo`, looking for the
