@@ -669,6 +669,7 @@ int main(int argc, char *argv[])
 	/* Sanity check with driver that setting actually took. */
 	real_timeout = wdt_get_timeout();
 	if (real_timeout < 0) {
+		real_timeout = WDT_TIMEOUT_DEFAULT;
 		PERROR("Failed reading current watchdog timeout");
 	} else {
 		if (real_timeout <= period) {
@@ -679,11 +680,7 @@ int main(int argc, char *argv[])
 
 	/* If user did not provide '-t' interval, set to half WDT timeout */
 	if (-1 == period) {
-		if (real_timeout < 0)
-			period = WDT_KICK_DEFAULT;
-		else
-			period = real_timeout / 2;
-
+		period = real_timeout / 2;
 		if (!period)
 			period = 1;
 	}
