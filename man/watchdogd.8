@@ -46,6 +46,9 @@ Script or command to run as monitor plugin callback.  When given the
 will be called instead of reboot when the REBOOT watermark is reached by
 a monitor plugin.  Hence, it is up to the script to perform a reboot if
 that is needed.
+.It Fl f, -filenr Ar WARN Op ,REBOOT
+Enable file descriptor leak supervision.  REBOOT is optional, when
+omitted the plugin will not reboot.
 .It Fl h, -help
 Show help message.
 .It Fl l, -loglevel Ar LEVEL
