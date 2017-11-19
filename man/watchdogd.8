@@ -11,6 +11,7 @@
 .Op Fl T Ar SEC
 .Op Fl t Ar SEC
 .Op Fl l Ar LEVEL
+.Op Fl e Ar CMD
 .Op Fl a Ar WARN,REBOOT
 .Op Fl m Ar WARN,REBOOT
 .Op Fl f Ar WARN,REBOOT
@@ -50,6 +51,12 @@ Watchdog kick interval, in seconds.
 Disable watchdog (WDT) on normal exit.  Not supported in all WDT drivers
 due to HW limitations.  Some drivers emulate support by keeping an
 in-kernel thread to continue kicking the WDT.
+.It Fl e, -script Ar CMD
+Script or command to run as monitor plugin callback.  When given the
+.Ar CMD
+will be called instead of reboot when the REBOOT watermark is reached by
+a monitor plugin.  Hence, it is up to the script to perform a reboot if
+that is needed.
 .It Fl a, -load-averate Ar WARN,REBOOT
 Enable normalized load average supervision.
 .It Fl m, -meminfo Ar WARN,REBOOT
