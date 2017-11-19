@@ -431,6 +431,9 @@ static int usage(int status)
 {
 	printf("Usage:\n"
 	       "  %s [-hnsVx] "
+#if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
+	       "[-e CMD] "
+#endif
 #ifdef LOADAVG_PERIOD
 	       "[-a W,R] "
 #endif
