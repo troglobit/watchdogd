@@ -63,11 +63,13 @@ static void cb(uev_t *w, void *arg, int events)
 	if (level > warning) {
 		if (critical > 0.0 && level > critical) {
 			ERROR("File descriptor usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
-			wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("filenr"), WDOG_DESCRIPTOR_LEAK);
+			if (script_exec("filenr", 1, level, warning, critical))
+				wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("filenr"), WDOG_DESCRIPTOR_LEAK);
 			return;
 		}
 
 		WARN("File descriptor use very high, %.2f > %0.2f, possible leak!", level, warning);
+		script_exec("filenr", 0, level, warning, critical);
 	}
 }
 

@@ -4,6 +4,7 @@ sbin_PROGRAMS       = watchdogd
 dist_man8_MANS      = watchdogd.8
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      plugin.c          plugin.h	\
+		      script.c		script.h	\
 		      pmon.c		pmon.h
 if FINIT
 watchdogd_SOURCES  += finit.c

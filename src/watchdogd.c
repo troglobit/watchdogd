@@ -444,6 +444,9 @@ static int usage(int status)
 	       "Example:\n"
 	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
+#if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
+               "  -e, --script=CMD         Script or command to run as monitor plugin callback\n"
+#endif
                "  -n, --foreground         Start in foreground, background is default\n"
 	       "  -s, --syslog             Use syslog, even if running in foreground\n"
 	       "  -l, --loglevel=LVL       Log level: none, err, warn, notice*, info, debug\n"
@@ -470,7 +473,9 @@ static int usage(int status)
 	       "\n"
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 	       "WARN,REBOOT ranges are 0-1, even for load average, where number of CPUs\n"
-	       "are in fact taken into consideration.\n"
+	       "are used to normalize load average.  Use `-e CMD` to call script on WARN\n"
+	       "and REBOOT, instead of performing an unconditional reboot on REBOOT.\n"
+	       "Note: the REBOOT argument is optional, left out disables the function.\n"
 	       "\n"
 #endif
 	       "WDT drivers usually support 120 sec as lowest timeout (T), but %s\n"
@@ -516,7 +521,12 @@ int wdt_debug(int enable)
 #else
 #define MEMINFO ""
 #endif
-#define PLUGIN_FLAGS LOADAVG FILENR MEMINFO
+#if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
+#define RUNSCRIPT "e:"
+#else
+#define RUNSCRIPT
+#endif
+#define PLUGIN_FLAGS RUNSCRIPT LOADAVG FILENR MEMINFO
 
 extern int __wdog_loglevel(char *level);
 
@@ -532,6 +542,9 @@ int main(int argc, char *argv[])
 	struct option long_options[] = {
 #ifdef LOADAVG_PERIOD
 		{"load-average",  1, 0, 'a'},
+#endif
+#if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
+		{"script",        1, 0, 'e'},
 #endif
 		{"foreground",    0, 0, 'n'},
 		{"help",          0, 0, 'h'},
@@ -561,6 +574,13 @@ int main(int argc, char *argv[])
 #ifdef LOADAVG_PERIOD
 			if (loadavg_set(optarg))
 			    return usage(1);
+			break;
+#endif
+
+#if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
+		case 'e':
+			if (script_init(optarg))
+				return usage(1);
 			break;
 #endif
 

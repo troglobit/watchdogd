@@ -23,6 +23,7 @@
 #include "loadavg.h"
 #include "meminfo.h"
 #include "pmon.h"
+#include "script.h"
 
 void  wdt_plugins_init   (uev_ctx_t *ctx, int T);
 void  wdt_plugins_exit   (uev_ctx_t *ctx);

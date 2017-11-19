@@ -110,11 +110,13 @@ static void cb(uev_t *w, void *arg, int events)
 		if (level > warning) {
 			if (critical > 0.0 && level > critical) {
 				ERROR("Memory usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
-				wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("meminfo"), WDOG_MEMORY_LEAK);
+				if (script_exec("meminfo", 1, level, warning, critical))
+					wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("meminfo"), WDOG_MEMORY_LEAK);
 				return;
 			}
 
 			WARN("Memory use very high, %.2f > %0.2f, possible leak!", level, warning);
+			script_exec("meminfo", 0, level, warning, critical);
 		}
 	}
 }
