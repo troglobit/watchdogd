@@ -6,7 +6,7 @@ AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([src/watchdogd.c])
 AC_CONFIG_HEADER([config.h])
-AC_CONFIG_FILES([Makefile src/libwdog.pc src/Makefile examples/Makefile man/Makefile])
+AC_CONFIG_FILES([Makefile watchdogd.service src/libwdog.pc src/Makefile examples/Makefile man/Makefile])
 
 # Older versions of autoconf (<2.58) do not have AC_CONFIG_MACRO_DIR()
 #m4_include([m4/local-macros.m4])
@@ -51,6 +51,10 @@ AC_ARG_ENABLE(builtin-tests,
 AC_ARG_ENABLE(rcfile,
         AS_HELP_STRING([--disable-rcfile], [Disable file store reset cause backend]))
 
+AC_ARG_WITH([systemd],
+	[AS_HELP_STRING([--with-systemd=DIR], [Directory for systemd service files, default: auto])],,
+	[with_systemd=auto])
+
 AS_IF([test "x$enable_compat" = "xyes"], [
 	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
 
@@ -78,12 +82,36 @@ AS_IF([test "x$enable_builtin_tests" != "xno"], enable_builtin_tests="yes",[
 AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
 	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])
 
+# Check where to install the systemd .service file
+AS_IF([test "x$with_systemd" = "xyes" -o "x$with_systemd" = "xauto"], [
+     def_systemd=$($PKG_CONFIG --variable=systemdsystemunitdir systemd)
+     AS_IF([test "x$def_systemd" = "x"],
+         [AS_IF([test "x$with_systemd" = "xyes"],
+	     [AC_MSG_ERROR([systemd support requested but pkg-config unable to query systemd package])])
+	     with_systemd=no], [with_systemd="$def_systemd"])]
+)
+AS_IF([test "x$with_systemd" != "xno"],
+     [AC_SUBST([systemddir], [$with_systemd])])
+
+AM_CONDITIONAL([HAVE_SYSTEMD], [test "x$with_systemd" != "xno"])
 AM_CONDITIONAL(LOADAVG_PLUGIN, [test "x$enable_loadavg" != "xno"])
 AM_CONDITIONAL(FILENR_PLUGIN, [test "x$enable_filenr" != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$enable_meminfo" != "xno"])
 AM_CONDITIONAL(FINIT, [test "x$finit" = "xyes"])
 AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
+
+# Expand $sbindir early, into $SBINDIR, for systemd unit file
+# NOTE: This does *not* take prefix/exec_prefix override at "make
+#       install" into account, unfortunately.
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+test "x$exec_prefix" = xNONE && exec_prefix='${prefix}'
+DOCDIR=`eval echo $docdir`
+DOCDIR=`eval echo $DOCDIR`
+AC_SUBST(DOCDIR)
+SBINDIR=`eval echo $sbindir`
+SBINDIR=`eval echo $SBINDIR`
+AC_SUBST(SBINDIR)
 
 # Generate all files
 AC_OUTPUT

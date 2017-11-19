@@ -1,5 +1,6 @@
 ACLOCAL_AMFLAGS     = -I m4
 DISTCLEANFILES      = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d *.sock
+DISTCHECK_CONFIGURE_FLAGS = --with-systemd=$$dc_install_base/$(systemd)
 
 doc_DATA            = README.md LICENSE
 EXTRA_DIST          = README.md LICENSE ChangeLog.md
@@ -7,6 +8,10 @@ DIST_SUBDIRS        = examples
 SUBDIRS             = src man
 if ENABLE_EXAMPLES
 SUBDIRS            += examples
+endif
+
+if HAVE_SYSTEMD
+systemd_DATA        = watchdogd.service
 endif
 
 ## Compat hook
