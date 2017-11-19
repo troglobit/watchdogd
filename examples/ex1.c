@@ -34,12 +34,12 @@ int main(int argc, char *argv[])
 	if (argc >= 2 && !strncmp(argv[1], "-V", 2))
 		dbg = 1;
 
-	DEBUG("Checking connectivity with watchdogd ...");
+	DEBUG("=> Checking connectivity with watchdogd ...");
 	if (wdog_pmon_ping()) {
 		PERROR("Failed connectivity check");
 		return 1;
 	}
-	DEBUG("OK!");
+	DEBUG("=> OK!");
 
 	id = wdog_pmon_subscribe(NULL, 3000, &ack);
 	if (id < 0) {
@@ -53,14 +53,14 @@ int main(int argc, char *argv[])
 		if (wdog_status(&enabled))
 			PERROR("Failed reading wdog status");
 
-		DEBUG("Kicking ... (%sABLED)", enabled ? "EN" : "DIS");
+		DEBUG("=> Kicking ack:%d ... (%sABLED)", ack, enabled ? "EN" : "DIS");
 		if (wdog_pmon_kick(id, &ack))
 			PERROR("Failed kicking");
 		sleep(2);
 
 		/* Apx. halfway through, disable wdog ... */
 		if (i == 8) {
-			DEBUG("Verify that wdog can be disabled at runtime.");
+			DEBUG("=> Verify that wdog can be disabled at runtime.");
 			wdog_enable(0);
 
 			/* Miss deadline */
@@ -71,12 +71,12 @@ int main(int argc, char *argv[])
 
 		/* Later on ... re-enable */
 		if (i == 14) {
-			DEBUG("Re-enabling wdog ...");
+			DEBUG("=> Re-enabling wdog ...");
 			wdog_enable(1);
 		}
 	}
 
-	DEBUG("Exiting ...");
+	DEBUG("=> Exiting ...");
 	if (wdog_pmon_unsubscribe(id, ack)) {
 		PERROR("Failed unsubscribe");
 		return 1;
