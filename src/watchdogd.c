@@ -430,7 +430,17 @@ static void progname(char *nm)
 static int usage(int status)
 {
 	printf("Usage:\n"
-	       "  %s [-hnsVx] [-a WARN,REBOOT] [-T SEC] [-t SEC] [%s]\n\n"
+	       "  %s [-hnsVx] "
+#ifdef LOADAVG_PERIOD
+	       "[-a W,R] "
+#endif
+#ifdef MEMINFO_PERIOD
+	       "[-m W,R] "
+#endif
+#ifdef FILENR_PERIOD
+	       "[-f W,R] "
+#endif
+	       "[-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
 	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
@@ -442,8 +452,8 @@ static int usage(int status)
                "  -t, --interval=SEC       WDT kick interval, in SEC seconds, default: %d\n"
                "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
-	       "\n"
 #ifdef LOADAVG_PERIOD
+	       "\n"
 	       "  -a, --load-average=W,R   Enable normalized load average check, WARN,REBOOT\n"
 #endif
 #ifdef MEMINFO_PERIOD
@@ -458,9 +468,11 @@ static int usage(int status)
 	       "  -V, --version            Display version and exit\n"
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
+#if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 	       "WARN,REBOOT ranges are 0-1, even for load average, where number of CPUs\n"
 	       "are in fact taken into consideration.\n"
 	       "\n"
+#endif
 	       "WDT drivers usually support 120 sec as lowest timeout (T), but %s\n"
 	       "tries to set %d sec timeout, falling back to what the driver reports.\n"
 	       "\n", __progname, WDT_DEVNODE, __progname, WDT_KICK_DEFAULT,
