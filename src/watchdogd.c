@@ -416,6 +416,17 @@ static void period_cb(uev_t *w, void *arg, int event)
 	wdt_kick("Kicking watchdog.");
 }
 
+/* https://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons/ */
+static void progname(char *nm)
+{
+	int i;
+
+	for (i = 0; nm[i]; i++)
+		nm[i] = 0;
+
+	sprintf(nm, "@%s", PACKAGE);
+}
+
 static int usage(int status)
 {
 	printf("Usage:\n"
@@ -697,6 +708,9 @@ int main(int argc, char *argv[])
 
 	/* Start all enabled plugins */
 	wdt_plugins_init(&ctx, T);
+
+	/* Mark oursevles a "special" process for Finit/systemd */
+	progname(argv[0]);
 
 	/* Create pidfile when we're done with all set up. */
 	if (pidfile(NULL) && !wdt_testmode())
