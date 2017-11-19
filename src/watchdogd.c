@@ -277,6 +277,7 @@ int wdt_exit(uev_ctx_t *ctx)
 		LOG("Forced watchdog reboot.");
 		wdt_set_timeout(1);
 		close(fd);
+		fd = -1;
 	}
 
 	/* Tell main() to loop until reboot ... */
