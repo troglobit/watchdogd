@@ -1,0 +1,6 @@
+watchdogd (3.0-1) unstable; urgency=low
+
+  * Initial release, with upstream packaging.
+
+ -- Joachim Nilsson <troglobit@gmail.com>  Sun, 19 Nov 2017 21:18:50 +0100
+

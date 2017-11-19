@@ -1,0 +1,17 @@
+Source: watchdogd
+Section: admin
+Priority: extra
+Maintainer: Joachim Nilsson <troglobit@gmail.com>
+Build-Depends: debhelper (>= 9), dh-systemd (>= 1.5)
+Standards-Version: 3.9.8
+Homepage: https://github.com/troglobit/watchdogd
+
+Package: watchdogd
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, makedev (>= 2.3.1-24) | udev, lsb-base (>= 3.2-14)
+Conflicts: watchdog
+Description: Advanced system and process supervisor for (embedded) Linux
+ The watchdog daemon runs in the background on your system, monitoring
+ system load, file descriptor, and memory leaks.  Periodically it kicks
+ /dev/watchdog, if the system is overloaded and watchdogd misses a kick
+ the system will be rebooted.

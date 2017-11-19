@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+# export DH_VERBOSE=1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@ --with=systemd
+
+override_dh_auto_configure:
+	dh_auto_configure -- --enable-filenr --enable-loadavg --enable-meminfo --enable-syslog-mark
+
+override_dh_auto_install:
+	dh_auto_install
+	find debian/ -name LICENSE -delete

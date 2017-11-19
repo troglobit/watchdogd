@@ -1,0 +1,8 @@
+autoreconf.*
+debhelper-build-stamp
+files
+watchdogd.debhelper.log
+watchdogd.post*
+watchdogd.pre*
+watchdogd.substvars
+watchdogd/
