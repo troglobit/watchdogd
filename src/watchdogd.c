@@ -67,17 +67,22 @@ int wdt_init(struct watchdog_info *info)
 	if (wdt_testmode())
 		return 0;
 
-	/*
-	 * If we're called in a system with Finit running, tell it to
-	 * disable its built-in watchdog daemon.
-	 */
-	if (wdt_handover(&finit))
-		PERROR("Failed communicating watchdog handover with finit");
-
+retry:
 	fd = open(devnode, O_WRONLY);
 	if (fd == -1) {
-		DEBUG("Failed opening watchdog device %s: %s", devnode, strerror(errno));
-		return 1;
+		if (EBUSY != errno && !finit)
+			return 1;
+
+		/*
+		 * If we're called in a system with Finit running, tell it to
+		 * disable its built-in watchdog daemon.
+		 */
+		if (finit || wdt_handover(&finit)) {
+			PERROR("Failed communicating watchdog handover with finit");
+			return 1;
+		}
+
+		goto retry;
 	}
 
 	if (finit)
