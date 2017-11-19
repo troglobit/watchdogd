@@ -47,8 +47,9 @@ static void cb(uev_t *w, void *arg, int events)
 	}
 
 #ifdef SYSLOG_MARK
-	LOG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
-	    load[0], load[1], load[2], (int)num);
+//	LOG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
+//	    load[0], load[1], load[2], (int)num);
+	LOG("Loadavg: %.2f, %.2f, %.2f (1, 5, 15 min)", load[0], load[1], load[2]);
 #endif
 
 	/* Compensate for number of CPU cores */

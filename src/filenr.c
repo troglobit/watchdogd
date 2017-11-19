@@ -55,8 +55,9 @@ static void cb(uev_t *w, void *arg, int events)
 	level = (double)(curr - un) / max;
 
 #ifdef SYSLOG_MARK
-	LOG("Current file-nr: %d max: %d, level: %.0f%%, warning: %.0f%%, critical: %.0f%%",
-	    curr, max, level * 100, warning * 100, critical * 100);
+//	LOG("Current file-nr: %d max: %d, level: %.0f%%, warning: %.0f%%, critical: %.0f%%",
+//	    curr, max, level * 100, warning * 100, critical * 100);
+	LOG("File nr: %d, max: %d", curr, max);
 #endif
 
 	if (level > warning) {
