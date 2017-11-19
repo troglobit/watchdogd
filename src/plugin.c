@@ -81,10 +81,8 @@ int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 
 	strlcpy(buf, arg, sizeof(buf));
 	ptr = strchr(buf, ',');
-	if (ptr) {
+	if (ptr)
 		*ptr++ = 0;
-		DEBUG("Found second arg: %s", ptr);
-	}
 
 	/* First argument is warning */
 	value = strtod(buf, NULL);
@@ -106,8 +104,6 @@ int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 		if (critical)
 			*critical = value;
 	}
-
-	DEBUG("%s monitor: %.2f, %.2f", desc, warning ? *warning : 0.0, critical ? *critical : 0.0);
 
 	return 0;
 }
