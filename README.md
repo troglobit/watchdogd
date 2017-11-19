@@ -24,9 +24,9 @@ Introduction
 ------------
 
 `watchdogd(8)` is an advanced system and process supervisor daemon,
-primarily intended for embedded Linux and server systems.  It can help
-monitor critical system resources, supervise the heartbeat of processes,
-record deadline transgressions, and reset the system.
+primarily intended for embedded Linux and server systems.  It monitors
+critical system resources, supervises the heartbeat of processes,
+records deadline transgressions, and resets the system if needed.
 
 When a system comes back up after a reset, `watchdogd` determines the
 reset cause and records it in a logfile for later analysis by an
