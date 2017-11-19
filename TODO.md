@@ -8,10 +8,8 @@ Before Release
 
 * watchdogd:
   - Add support for running a script callback on WARN,REBOOT
-* watchdogctl:
-  - add set timeout command
-  - add commands to enable/disable plugins
 * Basic Debian packaging, including systemd and finit support
+
 
 General
 -------
@@ -27,6 +25,9 @@ General
     shall be possible to read out as well.
   - Hard disk/flash
   - RTC alarm register
+* watchdogctl:
+  - add set timeout command
+  - add commands to enable/disable plugins
 
 
 System Health Monitor
