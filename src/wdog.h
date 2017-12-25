@@ -35,8 +35,8 @@ typedef enum {
 
 typedef struct
 {
-	unsigned int  wid;
 	unsigned int  counter;
+	unsigned int  wid;
 	wdog_cause_t  cause;
 	unsigned int  enabled;
 	char          label[16];
