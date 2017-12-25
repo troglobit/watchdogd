@@ -35,11 +35,11 @@ typedef enum {
 
 typedef struct
 {
-	unsigned int  counter;
-	unsigned int  wid;
-	wdog_cause_t  cause;
-	unsigned int  enabled;
-	char          label[16];
+	unsigned int  counter;   /* Global reset counter since power-on, not per-cause */
+	unsigned int  wid;       /* Watchdog ID of process causing reset */
+	wdog_cause_t  cause;     /* Reset cause */
+	unsigned int  enabled;   /* Unused, kept for compat. */
+	char          label[16]; /* Process name causing reset, or label */
 } wdog_reason_t;
 
 int   wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */
