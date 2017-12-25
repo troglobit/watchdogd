@@ -40,6 +40,11 @@ static inline int wdog_get_reason(wdog_reason_t *reason)
 	return wdog_reboot_reason(reason);
 }
 
+static inline int wdog_get_reason_raw(wdog_reason_t *reason)
+{
+	return wdog_reboot_reason_raw(reason);
+}
+
 static inline char *wdog_get_reason_str(wdog_reason_t *reason)
 {
 	return wdog_reboot_reason_str(reason);
