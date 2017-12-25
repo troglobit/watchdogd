@@ -304,6 +304,14 @@ static void cb(uev_t *w, void *arg, int events)
 		*reason = reboot_reason;
 		break;
 
+	case WDOG_RESET_CAUSE_RAW_CMD:
+		reason = (wdog_reason_t *)&req;
+		if (wdt_reset_cause(reason)) {
+			req.cmd   = WDOG_CMD_ERROR;
+			req.error = errno;
+		}
+		break;
+
 	case WDOG_CLEAR_CAUSE_CMD:
 		if (wdt_clear_cause()) {
 			req.cmd   = WDOG_CMD_ERROR;

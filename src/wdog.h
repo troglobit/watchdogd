@@ -54,6 +54,7 @@ int   wdog_status           (int *status);  /* Check if enabled */
 int   wdog_reboot           (int pid, char *label);
 int   wdog_reboot_timeout   (int pid, char *label, int timeout);
 int   wdog_reboot_reason    (wdog_reason_t *reason);
+int   wdog_reboot_reason_raw(wdog_reason_t *reason);
 char *wdog_reboot_reason_str(wdog_reason_t *reason);
 int   wdog_reboot_reason_clr(void);
 

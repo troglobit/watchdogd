@@ -141,7 +141,8 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 		goto error;
 	}
 
-	if (cmd == WDOG_RESET_CAUSE_CMD)
+	if (cmd == WDOG_RESET_CAUSE_CMD ||
+	    cmd == WDOG_RESET_CAUSE_RAW_CMD)
 		memcpy(ack, &req, sizeof(wdog_reason_t));
 	else if (ack)
 		*ack = req.next_ack;
@@ -263,6 +264,11 @@ int wdog_reboot_timeout(pid_t pid, char *label, int timeout)
 int wdog_reboot_reason(wdog_reason_t *reason)
 {
 	return doit(WDOG_RESET_CAUSE_CMD, 0, NULL, -1, (int *)reason);
+}
+
+int wdog_reboot_reason_raw(wdog_reason_t *reason)
+{
+	return doit(WDOG_RESET_CAUSE_RAW_CMD, 0, NULL, -1, (int *)reason);
 }
 
 char *wdog_reboot_reason_str(wdog_reason_t *reason)
