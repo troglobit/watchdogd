@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
 	wdog_reboot_reason(&reason);
 	printf("Reset reason: %s\n", wdog_reboot_reason_str(&reason));
-	printf("wid %d, label %s, cause: %d, counter: %d\n",
+	printf("wid %d, label %s, cause: %d, counter: %u\n",
 	       reason.wid, reason.label, reason.cause, reason.counter);
 
 	id = wdog_subscribe(NULL, 2000, &ack);

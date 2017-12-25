@@ -401,7 +401,7 @@ static int create_bootstatus(int cause, int timeout, int interval)
 			fprintf(fp, "Watchdog ID  : %d\n", reboot_reason.wid);
 			fprintf(fp, "Label        : %s\n", reboot_reason.label);
 			fprintf(fp, "Reset cause  : %d (%s)\n", reboot_reason.cause, wdog_get_reason_str(&reboot_reason));
-			fprintf(fp, "Counter      : %d\n", reboot_reason.counter);
+			fprintf(fp, "Counter      : %u\n", reboot_reason.counter);
 		}
                 fclose(fp);
         } else {
