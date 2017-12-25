@@ -289,6 +289,15 @@ char *wdog_reboot_reason_str(wdog_reason_t *reason)
 	case WDOG_FORCED_RESET:
 		return "Forced reset";
 
+	case WDOG_DESCRIPTOR_LEAK:
+		return "Descriptor leak";
+
+	case WDOG_MEMORY_LEAK:
+		return "Memory leak";
+
+	case WDOG_CPU_OVERLOAD:
+		return "CPU overload";
+
 	case WDOG_FAILED_UNKNOWN:
 	default:
 		break;
