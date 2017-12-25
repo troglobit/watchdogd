@@ -38,12 +38,12 @@ int reset_cause_set(pid_t pid, wdog_reason_t *reason)
 	if (!reason->label[0])
 		strlcpy(reason->label, "XBAD_LABEL", sizeof(reason->label));
 
+	fprintf(fp, WDT_REASON_CNT ": %d\n", reason->counter);
 	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
 	fprintf(fp, WDT_REASON_WID ": %d\n", reason->wid);
 	fprintf(fp, WDT_REASON_LBL ": %s\n", reason->label);
 	fprintf(fp, WDT_REASON_CSE ": %d\n", reason->cause);
 	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(reason));
-	fprintf(fp, WDT_REASON_CNT ": %d\n", reason->counter);
 	fclose(fp);
 
 	return 0;
@@ -76,13 +76,13 @@ int reset_cause_get(wdog_reason_t *reason)
 	}
 
 	while (fgets(buf, sizeof(buf), fp)) {
-		if (sscanf(buf, WDT_REASON_WID ": %d\n", &reason->wid) == 1)
+		if (sscanf(buf, WDT_REASON_CNT ": %d\n", &reason->counter) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_LBL ": %s\n", reason->label) == 1)
+		if (sscanf(buf, WDT_REASON_WID ": %d\n", &reason->wid) == 1)
 			continue;
 		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&reason->cause) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_CNT ": %d\n", &reason->counter) == 1)
+		if (sscanf(buf, WDT_REASON_LBL ": %s\n", reason->label) == 1)
 			continue;
 	}
 	fclose(fp);
