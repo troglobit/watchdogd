@@ -17,6 +17,14 @@
 
 #include <unistd.h>
 
+static inline int wdog_is_enabled(void)
+{
+	int status = 0;
+
+	wdog_status(&status);
+	return status;
+}
+
 static inline int wdog_debug(int enable)
 {
 	return wdog_set_debug(enable);
