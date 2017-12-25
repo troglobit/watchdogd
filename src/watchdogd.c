@@ -32,6 +32,9 @@ int period = -1;
 int __wdt_testmode = 0;
 #endif
 
+/* Actual reboot reason as read at boot, reported by pmon API */
+wdog_reason_t reboot_reason;
+
 /* WDT info */
 static struct watchdog_info __info;
 
@@ -355,7 +358,6 @@ static int create_bootstatus(int cause, int timeout, int interval)
 {
 	FILE *fp;
 	char *status;
-	wdog_reason_t reason;
 
 	/*
 	 * Clear latest reset cause log IF and only IF:
@@ -366,10 +368,10 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	if (cause & WDIOF_POWERUNDER)
 		wdt_clear_cause();
 
-	memset(&reason, 0, sizeof(reason));
-	if (!wdt_reset_cause(&reason)) {
-		reset_cause   = reason.cause;
-		reset_counter = reason.counter;
+	memset(&reboot_reason, 0, sizeof(reboot_reason));
+	if (!wdt_reset_cause(&reboot_reason)) {
+		reset_cause   = reboot_reason.cause;
+		reset_counter = reboot_reason.counter;
 	}
 
 	if (wdt_testmode())
@@ -396,10 +398,10 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
         if (fp) {
 		if (!wdt_reset_cause(&reason)) {
-			fprintf(fp, "Watchdog ID  : %d\n", reason.wid);
-			fprintf(fp, "Label        : %s\n", reason.label);
-			fprintf(fp, "Reset cause  : %d (%s)\n", reason.cause, wdog_get_reason_str(&reason));
-			fprintf(fp, "Counter      : %d\n", reason.counter);
+			fprintf(fp, "Watchdog ID  : %d\n", reboot_reason.wid);
+			fprintf(fp, "Label        : %s\n", reboot_reason.label);
+			fprintf(fp, "Reset cause  : %d (%s)\n", reboot_reason.cause, wdog_get_reason_str(&reboot_reason));
+			fprintf(fp, "Counter      : %d\n", reboot_reason.counter);
 		}
                 fclose(fp);
         } else {

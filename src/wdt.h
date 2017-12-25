@@ -74,6 +74,7 @@ extern char *__progname;
 #ifndef TESTMODE_DISABLED
 extern int   __wdt_testmode;
 #endif
+extern wdog_reason_t reboot_reason;
 
 int wdt_enable         (int enable);
 int wdt_debug          (int enable);
