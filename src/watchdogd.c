@@ -53,6 +53,8 @@ static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
 static uev_t sigpwr_watcher;
 static uev_t timeout_watcher;
+static uev_t sigusr1_watcher;
+static uev_t sigusr2_watcher;
 
 
 int wdt_capability(uint32_t flag)
@@ -343,6 +345,11 @@ static void reboot_cb(uev_t *w, void *arg, int events)
 	wdt_forced_reboot(w->ctx, 1, "init", WDOG_FORCED_RESET);
 }
 
+static void ignore_cb(uev_t *w, void *arg, int events)
+{
+	DEBUG("Ignoring SIG%s", (char *)arg);
+}
+
 static void setup_signals(uev_ctx_t *ctx)
 {
 	/* Signals to stop watchdogd */
@@ -352,6 +359,10 @@ static void setup_signals(uev_ctx_t *ctx)
 
 	/* Watchdog reboot support */
 	uev_signal_init(ctx, &sigpwr_watcher, reboot_cb, NULL, SIGPWR);
+
+	/* Ignore signals older watchdogd used, in case of older userland */
+	uev_signal_init(ctx, &sigusr1_watcher, ignore_cb, "USR1", SIGUSR1);
+	uev_signal_init(ctx, &sigusr2_watcher, ignore_cb, "USR2", SIGUSR2);
 }
 
 static int create_bootstatus(int cause, int timeout, int interval)
