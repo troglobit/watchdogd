@@ -263,16 +263,31 @@ int wdog_reboot_timeout(pid_t pid, char *label, int timeout)
 
 int wdog_reboot_reason(wdog_reason_t *reason)
 {
+	if (!reason) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	return doit(WDOG_RESET_CAUSE_CMD, 0, NULL, -1, (int *)reason);
 }
 
 int wdog_reboot_reason_raw(wdog_reason_t *reason)
 {
+	if (!reason) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	return doit(WDOG_RESET_CAUSE_RAW_CMD, 0, NULL, -1, (int *)reason);
 }
 
 char *wdog_reboot_reason_str(wdog_reason_t *reason)
 {
+	if (!reason) {
+		errno = EINVAL;
+		return "Unknown";
+	}
+
 	switch (reason->cause) {
 	case WDOG_SYSTEM_NONE:
 		return "None";
