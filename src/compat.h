@@ -16,6 +16,8 @@
  */
 
 #include <unistd.h>
+#include <signal.h>		/* kill(), SIGINT */
+#include <sys/reboot.h>		/* reboot(), RB_AUTOBOOT */
 
 static inline int wdog_is_enabled(void)
 {
@@ -30,9 +32,20 @@ static inline int wdog_debug(int enable)
 	return wdog_set_debug(enable);
 }
 
-static inline int wdog_forced_reset(char *label)
+static inline void wdog_forced_reset(char *label)
 {
-	return wdog_reboot(getpid(), label);
+	if (!label || !label[0])
+		label = "XBAD_LABEL";
+
+	if (wdog_reboot(getpid(), label)) {
+		/*
+		 * Fallback handling in case API fails, the user expects
+		 * a reboot now.  Try an orderly reboot first simulating
+		 * ctrl-alt-del from the kernel, then do kernel reboot.
+		 */
+		if (kill(1, SIGINT))
+			reboot(RB_AUTOBOOT);
+	}
 }
 
 static inline int wdog_get_reason(wdog_reason_t *reason)
