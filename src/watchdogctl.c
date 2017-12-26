@@ -56,6 +56,18 @@ static int do_clear(char *arg)
 	return wdog_reboot_reason_clr();
 }
 
+static int do_counter(char *arg)
+{
+	int rc;
+	unsigned int counter = 0;
+
+	rc = wdog_reboot_counter(&counter);
+	if (!rc)
+		printf("%u\n", counter);
+
+	return rc;
+}
+
 static int do_enable(char *arg)
 {
 	int result;
@@ -253,6 +265,7 @@ static int usage(int code)
 	       "\n"
 	       "Commands:\n"
 	       "  clear              Clear reset reason\n"
+	       "  counter            Show reset counter, num. reboots since power-on\n"
 	       "  debug              Toggle debug log level in daemon\n"
 	       "  disable            Disable watchdog\n"
 	       "  enable             Re-enable watchdog\n"
@@ -296,6 +309,7 @@ int main(int argc, char *argv[])
 	};
 	struct command command[] = {
 		{ "clear",             do_clear,     0, NULL },
+		{ "counter",           do_counter,   0, NULL },
 		{ "disable",           do_enable,    0, "0"  },
 		{ "enable",            do_enable,    0, "1"  },
 		{ "force-reset",       do_reset,     0, NULL },
