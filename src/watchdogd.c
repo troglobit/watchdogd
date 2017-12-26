@@ -27,6 +27,7 @@ int enabled = 1;
 int loglevel = LOG_NOTICE;
 int wait_reboot = 0;
 int period = -1;
+char  *prognm = NULL;
 
 #ifndef TESTMODE_DISABLED
 int __wdt_testmode = 0;
@@ -435,15 +436,27 @@ static void period_cb(uev_t *w, void *arg, int event)
 	wdt_kick("Kicking watchdog.");
 }
 
-/* https://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons/ */
-static void progname(char *nm)
+/*
+ * Mark oursevles a "special" process for Finit/systemd
+ * https://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons/
+ */
+static char *progname(char *arg0)
 {
 	int i;
+	char *nm;
 
-	for (i = 0; nm[i]; i++)
-		nm[i] = 0;
+	nm = strrchr(arg0, '/');
+	if (nm)
+		nm++;
+	else
+		nm = arg0;
+	nm = strdup(nm);
 
-	sprintf(nm, "@%s", PACKAGE);
+	for (i = 0; arg0[i]; i++)
+		arg0[i] = 0;
+	sprintf(arg0, "@%s", PACKAGE);
+
+	return nm;
 }
 
 static int usage(int status)
@@ -502,8 +515,8 @@ static int usage(int status)
 #endif
 	       "WDT drivers usually support 120 sec as lowest timeout (T), but %s\n"
 	       "tries to set %d sec timeout, falling back to what the driver reports.\n"
-	       "\n", __progname, WDT_DEVNODE, __progname, WDT_KICK_DEFAULT,
-	       __progname, WDT_TIMEOUT_DEFAULT);
+	       "\n", prognm, WDT_DEVNODE, prognm, WDT_KICK_DEFAULT,
+	       prognm, WDT_TIMEOUT_DEFAULT);
 
 	return status;
 }
@@ -590,6 +603,7 @@ int main(int argc, char *argv[])
 	};
 	uev_ctx_t ctx;
 
+	prognm = progname(argv[0]);
 	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "Fhl:Lnp::sSt:T:Vx?", long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'a':
@@ -701,9 +715,9 @@ int main(int argc, char *argv[])
 		log_opts |= LOG_PERROR;
 
 	setlogmask(LOG_UPTO(loglevel));
-	openlog(NULL, log_opts, LOG_DAEMON);
+	openlog(prognm, log_opts, LOG_DAEMON);
 
-	LOG("watchdogd v%s %s ...", PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
+	LOG("%s v%s %s ...", prognm, PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
 	uev_init(&ctx);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
@@ -763,11 +777,8 @@ int main(int argc, char *argv[])
 	/* Start all enabled plugins */
 	wdt_plugins_init(&ctx, T);
 
-	/* Mark oursevles a "special" process for Finit/systemd */
-	progname(argv[0]);
-
 	/* Create pidfile when we're done with all set up. */
-	if (pidfile(NULL) && !wdt_testmode())
+	if (pidfile(prognm) && !wdt_testmode())
 		PERROR("Cannot create pidfile");
 
 	status = uev_run(&ctx, 0);
