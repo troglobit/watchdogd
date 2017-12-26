@@ -342,7 +342,7 @@ static void exit_cb(uev_t *w, void *arg, int events)
 
 static void reboot_cb(uev_t *w, void *arg, int events)
 {
-	wdt_forced_reboot(w->ctx, 1, "init", WDOG_FORCED_RESET);
+	wdt_forced_reboot(w->ctx, 1, "init", 0);
 }
 
 static void ignore_cb(uev_t *w, void *arg, int events)
