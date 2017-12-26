@@ -74,6 +74,7 @@ extern char *__progname;
 #ifndef TESTMODE_DISABLED
 extern int   __wdt_testmode;
 #endif
+extern unsigned int reset_counter;
 extern wdog_reason_t reboot_reason;
 
 int wdt_enable         (int enable);
@@ -88,6 +89,11 @@ int wdt_get_bootstatus (void);
 int wdt_close          (uev_ctx_t *ctx);
 int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
 int wdt_forced_reboot  (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
+
+static inline unsigned int wdt_reset_counter(void)
+{
+	return reset_counter;
+}
 
 static inline int wdt_testmode(void)
 {

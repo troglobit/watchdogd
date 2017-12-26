@@ -35,12 +35,12 @@ int __wdt_testmode = 0;
 /* Actual reboot reason as read at boot, reported by pmon API */
 wdog_reason_t reboot_reason;
 
+/* Reset cause */
+wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
+unsigned int reset_counter = 0;
+
 /* WDT info */
 static struct watchdog_info __info;
-
-/* Reset cause */
-static wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
-static unsigned int reset_counter = 0;
 
 /* Local variables */
 static int fd = -1;
