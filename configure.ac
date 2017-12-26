@@ -26,7 +26,7 @@ PKG_CHECK_MODULES([lite], [libite >= 2.0.1])
 
 # Check for configure switches
 AC_ARG_ENABLE([compat],
-	[AS_HELP_STRING([--enable-compat], [Enable compat supervisor.status])],,
+	[AS_HELP_STRING([--enable-compat], [Enable compat supervisor.status and signals])],,
 	[enable_compat=no], [])
 AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
@@ -56,7 +56,7 @@ AC_ARG_WITH([systemd],
 	[with_systemd=auto])
 
 AS_IF([test "x$enable_compat" = "xyes"], [
-	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status])])
+	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status and signals])])
 
 AS_IF([test "x$enable_loadavg" != "xno"], [
 	AS_IF([test "x$enable_loadavg" = "xyes"], [enable_loadavg=300])
