@@ -342,7 +342,8 @@ static void exit_cb(uev_t *w, void *arg, int events)
 
 static void reboot_cb(uev_t *w, void *arg, int events)
 {
-	wdt_forced_reboot(w->ctx, 1, "init", 0);
+	/* XXX: A future version may try to figure out PID of sender */
+	wdt_forced_reboot(w->ctx, 1, (char *)arg, 0);
 }
 
 static void ignore_cb(uev_t *w, void *arg, int events)
@@ -353,12 +354,17 @@ static void ignore_cb(uev_t *w, void *arg, int events)
 static void setup_signals(uev_ctx_t *ctx)
 {
 	/* Signals to stop watchdogd */
+#ifndef COMPAT_SUPERVISOR
 	uev_signal_init(ctx, &sigterm_watcher, exit_cb, NULL, SIGTERM);
-	uev_signal_init(ctx, &sigint_watcher,  exit_cb, NULL, SIGINT);
 	uev_signal_init(ctx, &sigquit_watcher, exit_cb, NULL, SIGQUIT);
+#else
+	uev_signal_init(ctx, &sigterm_watcher, reboot_cb, "*REBOOT*", SIGTERM);
+	uev_signal_init(ctx, &sigquit_watcher, reboot_cb, "client", SIGQUIT);
+#endif
+	uev_signal_init(ctx, &sigint_watcher,  exit_cb, NULL, SIGINT);
 
 	/* Watchdog reboot support */
-	uev_signal_init(ctx, &sigpwr_watcher, reboot_cb, NULL, SIGPWR);
+	uev_signal_init(ctx, &sigpwr_watcher, reboot_cb, "init", SIGPWR);
 
 	/* Ignore signals older watchdogd used, in case of older userland */
 	uev_signal_init(ctx, &sigusr1_watcher, ignore_cb, "USR1", SIGUSR1);
