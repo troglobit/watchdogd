@@ -108,20 +108,19 @@ responds to the following signals:
 .Pp
 .Bl -tag -width TERM -compact
 .It TERM
-Tell
-.Nm
-to exit gracefully.  If started with the
+Safe exit if started with the
 .Fl x
-flag
-.Nm
-writes the magic word before closing the connection to the kernel WDT
-driver, this to prevent causing a system reboot.
+flag, otherwise same as PWR.
 .It INT
 Same as TERM
+.It PWR
+Force a system reboot.  Systems with Finit use this to reboot.
 .It QUIT
 Same as TERM
-.It PWR
-Can be used to signal system reboot.
+.It USR1
+Ignored, was used in an earlier version.
+.It USR2
+Same as USR1
 .El
 .Sh FILES
 .Bl -tag -width /var/lib/misc/watchdogd.state -compact
