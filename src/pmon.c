@@ -299,6 +299,10 @@ static void cb(uev_t *w, void *arg, int events)
 		}
 		break;
 
+	case WDOG_RESET_COUNTER_CMD:
+		req.next_ack = wdt_reset_counter();
+		break;
+
 	case WDOG_RESET_CAUSE_CMD:
 		reason = (wdog_reason_t *)&req;
 		*reason = reboot_reason;

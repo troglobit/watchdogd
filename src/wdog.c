@@ -261,6 +261,16 @@ int wdog_reboot_timeout(pid_t pid, char *label, int timeout)
 	return doit(WDOG_REBOOT_CMD, pid, label, timeout, NULL);
 }
 
+int wdog_reboot_counter(unsigned int *counter)
+{
+	if (!counter) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	return doit(WDOG_RESET_COUNTER_CMD, 0, NULL, -1, (int *)counter);
+}
+
 int wdog_reboot_reason(wdog_reason_t *reason)
 {
 	if (!reason) {
