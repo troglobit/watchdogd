@@ -3,6 +3,10 @@ Goal of watchdogd
 
 Monitor the health of the system and its processes.
 
+Before Release
+--------------
+
+* watchdogctl, allow short forms of commands, like initctl
 
 General
 -------
