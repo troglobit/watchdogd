@@ -48,6 +48,7 @@ int wdt_handover(int *exist)
 	 * Try connecting to Finit, we should get a reply immediately,
 	 * if nobody is at home we close the connection and continue.
 	 */
+	DEBUG("Attempting WDT handover with Finit ...");
 	memset(&sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
 	strlcpy(sun.sun_path, INIT_SOCKET, sizeof(sun.sun_path));

@@ -87,7 +87,7 @@ retry:
 			PERROR("Failed communicating watchdog handover with finit");
 			return 1;
 		}
-
+		DEBUG("WDT handover complete.");
 		goto retry;
 	}
 
