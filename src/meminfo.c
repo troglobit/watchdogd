@@ -111,7 +111,7 @@ static void cb(uev_t *w, void *arg, int events)
 			if (critical > 0.0 && level > critical) {
 				ERROR("Memory usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
 				if (script_exec("meminfo", 1, level, warning, critical))
-					wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("meminfo"), WDOG_MEMORY_LEAK);
+					wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("meminfo"), 0);
 				return;
 			}
 
