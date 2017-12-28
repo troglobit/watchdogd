@@ -315,7 +315,7 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 	if (!ctx || !reason)
 		return errno = EINVAL;
 
-	LOG("Reboot requested by pid %d, label %s ...", pid, reason->label);
+	DEBUG("Reboot requested by pid %d, label %s, timeout: %d ...", pid, reason->label, timeout);
 
 	/* Save reboot cause */
 	reason->counter = reset_counter + 1;
@@ -327,6 +327,7 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 	return wdt_exit(ctx);
 }
 
+/* timeout is in milliseconds */
 int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 {
 	wdog_reason_t reason;
@@ -340,6 +341,7 @@ int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 
 static void exit_cb(uev_t *w, void *arg, int events)
 {
+	DEBUG("Got signal %d, rebooting:%d ...", w->signo, rebooting);
 	if (rebooting) {
 		wdt_exit(w->ctx);
 		return;
@@ -352,6 +354,7 @@ static void reboot_cb(uev_t *w, void *arg, int events)
 {
 	int timeout = 0;
 
+	DEBUG("Got signal %d, rebooting:%d ...", w->signo, rebooting);
 	if (rebooting) {
 		wdt_exit(w->ctx);
 		return;
@@ -360,7 +363,7 @@ static void reboot_cb(uev_t *w, void *arg, int events)
 	rebooting = 1;
 
 	if (w->signo == SIGPWR)
-		timeout = 10;
+		timeout = 10000;
 
 	/* XXX: A future version may try to figure out PID of sender */
 	wdt_forced_reboot(w->ctx, 1, (char *)arg, timeout);
