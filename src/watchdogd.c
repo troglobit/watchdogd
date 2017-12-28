@@ -27,6 +27,7 @@ int enabled = 1;
 int loglevel = LOG_NOTICE;
 int wait_reboot = 0;
 int period = -1;
+int rebooting = 0;
 char  *prognm = NULL;
 
 #ifndef TESTMODE_DISABLED
@@ -274,13 +275,14 @@ int wdt_clear_cause(void)
 int wdt_exit(uev_ctx_t *ctx)
 {
 	/* Let plugins exit before we leave main loop */
-	wdt_plugins_exit(ctx);
+	if (!rebooting)
+		wdt_plugins_exit(ctx);
 
 	/* Be nice, sync any buffered data to disk first. */
 	sync();
 
 	if (fd != -1) {
-		LOG("Forced watchdog reboot.");
+		DEBUG("Forced watchdog reboot.");
 		wdt_set_timeout(1);
 		close(fd);
 		fd = -1;
@@ -338,13 +340,30 @@ int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 
 static void exit_cb(uev_t *w, void *arg, int events)
 {
+	if (rebooting) {
+		wdt_exit(w->ctx);
+		return;
+	}
+
 	wdt_close(w->ctx);
 }
 
 static void reboot_cb(uev_t *w, void *arg, int events)
 {
+	int timeout = 0;
+
+	if (rebooting) {
+		wdt_exit(w->ctx);
+		return;
+	}
+
+	rebooting = 1;
+
+	if (w->signo == SIGPWR)
+		timeout = 10;
+
 	/* XXX: A future version may try to figure out PID of sender */
-	wdt_forced_reboot(w->ctx, 1, (char *)arg, 0);
+	wdt_forced_reboot(w->ctx, 1, (char *)arg, timeout);
 }
 
 static void ignore_cb(uev_t *w, void *arg, int events)
