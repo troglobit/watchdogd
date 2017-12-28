@@ -8,6 +8,7 @@ Before Release
 
 * watchdogd, reverse logic: update reset counter for each boot,
   not for each reboot command, to catch power loss as well
+* Sample average to not trigger reboot during peak loads
 * watchdogctl, allow short forms of commands, like initctl
 
 General
