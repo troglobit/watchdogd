@@ -44,7 +44,8 @@ int reset_cause_set(pid_t pid, wdog_reason_t *reason)
 	fprintf(fp, WDT_REASON_LBL ": %s\n", reason->label);
 	fprintf(fp, WDT_REASON_CSE ": %d\n", reason->cause);
 	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(reason));
-	fclose(fp);
+	if (fclose(fp))
+		PERROR("Failed writing reset cause to disk");
 
 	return 0;
 }
