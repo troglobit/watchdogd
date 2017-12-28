@@ -6,6 +6,8 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
+* watchdogd, reverse logic: update reset counter for each boot,
+  not for each reboot command, to catch power loss as well
 * watchdogctl, allow short forms of commands, like initctl
 
 General
