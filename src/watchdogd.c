@@ -394,6 +394,29 @@ static void setup_signals(uev_ctx_t *ctx)
 	uev_signal_init(ctx, &sigusr2_watcher, ignore_cb, "USR2", SIGUSR2);
 }
 
+#ifdef COMPAT_SUPERVISOR
+static int compat_supervisor(wdog_reason_t *r)
+{
+	FILE *fp;
+
+	/* Compat, created at boot from RTC contents */
+	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
+        if (!fp) {
+		PERROR("Failed creating compat boot status");
+		return -1;
+	}
+
+	fprintf(fp, "Watchdog ID  : %d\n", r->wid);
+	fprintf(fp, "Label        : %s\n", r->label);
+	fprintf(fp, "Reset cause  : %d (%s)\n", r->cause, wdog_get_reason_str(r));
+	fprintf(fp, "Counter      : %u\n", r->counter);
+
+	return fclose(fp);
+}
+#else
+#define compat_supervisor(r) 0
+#endif /* COMPAT_SUPERVISOR */
+
 static int create_bootstatus(int cause, int timeout, int interval)
 {
 	FILE *fp;
@@ -440,24 +463,7 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	if (wdt_testmode())
 		return 0;
 
-#ifdef COMPAT_SUPERVISOR
-	/* Compat, created at boot from RTC contents */
-	fp = fopen(_PATH_VARRUN "supervisor.status", "w");
-        if (fp) {
-		if (!wdt_reset_cause(&reason)) {
-			fprintf(fp, "Watchdog ID  : %d\n", reboot_reason.wid);
-			fprintf(fp, "Label        : %s\n", reboot_reason.label);
-			fprintf(fp, "Reset cause  : %d (%s)\n", reboot_reason.cause, wdog_get_reason_str(&reboot_reason));
-			fprintf(fp, "Counter      : %u\n", reboot_reason.counter);
-		}
-                fclose(fp);
-        } else {
-		PERROR("Failed creating compat boot status");
-		return -1;
-	}
-#endif /* COMPAT_SUPERVISOR */
-
-	return 0;
+	return compat_supervisor(&reboot_reason);
 }
 
 static void period_cb(uev_t *w, void *arg, int event)
