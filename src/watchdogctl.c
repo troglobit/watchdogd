@@ -265,20 +265,22 @@ static int usage(int code)
 	       "  -V, --version      Show program version\n"
 	       "\n"
 	       "Commands:\n"
+	       "  help               This help text\n"
+//	       "  debug              Toggle watchdogd debug level\n"
+	       "  loglevel LVL       Adjust log level: none, err, warn, notice*, info, debug\n"
+//	       "  force-reset        Forced reset, alias to `reboot 0`\n"
+	       "  reboot  [MSEC]     Reboot using WDT, optional MSEC (milliseconds) delay\n"
+	       "  status             Show watchdog and supervisor status, default command\n"
+	       "  version            Show program version\n"
+		"\n"
 	       "  clear              Clear reset reason\n"
 	       "  counter            Show reset counter, num. reboots since power-on\n"
-	       "  debug              Toggle debug log level in daemon\n"
+		"\n"
 	       "  disable            Disable watchdog\n"
 	       "  enable             Re-enable watchdog\n"
-//	       "  force-reset        Forced reset, alias to `reboot 0`\n"
-	       "  loglevel LVL       Adjust log level: none, err, warn, notice*, info, debug\n"
-	       "  reboot  [MSEC]     Reboot, with optional MSEC (milliseconds) delay\n"
-	       "  status             Show watchdog and supervisor status\n"
+		"\n"
 #ifndef PMON_TESTS_DISABLED
 	       "  test    [TEST]     Run built-in process monitor (PMON) test, see below\n"
-#endif
-	       "  version            Show program version\n"
-#ifndef PMON_TESTS_DISABLED
 	       "\n"
 	       "Tests:\n"
 	       "  complete-cycle**   Verify subscribe, kick, and unsubscribe (no reboot)\n"
@@ -299,6 +301,11 @@ static int usage(int code)
 	return code;
 }
 
+static int show_usage(char *arg)
+{
+	return usage(0);
+}
+
 int main(int argc, char *argv[])
 {
 	int c;
@@ -314,6 +321,7 @@ int main(int argc, char *argv[])
 		{ "disable",           do_enable,    0, "0"  },
 		{ "enable",            do_enable,    0, "1"  },
 		{ "force-reset",       do_reset,     0, NULL },
+		{ "help",              show_usage,   0, NULL },
 		{ "loglevel",          set_loglevel, 1, NULL },
 		{ "reboot",            do_reset,     1, NULL },
 		{ "status",            show_status,  0, NULL },
