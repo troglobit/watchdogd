@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <lite/lite.h>
 
 #include "config.h"
 #include "private.h"
@@ -214,7 +215,7 @@ static int run_test(char *arg)
 	};
 
 	for (int i = 0; opts[i].arg; i++) {
-		if (!strcmp(opts[i].arg, arg)) {
+		if (string_match(opts[i].arg, arg)) {
 			op = opts[i].op;
 			break;
 		}
@@ -354,7 +355,7 @@ int main(int argc, char *argv[])
 			optarg = NULL;
 
 		for (c = 0; command[c].cmd; c++) {
-			if (strcmp(command[c].cmd, cmd))
+			if (!string_match(command[c].cmd, cmd))
 				continue;
 
 			switch (command[c].type) {
