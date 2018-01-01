@@ -29,10 +29,10 @@ critical system resources, supervises the heartbeat of processes,
 records deadline transgressions, and resets the system if needed.
 
 When a system comes back up after a reset, `watchdogd` determines the
-reset cause and records it in a logfile for later analysis by an
-operator or network management system (NMS).  This information can in
-turn then be used to put the system in an operational safe state, or
-non-operational safe state.
+reset cause and records it in a file for later analysis by an operator
+or network management system (NMS).  This information in turn can be
+used to put the system in an operational safe state, or non-operational
+safe state.
 
 
 ### What is a watchdog timer?
@@ -92,9 +92,9 @@ Options:
   -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
                            "magic" exit may not be supported by HW/driver
   
-  -a, --load-average=W,R   Enable normalized load average check WARN,REBOOT
-  -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT
-  -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT
+  -a, --load-average=W[,R] Enable normalized load average check WARN,REBOOT
+  -m, --meminfo=W[,R]      Enable memory leak check, WARN,REBOOT
+  -f, --filenr=W[,R]       Enable file descriptor leak check, WARN,REBOOT
   -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
                            Default RT prio when active: SCHED_RR @98
   
