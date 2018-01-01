@@ -421,6 +421,7 @@ static int create_bootstatus(int cause, int timeout, int interval)
 {
 	FILE *fp;
 	char *status;
+	wdog_reason_t reason;
 
 	if (wdt_testmode())
 		status = WDOG_STATUS_TEST;
@@ -443,11 +444,12 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	if (cause & WDIOF_POWERUNDER)
 		wdt_clear_cause();
 
-	memset(&reboot_reason, 0, sizeof(reboot_reason));
-	if (!wdt_reset_cause(&reboot_reason)) {
-		reset_cause   = reboot_reason.cause;
-		reset_counter = reboot_reason.counter;
+	memset(&reason, 0, sizeof(reason));
+	if (!wdt_reset_cause(&reason)) {
+		reset_cause   = reason.cause;
+		reset_counter = reason.counter;
 	}
+	memcpy(&reboot_reason, &reason, sizeof(reboot_reason));
 
 	fp = fopen(status, "w");
 	if (!fp) {
