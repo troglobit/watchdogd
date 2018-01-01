@@ -22,7 +22,7 @@ provides a safe way of querying status and controlling
 .Sh OPTIONS
 .Bl -tag -width Ds
 .It Fl v, -verbose
-Enable verbose mode, commands are otherwise silent.
+Enable verbose mode, otherwise commands are silent.
 .It Fl V, -version
 Show version information.
 .It Fl h, -help
@@ -32,19 +32,23 @@ Show help message.
 .Bl -tag -width Ds
 .It Cm clear
 Clear reset cause.
-.It Cm debug
-Toggle daemon debug log level.  See also the
-.Cm log
-command.
+.It Cm counter
+Show reset counter, number of reboots since power-on.
+.\" .It Cm debug
+.\" Toggle daemon debug log level.  See also the
+.\" .Cm log
+.\" command.
 .It Cm disble | enable
 Temporarily disable, or enable, daemon.
 .It Cm loglevel Ar LEVEL
-Change daemon log level, see also
-.Cm debug .
+Adjust daemon log level: none, err, warn, notice, info, debug.  Default:
+.Cm notice .
+.\" Change daemon log level, see also
+.\" .Cm debug .
 .It Cm reboot Op MSEC
 Reboot system using WDT, with an optional millisecond delay.
 .It Cm status
-Query status of daemon and show last reset cause, default.
+Query status of daemon and show last reset cause, default command.
 .It Cm test Op TEST
 Run built-in test of process monitor (PMON) functionality in daemon.
 The default test runs a complete cycle:
@@ -66,7 +70,7 @@ Verify reboot on missing first kick (reboot)
 Verify no premature trigger before unsubscribe (reboot)
 .El
 .It Cm version
-Show version information.
+Show program version.
 .El
 .Sh FILES
 .Bl -tag -width /var/lib/watchdogd.state -compact
