@@ -26,7 +26,7 @@ watchdogd_CFLAGS    = $(uev_CFLAGS) $(lite_CFLAGS) $(AM_CFLAGS)
 watchdogd_LDADD     = $(uev_LIBS)   $(lite_LIBS) libwdog.la
 
 watchdogctl_SOURCES = watchdogctl.c
-watchdogctl_CFLAGS  = $(lite_CFLAGS)
+watchdogctl_CFLAGS  = $(lite_CFLAGS) $(AM_CFLAGS)
 watchdogctl_LDADD   = $(lite_LIBS) libwdog.la
 
 lib_LTLIBRARIES     = libwdog.la
