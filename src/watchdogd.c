@@ -423,18 +423,6 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	char *status;
 	wdog_reason_t reason;
 
-	if (wdt_testmode())
-		status = WDOG_STATUS_TEST;
-	else
-		status = WDOG_STATUS;
-
-	/*
-	 * In case we're restarted at runtime this prevents us from
-	 * recreating the status file(s).
-	 */
-	if (fexist(status))
-		return 0;
-
 	/*
 	 * Clear latest reset cause log IF and only IF:
 	 *  - WDT reports power failure as cause of latest boot
@@ -450,6 +438,18 @@ static int create_bootstatus(int cause, int timeout, int interval)
 		reset_counter = reason.counter;
 	}
 	memcpy(&reboot_reason, &reason, sizeof(reboot_reason));
+
+	if (wdt_testmode())
+		status = WDOG_STATUS_TEST;
+	else
+		status = WDOG_STATUS;
+
+	/*
+	 * In case we're restarted at runtime this prevents us from
+	 * recreating the status file(s).
+	 */
+	if (fexist(status))
+		return 0;
 
 	fp = fopen(status, "w");
 	if (!fp) {
