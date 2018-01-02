@@ -110,22 +110,15 @@ static int set_loglevel(char *arg)
 static int show_status(char *arg)
 {
 	FILE *fp;
-	char *file[] = {
-		WDOG_STATUS,
-		WDOG_STATE,
-		NULL
-	};
 
-	for (int i = 0; file[i]; i++) {
-		fp = fopen(file[i], "r");
-		if (fp) {
-			char buf[80];
+	fp = fopen(WDOG_STATUS, "r");
+	if (fp) {
+		char buf[80];
 
-			while (fgets(buf, sizeof(buf), fp))
-				fputs(buf, stdout);
+		while (fgets(buf, sizeof(buf), fp))
+			fputs(buf, stdout);
 
-			fclose(fp);
-		}
+		fclose(fp);
 	}
 
 	return 0;
