@@ -38,8 +38,8 @@ to query status and control
 .Sh OPTIONS
 .Bl -tag -width Ds
 .It Fl a, -load-averate Ar WARN Op ,REBOOT
-Enable normalized load average supervision.  REBOOT is optional, when
-omitted the plugin will not reboot.
+Enable load average supervision.  REBOOT is optional, omitting it
+disables the reboot action.
 .It Fl e, -script Ar CMD
 Script or command to run as monitor plugin callback.  When given the
 .Ar CMD

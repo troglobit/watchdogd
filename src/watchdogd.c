@@ -590,7 +590,7 @@ static int usage(int status)
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
 #ifdef LOADAVG_PERIOD
 	       "\n"
-	       "  -a, --load-average=W,R   Enable normalized load average check, WARN,REBOOT\n"
+	       "  -a, --load-average=W,R   Enable load average check, WARN,REBOOT\n"
 #endif
 #ifdef MEMINFO_PERIOD
 	       "  -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT\n"
@@ -605,16 +605,15 @@ static int usage(int status)
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
-	       "WARN,REBOOT ranges are 0-1, even for load average, where number of CPUs\n"
-	       "are used to normalize load average.  Use `-e CMD` to call script on WARN\n"
-	       "and REBOOT, instead of performing an unconditional reboot on REBOOT.\n"
-	       "Note: the REBOOT argument is optional, left out disables the function.\n"
+	       "WARN,REBOOT ranges are 0-1 (0-100%%), except for load average which can vary\n"
+	       "a lot between systems and use-cases, not just because of the number of CPU\n"
+	       "cores.  Use `-e CMD` to call script on WARN and REBOOT, instead of performing\n"
+	       "an unconditional reboot on REBOOT.\n"
+	       "Note: the REBOOT argument is optional, omitting it disables reboot action.\n"
 	       "\n"
 #endif
-	       "WDT drivers usually support 120 sec as lowest timeout (T), but %s\n"
-	       "tries to set %d sec timeout, falling back to what the driver reports.\n"
-	       "\n", prognm, WDT_DEVNODE, prognm, WDT_KICK_DEFAULT,
-	       prognm, WDT_TIMEOUT_DEFAULT);
+	       "Bug report address: %s\n", prognm, WDT_DEVNODE, prognm, WDT_KICK_DEFAULT,
+	       PACKAGE_BUGREPORT);
 
 	return status;
 }

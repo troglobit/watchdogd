@@ -25,6 +25,7 @@ static uev_t watcher;
 static double warning  = 0.0;
 static double critical = 0.0;
 
+#if 0
 static void compensate(double load[])
 {
 	static double num = 0.0;
@@ -38,6 +39,7 @@ static void compensate(double load[])
 	for (int i = 0; i < 3; i++)
 		load[i] /= num;
 }
+#endif
 
 static int above_watermark(double avg, struct sysinfo *si)
 {
@@ -74,11 +76,13 @@ static void cb(uev_t *w, void *arg, int events)
 	LOG("Loadavg: %.2f, %.2f, %.2f (1, 5, 15 min)", load[0], load[1], load[2]);
 #endif
 
+#if 0
 	/* Compensate for number of CPU cores */
 	compensate(load);
-	avg = (load[0] + load[1]) / 2.0;
+#endif
 
-	DEBUG("Adjusted: %.2f, %.2f, %.2f (1, 5, 15 min), avg: %.2f (1 + 5), warning: %.2f, reboot: %.2f",
+	avg = (load[0] + load[1]) / 2.0;
+	DEBUG("System load: %.2f, %.2f, %.2f (1, 5, 15 min), avg: %.2f (1 + 5), warning: %.2f, reboot: %.2f",
 	      load[0], load[1], load[2], avg, warning, critical);
 
 	if (avg > warning) {

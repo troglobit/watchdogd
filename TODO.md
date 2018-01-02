@@ -6,7 +6,6 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
-* Sample average to not trigger reboot during peak loads
 * Disable reset reason state file by default, enable in .conf
 * Support enable/disable watchdog features in a `/etc/watchdogd.conf`
   - command line options win over .conf, even on SIGHUP

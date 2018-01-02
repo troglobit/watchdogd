@@ -69,7 +69,7 @@ CPU, and as long as there is CPU time it "kicks" the WDT chip (via the
 driver).  However, with few command line options it can also monitor
 other aspect of the system, such as:
 
-- Load average (normalized)
+- Load average
 - Memory leaks
 - File descriptor leaks
 - Process live locks
@@ -92,7 +92,7 @@ Options:
   -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
                            "magic" exit may not be supported by HW/driver
   
-  -a, --load-average=W[,R] Enable normalized load average check WARN,REBOOT
+  -a, --load-average=W[,R] Enable load average check WARN,REBOOT
   -m, --meminfo=W[,R]      Enable memory leak check, WARN,REBOOT
   -f, --filenr=W[,R]       Enable file descriptor leak check, WARN,REBOOT
   -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
@@ -131,10 +131,9 @@ to `/dev/watchdog`, and wait for WDT reboot.  It waits at most 3x the
 WDT timeout before announcing HW WDT failure and forcing a reboot.
 
 `watchdogd(8)` supports optional monitoring of several system resources.
-First, system load average (normalized) monitoring can be enabled with
-`-a 0.8,0.9`.  Second, the memory leak detector `-m 0.9,0.95`.  Third,
-file descriptor leak detector `-f 0.8,0.95`.  All *very* useful on an
-embedded system.
+First, system load average monitoring can be enabled with `-a 0.8,0.9`.
+Second, the memory leak detector `-m 0.9,0.95`.  Third, file descriptor
+leak detector `-f 0.8,0.95`.  All *very* useful on an embedded system.
 
 The two values, separated by a comma, are the warning and reboot levels
 in percent.  The latter is optional, if omitted reboot is disabled.  The
@@ -142,13 +141,15 @@ reboot is also disabled if `-e CMD` is given, then the script `CMD` is
 run instead, both at warning and reboot level, and it is up to the
 script to perform a reboot if needed.
 
-For the loadavg monitoring it is important to know that the trigger
-levels are normalized.  This means `watchdogd` does not care how many
-CPU cores your system has online.  If the kernel `/proc/loadavg` file
-shows `3.9 3.0 2.5` on a four-core CPU, `watchdogd` will consider this
-as a load of `0.98 0.75 0.63`, i.e. divided by four.  Only the one (1)
-and five (5) minute average values are used.  For more information on
-the UNIX load average, see this [StackOverflow question][loadavg].
+Determining suitable system load average levels is tricky.  It always
+depends on the system and use-case, not just the number of CPU cores.
+Peak loads of 16.00 on an 8 core system may be responsive and still
+useful but 2.00 on a 2 core system may be completely bogged down.  Make
+sure to read up on the subject and thoroughly test your system before
+enabling a reboot trigger value.  `watchdgod` uses an average of the
+first two load average values, the one (1) and five (5) minute.  For
+more information on the UNIX load average, see this [StackOverflow
+question][loadavg].
 
 The RAM usage monitor only triggers on systems without swap.  This is
 detected by reading the file `/proc/meminfo`, looking for the
