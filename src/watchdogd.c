@@ -262,16 +262,6 @@ int wdt_close(uev_ctx_t *ctx)
 	return uev_exit(ctx);
 }
 
-int wdt_reset_cause(wdog_reason_t *reason)
-{
-	return reset_cause_get(reason);
-}
-
-int wdt_clear_cause(void)
-{
-	return reset_cause_clear();
-}
-
 int wdt_exit(uev_ctx_t *ctx)
 {
 	/* Let plugins exit before we leave main loop */
@@ -430,10 +420,10 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	 * Otherwise we simply log the boot
 	 */
 	if (cause & WDIOF_POWERUNDER)
-		wdt_clear_cause();
+		reset_cause_clear();
 
 	memset(&reason, 0, sizeof(reason));
-	if (!wdt_reset_cause(&reason)) {
+	if (!reset_cause_get(&reason)) {
 		reset_cause   = reason.cause;
 		reset_counter = reason.counter;
 	}

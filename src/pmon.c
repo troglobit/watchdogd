@@ -21,6 +21,7 @@
 
 #include "plugin.h"
 #include "private.h"
+#include "rc.h"
 #include "wdog.h"
 #include "pmon.h"
 
@@ -310,14 +311,14 @@ static void cb(uev_t *w, void *arg, int events)
 
 	case WDOG_RESET_CAUSE_RAW_CMD:
 		reason = (wdog_reason_t *)&req;
-		if (wdt_reset_cause(reason)) {
+		if (reset_cause_get(reason)) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		}
 		break;
 
 	case WDOG_CLEAR_CAUSE_CMD:
-		if (wdt_clear_cause()) {
+		if (reset_cause_clear()) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		}
