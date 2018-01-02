@@ -443,7 +443,7 @@ static int compat_supervisor(wdog_reason_t *r)
 #define compat_supervisor(r) 0
 #endif /* COMPAT_SUPERVISOR */
 
-static int create_bootstatus(int cause, int timeout, int interval)
+static int wdt_set_bootstatus(int cause, int timeout, int interval)
 {
 	FILE *fp;
 	pid_t pid = 0;
@@ -838,7 +838,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* ... save boot cause in /var/run/watchdogd.status */
-	create_bootstatus(cause, real_timeout, period);
+	wdt_set_bootstatus(cause, real_timeout, period);
 
 	/* Calculate period (T) in milliseconds for libuEv */
 	T = period * 1000;
