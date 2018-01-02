@@ -32,13 +32,13 @@ AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
 	[enable_examples=yes], [])
 AC_ARG_ENABLE([loadavg],
-	[AS_HELP_STRING([--enable-loadavg=SEC], [Enable CPU load average monitor])],
+	[AS_HELP_STRING([--enable-loadavg=SEC], [Enable CPU load average monitor, default 5 min])],
 	[enable_loadavg=$enableval], [enable_loadavg=no])
 AC_ARG_ENABLE([filenr],
-	[AS_HELP_STRING([--enable-filenr=SEC], [Enable file descriptor leak monitor])],
+	[AS_HELP_STRING([--enable-filenr=SEC], [Enable file descriptor leak monitor, default 5 min])],
 	[enable_filenr=$enableval], [enable_filenr=no])
 AC_ARG_ENABLE([meminfo],
-	[AS_HELP_STRING([--enable-meminfo=SEC], [Enable memory leak monitor])],
+	[AS_HELP_STRING([--enable-meminfo=SEC], [Enable memory leak monitor, default 5 min])],
 	[enable_meminfo=$enableval], [enable_meminfo=no])
 AC_ARG_ENABLE([syslog-mark],
 	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
