@@ -25,6 +25,19 @@ static uev_t watcher;
 static double warning  = 0.0;
 static double critical = 0.0;
 
+static void compensate(double load[])
+{
+	static double num = 0.0;
+
+	if (num == 0.0) {
+		num = (double)get_nprocs();
+		if (num == 0.0)
+			num = 1.0;
+	}
+
+	for (int i = 0; i < 3; i++)
+		load[i] /= num;
+}
 
 static double num_cores(void)
 {
@@ -57,9 +70,7 @@ static void cb(uev_t *w, void *arg, int events)
 #endif
 
 	/* Compensate for number of CPU cores */
-	load[0] /= num;
-	load[1] /= num;
-	load[2] /= num;
+	compensate(load);
 	avg = (load[0] + load[1]) / 2.0;
 
 	DEBUG("Adjusted: %.2f, %.2f, %.2f (1, 5, 15 min), avg: %.2f (1 + 5), warning: %.2f, reboot: %.2f",
