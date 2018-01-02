@@ -97,6 +97,7 @@ int wdog_pmon_ping(void)
 static int doit(int cmd, int id, char *label, int timeout, int *ack)
 {
 	int sd;
+	size_t len;
 	wdog_t req = {
 		.cmd     = cmd,
 		.pid     = getpid(),
@@ -113,7 +114,12 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 	if (!label || !label[0])
 		label = __progname;
 
-	strlcpy(req.label, label, sizeof(req.label));
+	/* Copy label and make sure to terminate it. */
+	len = strlen(label);
+	if (len >= sizeof(req.label))
+		len = sizeof(req.label) - 1;
+	strncpy(req.label, label, sizeof(req.label));
+	req.label[len] = 0;
 
 	switch (cmd) {
 	case WDOG_KICK_CMD:
