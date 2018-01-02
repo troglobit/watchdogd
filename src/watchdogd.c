@@ -462,6 +462,15 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
 	fclose(fp);
 
+	/*
+	 * Prepare for power-loss or otherwise uncontrolled reset
+	 * The operator expects us to track the n:o restarts ...
+	 */
+	memset(&reason, 0, sizeof(reason));
+	reason.cause   = WDOG_FAILED_UNKNOWN;
+	reason.counter = reset_counter + 1;
+	reset_cause_set(getpid(), &reason);
+
 	if (wdt_testmode())
 		return 0;
 
