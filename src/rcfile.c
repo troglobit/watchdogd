@@ -35,9 +35,6 @@ int reset_cause_set(wdog_reason_t *reason, pid_t pid)
 		return 1;
 	}
 
-	if (!reason->label[0])
-		strlcpy(reason->label, "XBAD_LABEL", sizeof(reason->label));
-
 	if (wdt_fstore_reason(fp, reason, pid))
 		PERROR("Failed writing reset cause to disk");
 
