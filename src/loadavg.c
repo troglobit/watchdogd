@@ -16,6 +16,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/sysinfo.h>
 #include "plugin.h"
 
 static uev_t watcher;
@@ -39,12 +40,15 @@ static void cb(uev_t *w, void *arg, int events)
 {
 	double num = num_cores();
 	double avg, load[3];
+	struct sysinfo si;
 
-	memset(load, 0, sizeof(load));
-	if (getloadavg(load, 3) == -1) {
+	if (sysinfo(&si)) {
 		ERROR("Failed reading system loadavg");
 		return;
 	}
+
+	for (int i = 0; i < 3; i++)
+		load[i] = (double)si.loads[i] / (1 << SI_LOAD_SHIFT);
 
 #ifdef SYSLOG_MARK
 //	LOG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
