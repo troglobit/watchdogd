@@ -28,7 +28,7 @@
 /*
  * Communicate WDT ownership handover to Finit
  */
-int wdt_handover(int *exist)
+int wdt_handover(char *devnode)
 {
 	int sd, rc = -1, retry = 3;
 	size_t len;
@@ -58,9 +58,6 @@ int wdt_handover(int *exist)
 		sleep(1);
 	}
 
-	if (exist)
-		*exist = 1;
-
 	len = sizeof(rq);
 	pfd.fd = sd;
 	pfd.events = POLLOUT;
@@ -78,7 +75,7 @@ int wdt_handover(int *exist)
 		goto err;
 
 	if (rq.cmd == INIT_CMD_ACK)
-		rc = 0;
+		rc = open(devnode, O_WRONLY);
 err:
 	close(sd);
 	return rc;

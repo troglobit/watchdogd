@@ -77,6 +77,8 @@ extern int   __wdt_testmode;
 extern unsigned int reset_counter;
 extern wdog_reason_t reboot_reason;
 
+int wdt_handover       (char *devnode);
+
 int wdt_enable         (int enable);
 int wdt_debug          (int enable);
 
@@ -104,12 +106,6 @@ static inline int wdt_testmode(void)
 	return 0;
 #endif
 }
-
-#ifdef HAVE_FINIT_FINIT_H
-int     wdt_handover(int *exist);
-#else
-#define wdt_handover(exist) 0
-#endif
 
 #endif /* WDT_H_ */
 

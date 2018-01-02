@@ -21,6 +21,29 @@
 #include "plugin.h"
 #include "rc.h"
 
+#ifndef HAVE_FINIT_FINIT_H
+#define check_handover(devnode)						\
+	return 1;
+#else
+#define check_handover(devnode)						\
+{									\
+	if (EBUSY != errno)						\
+		return 1;						\
+									\
+	/*								\
+	 * If we're called in a system with Finit running, tell it to	\
+	 * disable its built-in watchdog daemon.			\
+	 */								\
+	fd = wdt_handover(devnode);					\
+	if (fd == -1) {							\
+		PERROR("Failed communicating WDT handover with finit");	\
+		return 1;						\
+	}								\
+									\
+	wdt_kick("WDT handover complete.");				\
+}
+#endif
+
 /* Global daemon settings */
 int magic   = 0;
 int enabled = 1;
@@ -69,31 +92,12 @@ int wdt_capability(uint32_t flag)
  */
 int wdt_init(struct watchdog_info *info)
 {
-	int finit = 0;
-
 	if (wdt_testmode())
 		return 0;
 
-retry:
 	fd = open(devnode, O_WRONLY);
-	if (fd == -1) {
-		if (EBUSY != errno && !finit)
-			return 1;
-
-		/*
-		 * If we're called in a system with Finit running, tell it to
-		 * disable its built-in watchdog daemon.
-		 */
-		if (finit || wdt_handover(&finit)) {
-			PERROR("Failed communicating watchdog handover with finit");
-			return 1;
-		}
-		DEBUG("WDT handover complete.");
-		goto retry;
-	}
-
-	if (finit)
-		ioctl(fd, WDIOC_KEEPALIVE, &finit);
+	if (fd == -1)
+		check_handover(devnode);
 
 	if (info) {
 		memset(info, 0, sizeof(*info));
