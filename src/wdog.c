@@ -86,9 +86,12 @@ int wdog_pmon_ping(void)
 	if (-1 == sd)
 		return 1;
 
-	if (api_poll(sd, POLLIN | POLLOUT))
-		getsockopt(sd, SOL_SOCKET, SO_ERROR, &so_error, &len);
-
+	if (api_poll(sd, POLLIN | POLLOUT)) {
+		if (getsockopt(sd, SOL_SOCKET, SO_ERROR, &so_error, &len) == -1) {
+			close(sd);
+			return 1;
+		}
+	}
 	close(sd);
 
 	return so_error != 0;
