@@ -39,16 +39,6 @@ static void compensate(double load[])
 		load[i] /= num;
 }
 
-static double num_cores(void)
-{
-	int num = sysconf(_SC_NPROCESSORS_ONLN);
-
-	if (-1 == num)
-		return (double)1.0; /* At least one core. */
-
-	return (double)num;
-}
-
 static int above_watermark(double avg, struct sysinfo *si)
 {
 	/* Expect loadavg to be out of wack first five mins after boot. */
@@ -67,7 +57,6 @@ static int above_watermark(double avg, struct sysinfo *si)
 
 static void cb(uev_t *w, void *arg, int events)
 {
-	double num = num_cores();
 	double avg, load[3];
 	struct sysinfo si;
 
