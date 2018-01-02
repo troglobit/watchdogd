@@ -49,6 +49,22 @@ static double num_cores(void)
 	return (double)num;
 }
 
+static int above_watermark(double avg, struct sysinfo *si)
+{
+	/* Expect loadavg to be out of wack first five mins after boot. */
+	if (si->uptime < 300)
+		return 0;
+
+	/* High watermark alert disabled */
+	if (critical == 0.0)
+		return 0;
+
+	if (avg <= critical)
+		return 0;
+
+	return 1;
+}
+
 static void cb(uev_t *w, void *arg, int events)
 {
 	double num = num_cores();
@@ -77,7 +93,7 @@ static void cb(uev_t *w, void *arg, int events)
 	      load[0], load[1], load[2], avg, warning, critical);
 
 	if (avg > warning) {
-		if (critical > 0.0 && avg > critical) {
+		if (above_watermark(avg, &si)) {
 			ERROR("System load too high, %.2f > %0.2f, rebooting system ...", avg, critical);
 			if (script_exec("loadavg", 1, avg, warning, critical))
 				wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("loadavg"), 0);
