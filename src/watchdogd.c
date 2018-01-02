@@ -494,19 +494,21 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 		return create_bootstatus(status, &reboot_reason, cause, timeout, interval, pid);
 	}
 
- 	/*
-	 * Clear latest reset cause log IF and only IF:
-	 *  - WDT reports power failure as cause of latest boot
-	 *
-	 * Otherwise we simply log the boot
-	 */
-	if (cause & WDIOF_POWERUNDER)
-		reset_cause_clear(NULL);
-
 	memset(&reason, 0, sizeof(reason));
 	if (!reset_cause_get(&reason, &pid)) {
 		reset_cause   = reason.cause;
 		reset_counter = reason.counter;
+	}
+
+	/*
+	 * Clear latest reset cause log IF and only IF WDT reports power
+	 * failure as cause of this boot.  Keep reset counter, that must
+	 * be reset using the API, snmpEngineBoots (RFC 2574)
+	 */
+	if (cause & WDIOF_POWERUNDER) {
+		memset(&reason, 0, sizeof(reason));
+		reason.counter = reset_counter;
+		pid = 0;
 	}
 
 	if (!create_bootstatus(status, &reason, cause, timeout, interval, pid))
@@ -519,7 +521,7 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 	memset(&reason, 0, sizeof(reason));
 	reason.cause   = WDOG_FAILED_UNKNOWN;
 	reason.counter = reset_counter + 1;
-	reset_cause_set(&reason, 0);
+	reset_cause_clear(&reason);
 
 	if (wdt_testmode())
 		return 0;
