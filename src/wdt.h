@@ -88,6 +88,9 @@ int wdt_close          (uev_ctx_t *ctx);
 int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
 int wdt_forced_reboot  (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 
+int wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid);
+int wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid);
+
 static inline unsigned int wdt_reset_counter(void)
 {
 	return reset_counter;

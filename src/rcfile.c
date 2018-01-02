@@ -38,13 +38,7 @@ int reset_cause_set(pid_t pid, wdog_reason_t *reason)
 	if (!reason->label[0])
 		strlcpy(reason->label, "XBAD_LABEL", sizeof(reason->label));
 
-	fprintf(fp, WDT_REASON_CNT ": %u\n", reason->counter);
-	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
-	fprintf(fp, WDT_REASON_WID ": %d\n", reason->wid);
-	fprintf(fp, WDT_REASON_LBL ": %s\n", reason->label);
-	fprintf(fp, WDT_REASON_CSE ": %d\n", reason->cause);
-	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(reason));
-	if (fclose(fp))
+	if (wdt_fstore_reason(fp, reason, pid))
 		PERROR("Failed writing reset cause to disk");
 
 	return 0;
@@ -53,7 +47,6 @@ int reset_cause_set(pid_t pid, wdog_reason_t *reason)
 int reset_cause_get(wdog_reason_t *reason)
 {
 	FILE *fp;
-	char buf[80];
 	const char *state;
 
 	if (!reason)
@@ -76,19 +69,7 @@ int reset_cause_get(wdog_reason_t *reason)
 		return 0;
 	}
 
-	while (fgets(buf, sizeof(buf), fp)) {
-		if (sscanf(buf, WDT_REASON_CNT ": %u\n", &reason->counter) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_WID ": %d\n", &reason->wid) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&reason->cause) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_LBL ": %s\n", reason->label) == 1)
-			continue;
-	}
-	fclose(fp);
-
-	return 0;
+	return wdt_fload_reason(fp, reason, NULL);
 }
 
 int reset_cause_clear(void)

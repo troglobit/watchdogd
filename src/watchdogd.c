@@ -384,6 +384,42 @@ static void setup_signals(uev_ctx_t *ctx)
 	uev_signal_init(ctx, &sigusr2_watcher, ignore_cb, "USR2", SIGUSR2);
 }
 
+int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
+{
+	char buf[80];
+	pid_t dummy;
+
+	if (!pid)
+		pid = &dummy;
+
+	while (fgets(buf, sizeof(buf), fp)) {
+		if (sscanf(buf, WDT_REASON_CNT ": %u\n", &r->counter) == 1)
+			continue;
+		if (sscanf(buf, WDT_REASON_PID ": %d\n", pid) == 1)
+			continue;
+		if (sscanf(buf, WDT_REASON_WID ": %d\n", &r->wid) == 1)
+			continue;
+		if (sscanf(buf, WDT_REASON_LBL ": %s\n", r->label) == 1)
+			continue;
+		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&r->cause) == 1)
+			continue;
+	}
+
+	return fclose(fp);
+}
+
+int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
+{
+	fprintf(fp, WDT_REASON_CNT ": %u\n", r->counter);
+	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
+	fprintf(fp, WDT_REASON_WID ": %d\n", r->wid);
+	fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
+	fprintf(fp, WDT_REASON_CSE ": %d\n", r->cause);
+	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(r));
+
+	return fclose(fp);
+}
+
 #ifdef COMPAT_SUPERVISOR
 static int compat_supervisor(wdog_reason_t *r)
 {
