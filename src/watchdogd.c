@@ -443,9 +443,25 @@ static int compat_supervisor(wdog_reason_t *r)
 #define compat_supervisor(r) 0
 #endif /* COMPAT_SUPERVISOR */
 
-static int wdt_set_bootstatus(int cause, int timeout, int interval)
+static int create_bootstatus(char *fn, wdog_reason_t *r, int cause, int timeout, int interval, pid_t pid)
 {
 	FILE *fp;
+
+	fp = fopen(fn, "w");
+	if (!fp) {
+		PERROR("Failed opening %s", WDOG_STATUS);
+		return -1;
+	}
+
+	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
+	fprintf(fp, WDT_REASON_TMO ": %d\n", timeout);
+	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
+
+	 return wdt_fstore_reason(fp, r, pid);
+}
+
+static int wdt_set_bootstatus(int cause, int timeout, int interval)
+{
 	pid_t pid = 0;
 	char *status;
 	wdog_reason_t reason;
@@ -478,16 +494,7 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 	if (fexist(status))
 		return 0;
 
-	fp = fopen(status, "w");
-	if (!fp) {
-		PERROR("Failed opening %s", WDOG_STATUS);
-		return -1;
-	}
-
-	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
-	fprintf(fp, WDT_REASON_TMO ": %d\n", timeout);
-	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
-	fclose(fp);
+	create_bootstatus(status, &reboot_reason, cause, timeout, interval, pid);
 
 	/*
 	 * Prepare for power-loss or otherwise uncontrolled reset
