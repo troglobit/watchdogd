@@ -309,7 +309,7 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 
 	/* Save reboot cause */
 	reason->counter = reset_counter + 1;
-	reset_cause_set(pid, reason);
+	reset_cause_set(reason, pid);
 
 	if (timeout > 0)
 		return uev_timer_init(ctx, &timeout_watcher, reboot_timeout_cb, NULL, timeout, 0);
@@ -446,6 +446,7 @@ static int compat_supervisor(wdog_reason_t *r)
 static int create_bootstatus(int cause, int timeout, int interval)
 {
 	FILE *fp;
+	pid_t pid = 0;
 	char *status;
 	wdog_reason_t reason;
 
@@ -459,7 +460,7 @@ static int create_bootstatus(int cause, int timeout, int interval)
 		reset_cause_clear();
 
 	memset(&reason, 0, sizeof(reason));
-	if (!reset_cause_get(&reason)) {
+	if (!reset_cause_get(&reason, &pid)) {
 		reset_cause   = reason.cause;
 		reset_counter = reason.counter;
 	}
@@ -495,7 +496,7 @@ static int create_bootstatus(int cause, int timeout, int interval)
 	memset(&reason, 0, sizeof(reason));
 	reason.cause   = WDOG_FAILED_UNKNOWN;
 	reason.counter = reset_counter + 1;
-	reset_cause_set(getpid(), &reason);
+	reset_cause_set(&reason, 0);
 
 	if (wdt_testmode())
 		return 0;

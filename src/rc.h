@@ -18,8 +18,8 @@
 #ifndef RC_H_
 #define RC_H_
 
-extern int reset_cause_set   (pid_t pid, wdog_reason_t *reason);
-extern int reset_cause_get   (           wdog_reason_t *reason);
+extern int reset_cause_set   (wdog_reason_t *reason, pid_t  pid);
+extern int reset_cause_get   (wdog_reason_t *reason, pid_t *pid);
 extern int reset_cause_clear (void);
 
 #endif /* RC_H_ */

@@ -18,7 +18,7 @@
 #include "wdt.h"
 #include <stdio.h>
 
-int reset_cause_set(pid_t pid, wdog_reason_t *reason)
+int reset_cause_set(wdog_reason_t *reason, pid_t pid)
 {
 	FILE *fp;
 	const char *state;
@@ -44,7 +44,7 @@ int reset_cause_set(pid_t pid, wdog_reason_t *reason)
 	return 0;
 }
 
-int reset_cause_get(wdog_reason_t *reason)
+int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
 {
 	FILE *fp;
 	const char *state;
@@ -69,7 +69,7 @@ int reset_cause_get(wdog_reason_t *reason)
 		return 0;
 	}
 
-	return wdt_fload_reason(fp, reason, NULL);
+	return wdt_fload_reason(fp, reason, pid);
 }
 
 int reset_cause_clear(void)
@@ -77,7 +77,7 @@ int reset_cause_clear(void)
 	wdog_reason_t reason;
 
 	memset(&reason, 0, sizeof(reason));
-	return reset_cause_set(0, &reason);
+	return reset_cause_set(&reason, 0);
 }
 
 /**

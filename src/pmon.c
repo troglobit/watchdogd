@@ -311,7 +311,7 @@ static void cb(uev_t *w, void *arg, int events)
 
 	case WDOG_RESET_CAUSE_RAW_CMD:
 		reason = (wdog_reason_t *)&req;
-		if (reset_cause_get(reason)) {
+		if (reset_cause_get(reason, NULL)) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		}
