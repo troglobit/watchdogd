@@ -355,7 +355,8 @@ static int api_init(void)
 	if (-1 == sd)
 		return -1;
 
-	remove(sun.sun_path);
+	if (remove(sun.sun_path) && errno != ENOENT)
+		PERROR("Failed removing %s", sun.sun_path);
 
 	if (-1 == bind(sd, (struct sockaddr*)&sun, sizeof(sun)))
 		goto error;
