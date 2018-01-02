@@ -215,6 +215,9 @@ static void cb(uev_t *w, void *arg, int events)
 		return;
 	}
 
+	/* Make sure to terminate string, needed below. */
+	req.label[sizeof(req.label) - 1] = 0;
+
 	switch (req.cmd) {
 	case WDOG_SUBSCRIBE_CMD:
 		/* Start timer, return ID from allocated timer. */
