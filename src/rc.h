@@ -20,7 +20,7 @@
 
 extern int reset_cause_set   (wdog_reason_t *reason, pid_t  pid);
 extern int reset_cause_get   (wdog_reason_t *reason, pid_t *pid);
-extern int reset_cause_clear (void);
+extern int reset_cause_clear (wdog_reason_t *reason);
 
 #endif /* RC_H_ */
 

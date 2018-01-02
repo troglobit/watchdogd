@@ -72,12 +72,15 @@ int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
 	return wdt_fload_reason(fp, reason, pid);
 }
 
-int reset_cause_clear(void)
+int reset_cause_clear(wdog_reason_t *r)
 {
 	wdog_reason_t reason;
 
 	memset(&reason, 0, sizeof(reason));
-	return reset_cause_set(&reason, 0);
+	if (!r)
+		r = &reason;
+
+	return reset_cause_set(r, 0);
 }
 
 /**

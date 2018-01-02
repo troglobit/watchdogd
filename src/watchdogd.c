@@ -457,7 +457,7 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 	 * Otherwise we simply log the boot
 	 */
 	if (cause & WDIOF_POWERUNDER)
-		reset_cause_clear();
+		reset_cause_clear(NULL);
 
 	memset(&reason, 0, sizeof(reason));
 	if (!reset_cause_get(&reason, &pid)) {

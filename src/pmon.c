@@ -318,7 +318,7 @@ static void cb(uev_t *w, void *arg, int events)
 		break;
 
 	case WDOG_CLEAR_CAUSE_CMD:
-		if (reset_cause_clear()) {
+		if (reset_cause_clear(NULL)) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		}
