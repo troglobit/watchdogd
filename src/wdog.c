@@ -113,7 +113,8 @@ static int doit(int cmd, int id, char *label, int timeout, int *ack)
 	if (!label || !label[0])
 		label = __progname;
 
-	strncpy(req.label, label, sizeof(req.label));
+	strlcpy(req.label, label, sizeof(req.label));
+
 	switch (cmd) {
 	case WDOG_KICK_CMD:
 	case WDOG_UNSUBSCRIBE_CMD:
