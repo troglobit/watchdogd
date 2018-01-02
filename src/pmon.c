@@ -414,8 +414,8 @@ int pmon_exit(uev_ctx_t *ctx)
 
 	uev_io_stop(&watcher);
 	shutdown(sd, SHUT_RDWR);
-	remove(WDOG_PMON_PATH);
-	remove(WDOG_PMON_TEST);
+	(void)remove(WDOG_PMON_PATH);
+	(void)remove(WDOG_PMON_TEST);
 	close(sd);
 	sd = -1;
 
