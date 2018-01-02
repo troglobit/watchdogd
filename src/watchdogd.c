@@ -480,7 +480,6 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 		reset_cause   = reason.cause;
 		reset_counter = reason.counter;
 	}
-	memcpy(&reboot_reason, &reason, sizeof(reboot_reason));
 
 	if (wdt_testmode())
 		status = WDOG_STATUS_TEST;
@@ -494,7 +493,8 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 	if (fexist(status))
 		return 0;
 
-	create_bootstatus(status, &reboot_reason, cause, timeout, interval, pid);
+	if (!create_bootstatus(status, &reason, cause, timeout, interval, pid))
+		memcpy(&reboot_reason, &reason, sizeof(reboot_reason));
 
 	/*
 	 * Prepare for power-loss or otherwise uncontrolled reset
