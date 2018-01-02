@@ -420,6 +420,17 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 	return fclose(fp);
 }
 
+static int load_bootstatus(char *file, wdog_reason_t *r, pid_t *pid)
+{
+	FILE *fp;
+
+	fp = fopen(file, "r");
+	if (!fp)
+		return -1;
+
+	return wdt_fload_reason(fp, r, pid);
+}
+
 #ifdef COMPAT_SUPERVISOR
 static int compat_supervisor(wdog_reason_t *r)
 {
@@ -466,7 +477,24 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 	char *status;
 	wdog_reason_t reason;
 
+	if (wdt_testmode())
+		status = WDOG_STATUS_TEST;
+	else
+		status = WDOG_STATUS;
+
 	/*
+	 * In case we're restarted at runtime this prevents us from
+	 * recreating the status file(s).
+	 */
+	if (fexist(status)) {
+		load_bootstatus(status, &reboot_reason, &pid);
+		reset_cause   = reboot_reason.cause;
+		reset_counter = reboot_reason.counter;
+
+		return create_bootstatus(status, &reboot_reason, cause, timeout, interval, pid);
+	}
+
+ 	/*
 	 * Clear latest reset cause log IF and only IF:
 	 *  - WDT reports power failure as cause of latest boot
 	 *
@@ -480,18 +508,6 @@ static int wdt_set_bootstatus(int cause, int timeout, int interval)
 		reset_cause   = reason.cause;
 		reset_counter = reason.counter;
 	}
-
-	if (wdt_testmode())
-		status = WDOG_STATUS_TEST;
-	else
-		status = WDOG_STATUS;
-
-	/*
-	 * In case we're restarted at runtime this prevents us from
-	 * recreating the status file(s).
-	 */
-	if (fexist(status))
-		return 0;
 
 	if (!create_bootstatus(status, &reason, cause, timeout, interval, pid))
 		memcpy(&reboot_reason, &reason, sizeof(reboot_reason));
