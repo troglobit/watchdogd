@@ -259,9 +259,12 @@ static void cb(uev_t *w, void *arg, int events)
 		} else {
 			int timeout = p->timeout;
 
-			/* If process needs to request an extended timemout */
-			if (req.timeout >= 0)
-				timeout = req.timeout;
+			/*
+			 * If process needs to request an extended timemout
+			 * Like in subscribe we allow for some scheduling slack
+			 */
+			if (req.timeout > 0)
+				timeout = req.timeout + 500;
 
 			DEBUG("How do you do %s[%d], id:%d -- ACK should be %d, is %d",
 			      req.label, req.pid, req.id, p->ack, req.ack);
