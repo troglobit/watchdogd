@@ -16,6 +16,7 @@
  */
 
 #include <err.h>
+#include <ctype.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,13 +87,25 @@ static int do_enable(char *arg)
 static int do_reset(char *arg)
 {
 	int msec = 0;
+	char *msg = NULL;
 
-	if (arg)
-		msec = atoi(arg);
-	if (msec < 0)
-		errx(1, "Invalid reboot timeout (%d)", msec);
+	if (arg && isdigit(arg[0])) {
+		msg = strchr(arg, ' ');
+		if (msg) {
+			*msg = 0;
+			msg++;
+		}
 
-	return wdog_reboot_timeout(getpid(), "*REBOOT*", msec);
+		msec = atonum(arg);
+		if (msec < 0)
+			msec = 0;
+	} else
+		msg = arg;
+
+	if (!msg || !msg[0])
+		msg = "*REBOOT*";
+
+	return wdog_reboot_timeout(0, msg, msec);
 }
 
 static int set_loglevel(char *arg)
@@ -253,36 +266,37 @@ static int usage(int code)
 	       "  %s [OPTIONS] [COMMAND]\n"
 	       "\n"
 	       "Options:\n"
-	       "  -h, --help         Display this help text and exit\n"
-	       "  -v, --verbose      Verbose output, otherwise commands are silent\n"
-	       "  -V, --version      Show program version\n"
+	       "  -h, --help           Display this help text and exit\n"
+	       "  -v, --verbose        Verbose output, otherwise commands are silent\n"
+	       "  -V, --version        Show program version\n"
 	       "\n"
 	       "Commands:\n"
-	       "  help               This help text\n"
-//	       "  debug              Toggle watchdogd debug level\n"
-	       "  loglevel LVL       Adjust log level: none, err, warn, notice*, info, debug\n"
-//	       "  force-reset        Forced reset, alias to `reboot 0`\n"
-	       "  reboot  [MSEC]     Reboot using WDT, optional MSEC (milliseconds) delay\n"
-	       "  status             Show watchdog and supervisor status, default command\n"
-	       "  version            Show program version\n"
+	       "  help                 This help text\n"
+//	       "  debug                Toggle watchdogd debug level\n"
+	       "  loglevel LVL         Adjust log level: none, err, warn, notice*, info, debug\n"
+//	       "  force-reset          Forced reset, alias to `reboot 0`\n"
+	       "  reboot [MSEC] [MSG]  Reboot using WDT, optional MSEC (milliseconds) delay\n"
+	       "                       The optional MSG is presented as 'label' on reboot\n"
+	       "  status               Show watchdog and supervisor status, default command\n"
+	       "  version              Show program version\n"
 		"\n"
-	       "  clear              Clear reset reason\n"
-	       "  counter            Show reset counter, num. reboots since power-on\n"
+	       "  clear                Clear reset reason\n"
+	       "  counter              Show reset counter, num. reboots since power-on\n"
 		"\n"
-	       "  disable            Disable watchdog\n"
-	       "  enable             Re-enable watchdog\n"
+	       "  disable              Disable watchdog\n"
+	       "  enable               Re-enable watchdog\n"
 		"\n"
 #ifndef SUPERVISOR_TESTS_DISABLED
-	       "  test    [TEST]     Run process supervisor built-in test, see below\n"
+	       "  test    [TEST]       Run process supervisor built-in test, see below\n"
 	       "\n"
 	       "Tests:\n"
-	       "  complete-cycle**   Verify subscribe, kick, and unsubscribe (no reboot)\n"
-	       "  disable-enable     Verify WDT disable, and re-enable (no reboot)\n"
-	       "  false-ack          Verify kick with invalid ACK (reboot)\n"
-	       "  false-unsubscribe  Verify unsubscribe with invalid ACK (reboot)\n"
-	       "  failed-kick        Verify reboot on missing kick (reboot)\n"
-	       "  no-kick            Verify reboot on missing first kick (reboot)\n"
-	       "  premature-trigger  Verify no premature trigger before unsubscribe (reboot)\n"
+	       "  complete-cycle**     Verify subscribe, kick, and unsubscribe (no reboot)\n"
+	       "  disable-enable       Verify WDT disable, and re-enable (no reboot)\n"
+	       "  false-ack            Verify kick with invalid ACK (reboot)\n"
+	       "  false-unsubscribe    Verify unsubscribe with invalid ACK (reboot)\n"
+	       "  failed-kick          Verify reboot on missing kick (reboot)\n"
+	       "  no-kick              Verify reboot on missing first kick (reboot)\n"
+	       "  premature-trigger    Verify no premature trigger before unsubscribe (reboot)\n"
 #endif /* SUPERVISOR_TESTS_DISABLED */
 	       "____\n"
 	       "*  default log level\n"
