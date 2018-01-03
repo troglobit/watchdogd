@@ -309,7 +309,10 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 	if (!ctx || !reason)
 		return errno = EINVAL;
 
-	DEBUG("Reboot requested by pid %d, label %s, timeout: %d ...", pid, reason->label, timeout);
+	if (!pid)
+		DEBUG("Reboot from command line, label %s, timeout: %d ...", reason->label, timeout);
+	else
+		DEBUG("Reboot requested by pid %d, label %s, timeout: %d ...", pid, reason->label, timeout);
 
 	/* Save reboot cause */
 	reason->counter = reset_counter + 1;
