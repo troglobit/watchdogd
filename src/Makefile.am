@@ -1,7 +1,6 @@
 AM_CFLAGS           = -W -Wall -Wextra -Wno-unused-parameter -std=gnu99
 bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
-dist_man8_MANS      = watchdogd.8
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      plugin.c          plugin.h	\
 		      script.c		script.h	\
