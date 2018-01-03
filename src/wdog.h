@@ -39,7 +39,7 @@ typedef struct
 	unsigned int  wid;       /* Watchdog ID of process causing reset */
 	wdog_cause_t  cause;     /* Reset cause */
 	unsigned int  enabled;   /* Unused, kept for compat. */
-	char          label[16]; /* Process name causing reset, or label */
+	char          label[48]; /* Process name causing reset, or label */
 } wdog_reason_t;
 
 int   wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */

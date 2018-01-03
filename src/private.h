@@ -59,7 +59,7 @@ typedef struct {
 	unsigned int timeout;	/* msec */
 	unsigned int ack;
 	unsigned int next_ack;
-	char         label[16];	/* process name or label */
+	char         label[48];	/* process name or label */
 } wdog_t;
 
 #endif /* WDOG_PRIVATE_H_ */
