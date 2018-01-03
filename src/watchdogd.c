@@ -545,13 +545,8 @@ static void period_cb(uev_t *w, void *arg, int event)
 	wdt_kick("Kicking watchdog.");
 }
 
-/*
- * Mark oursevles a "special" process for Finit/systemd
- * https://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons/
- */
 static char *progname(char *arg0)
 {
-	int i;
 	char *nm;
 
 	nm = strrchr(arg0, '/');
@@ -560,10 +555,6 @@ static char *progname(char *arg0)
 	else
 		nm = arg0;
 	nm = strdup(nm);
-
-	for (i = 0; arg0[i]; i++)
-		arg0[i] = 0;
-	sprintf(arg0, "@%s", PACKAGE);
 
 	return nm;
 }
@@ -830,6 +821,12 @@ int main(int argc, char *argv[])
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
 	setup_signals(&ctx);
+
+	/*
+	 * Mark oursevles a "special" process for Finit/systemd
+	 * https://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons/
+	 */
+	arg[0][0] = '@';
 
 	if (wdt_init(&__info)) {
 		PERROR("Failed connecting to kernel watchdog driver");
