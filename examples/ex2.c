@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 		dbg = 1;
 
 	DEBUG("Checking connectivity with watchdogd ...");
-	if (wdog_pmon_ping()) {
+	if (wdog_ping()) {
 		PERROR("Failed connectivity check");
 		return 1;
 	}
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 
 	id = wdog_subscribe(NULL, 2000, &ack);
 	if (id < 0) {
-		perror("Failed connecting to pmon");
+		perror("Failed connecting to wdog");
 		return 1;
 	}
 

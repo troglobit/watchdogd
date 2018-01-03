@@ -76,7 +76,7 @@ static int api_poll(int sd, int ev)
 }
 
 /* Used by client to check if server is up */
-int wdog_pmon_ping(void)
+int wdog_ping(void)
 {
 	int sd;
 	int so_error = ENOTCONN;
@@ -167,22 +167,33 @@ error:
 	return -errno;
 }
 
-int wdog_pmon_subscribe(char *label, unsigned int timeout, unsigned int *ack)
+int wdog_subscribe(char *label, unsigned int timeout, unsigned int *ack)
 {
 	return doit(WDOG_SUBSCRIBE_CMD, -1, label, timeout, ack);
 }
 
-int wdog_pmon_kick(int id, unsigned int *ack)
+int wdog_kick(int id, unsigned int timeout, unsigned int ack, unsigned int *next_ack)
 {
-	return doit(WDOG_KICK_CMD, id, NULL, -1, ack);
+	int rc;
+
+	rc = doit(WDOG_KICK_CMD, id, NULL, timeout, &ack);
+	if (!rc)
+		*next_ack = ack;
+
+	return rc;
 }
 
-int wdog_pmon_extend_kick(int id, unsigned int timeout, unsigned int *ack)
+int wdog_extend_kick(int id, unsigned int timeout, unsigned int *ack)
 {
 	return doit(WDOG_KICK_CMD, id, NULL, timeout, ack);
 }
 
-int wdog_pmon_unsubscribe(int id, unsigned int ack)
+int wdog_kick2(int id, unsigned int *ack)
+{
+	return doit(WDOG_KICK_CMD, id, NULL, 0, ack);
+}
+
+int wdog_unsubscribe(int id, unsigned int ack)
 {
 	return doit(WDOG_UNSUBSCRIBE_CMD, id, NULL, 0, &ack);
 }

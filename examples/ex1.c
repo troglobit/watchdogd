@@ -35,15 +35,15 @@ int main(int argc, char *argv[])
 		dbg = 1;
 
 	DEBUG("=> Checking connectivity with watchdogd ...");
-	if (wdog_pmon_ping()) {
+	if (wdog_ping()) {
 		PERROR("Failed connectivity check");
 		return 1;
 	}
 	DEBUG("=> OK!");
 
-	id = wdog_pmon_subscribe(NULL, 3000, &ack);
+	id = wdog_subscribe(NULL, 3000, &ack);
 	if (id < 0) {
-		perror("Failed connecting to pmon");
+		perror("Failed connecting to wdog");
 		return 1;
 	}
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 			PERROR("Failed reading wdog status");
 
 		DEBUG("=> Kicking ack:%d ... (%sABLED)", ack, enabled ? "EN" : "DIS");
-		if (wdog_pmon_kick(id, &ack))
+		if (wdog_kick2(id, &ack))
 			PERROR("Failed kicking");
 		sleep(2);
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 	}
 
 	DEBUG("=> Exiting ...");
-	if (wdog_pmon_unsubscribe(id, ack)) {
+	if (wdog_unsubscribe(id, ack)) {
 		PERROR("Failed unsubscribe");
 		return 1;
 	}

@@ -136,13 +136,13 @@ static int testit(void)
 	unsigned int ack;
 
 	log("Verifying watchdog connectivity");
-	if (wdog_pmon_ping())
+	if (wdog_ping())
 		err(1, "Failed connectivity check");
 
 	log("Subscribing to process supervisor");
-	id = wdog_pmon_subscribe(NULL, tmo, &ack);
+	id = wdog_subscribe(NULL, tmo, &ack);
 	if (id < 0) {
-		perror("Failed connecting to pmon");
+		perror("Failed connecting to wdog");
 		return 1;
 	}
 
@@ -173,7 +173,7 @@ static int testit(void)
 		usleep(tmo / 2 * 1000);
 
 		log("Kicking watchdog: id %d, ack %d", id, ack);
-		if (wdog_pmon_kick(id, &ack))
+		if (wdog_kick2(id, &ack))
 			err(1, "Failed kicking");
 
 		if (count == 8)
@@ -188,7 +188,7 @@ static int testit(void)
 	}
 
 	log("Unsubscribing: id %d, ack %d", id, ack);
-	if (wdog_pmon_unsubscribe(id, ack))
+	if (wdog_unsubscribe(id, ack))
 		err(1, "Failed unsubscribe");
 
 	return 0;

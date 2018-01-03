@@ -68,26 +68,32 @@ static inline int wdog_clear_reason(void)
 	return wdog_reboot_reason_clr();
 }
 
-static inline int wdog_subscribe(char *label, unsigned int timeout, unsigned int *next_ack)
+static inline int wdog_pmon_ping(void)
 {
-        return wdog_pmon_subscribe(label, timeout, next_ack);
+	return wdog_ping();
 }
 
-static inline int wdog_unsubscribe(int wid, unsigned int ack)
+/* Returns ID or -errno */
+static inline int wdog_pmon_subscribe(char *label, int timeout, int *ack)
 {
-        return wdog_pmon_unsubscribe(wid, ack);
+	return wdog_subscribe(label, (unsigned int)timeout, (unsigned int *)ack);
 }
 
-static inline int wdog_kick(int wid, unsigned int timeout, unsigned int ack, unsigned int *next_ack)
+/* Returns 0 if OK, or errno */
+static inline int wdog_pmon_unsubscribe(int id, int ack)
 {
-        int result;
-	unsigned int new_ack = ack;
+	return wdog_unsubscribe(id, (unsigned int)ack);
+}
 
-	result = wdog_pmon_extend_kick(wid, timeout, &new_ack);
-	if (!result)
-		*next_ack = new_ack;
+/* Returns 0 while OK, or errno */
+static inline int wdog_pmon_kick(int id, int *ack)
+{
+	return wdog_kick2(id, (unsigned int *)ack);
+}
 
-	return result;
+static inline int wdog_pmon_extend_kick(int id, int timeout, int *ack)
+{
+	return wdog_extend_kick(id, (unsigned int)timeout, (unsigned int *)ack);
 }
 
 /**
