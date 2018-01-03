@@ -66,8 +66,12 @@ monitor other aspects of the system ...
 
 Without arguments `watchdogd` runs in the background, monitoring the the
 CPU, and as long as there is CPU time it "kicks" the WDT chip (via the
-driver).  However, with few command line options it can also monitor
-other aspect of the system, such as:
+driver).  If `watchdogd` is stopped, or does not get enough CPU time to
+run, the WDT will detect this and reboot the system.  This is the normal
+mode of operation.
+
+However, with few command line options it can also monitor other aspect
+of the system, such as:
 
 - Load average
 - Memory leaks
