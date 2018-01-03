@@ -23,7 +23,7 @@
 #include "private.h"
 #include "rc.h"
 #include "wdog.h"
-#include "pmon.h"
+#include "supervisor.h"
 
 static struct supervisor {
 	int   id;		/* 0-255, -1: Free */

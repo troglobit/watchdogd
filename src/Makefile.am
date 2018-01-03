@@ -5,7 +5,7 @@ dist_man8_MANS      = watchdogd.8
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
 		      plugin.c          plugin.h	\
 		      script.c		script.h	\
-		      pmon.c		pmon.h
+		      supervisor.c	supervisor.h
 if FINIT
 watchdogd_SOURCES  += finit.c
 endif
