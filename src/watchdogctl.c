@@ -33,7 +33,6 @@
 struct command {
 	char  *cmd;
 	int  (*cb)(char *arg);
-	int    type;
 	char  *arg;
 };
 
@@ -303,6 +302,7 @@ static int show_usage(char *arg)
 int main(int argc, char *argv[])
 {
 	int c;
+	char *cmd, arg[120];
 	struct option long_options[] = {
 		{ "help",              0, 0, 'h' },
 		{ "verbose",           0, 0, 'v' },
@@ -310,20 +310,20 @@ int main(int argc, char *argv[])
 		{ NULL, 0, 0, 0 }
 	};
 	struct command command[] = {
-		{ "clear",             do_clear,     0, NULL },
-		{ "counter",           do_counter,   0, NULL },
-		{ "disable",           do_enable,    0, "0"  },
-		{ "enable",            do_enable,    0, "1"  },
-		{ "force-reset",       do_reset,     0, NULL },
-		{ "help",              show_usage,   0, NULL },
-		{ "loglevel",          set_loglevel, 1, NULL },
-		{ "reboot",            do_reset,     1, NULL },
-		{ "status",            show_status,  0, NULL },
+		{ "clear",             do_clear,     NULL },
+		{ "counter",           do_counter,   NULL },
+		{ "disable",           do_enable,    "0"  },
+		{ "enable",            do_enable,    "1"  },
+		{ "force-reset",       do_reset,     NULL },
+		{ "help",              show_usage,   NULL },
+		{ "loglevel",          set_loglevel, NULL },
+		{ "reboot",            do_reset,     NULL },
+		{ "status",            show_status,  NULL },
 #ifndef SUPERVISOR_TESTS_DISABLED
-		{ "test",              run_test,     1, NULL },
+		{ "test",              run_test,     NULL },
 #endif
-		{ "version",           show_version, 0, NULL },
-		{ NULL,                NULL,         0, NULL }
+		{ "version",           show_version, NULL },
+		{ NULL,                NULL,         NULL }
 	};
 
 	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?" OPT_T, long_options, NULL)) != EOF) {
@@ -347,28 +347,23 @@ int main(int argc, char *argv[])
 	if (optind >= argc)
 		return show_status(NULL);
 
+	cmd = argv[optind++];
+
+	memset(arg, 0, sizeof(arg));
 	while (optind < argc) {
-		char *cmd;
-
-		cmd = argv[optind++];
+		strlcat(arg, argv[optind++], sizeof(arg));
 		if (optind < argc)
-			optarg = argv[optind];
-		else
-			optarg = NULL;
+			strlcat(arg, " ", sizeof(arg));
+	}
 
-		for (c = 0; command[c].cmd; c++) {
-			if (!string_match(command[c].cmd, cmd))
-				continue;
+	for (c = 0; command[c].cmd; c++) {
+		if (!string_match(command[c].cmd, cmd))
+			continue;
 
-			switch (command[c].type) {
-			case 1:
-				optind++;
-				return command[c].cb(optarg);
+		if (command[c].arg)
+			return command[c].cb(command[c].arg);
 
-			default:
-				return command[c].cb(command[c].arg);
-			}
-		}
+		return command[c].cb(arg);
 	}
 
 	return usage(1);
