@@ -390,23 +390,27 @@ static void setup_signals(uev_ctx_t *ctx)
 
 int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 {
-	char buf[80];
+	char *ptr, buf[80];
 	pid_t dummy;
 
 	if (!pid)
 		pid = &dummy;
 
-	while (fgets(buf, sizeof(buf), fp)) {
+	while ((ptr = fgets(buf, sizeof(buf), fp))) {
 		if (sscanf(buf, WDT_REASON_CNT ": %u\n", &r->counter) == 1)
 			continue;
 		if (sscanf(buf, WDT_REASON_PID ": %d\n", pid) == 1)
 			continue;
 		if (sscanf(buf, WDT_REASON_WID ": %d\n", &r->wid) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_LBL ": %s\n", r->label) == 1)
-			continue;
 		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&r->cause) == 1)
 			continue;
+
+		if (string_match(buf, WDT_REASON_LBL ": ")) {
+			ptr += strlen(WDT_REASON_LBL) + 2;
+			strlcpy(r->label, chomp(ptr), sizeof(r->label));
+			continue;
+		}
 	}
 
 	return fclose(fp);
