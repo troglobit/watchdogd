@@ -1,28 +1,42 @@
-.\" mdoc format
-.Dd 6 November, 2017
+.\"
+.\" Copyright (c) 2016-2018  Joachim Nilsson <troglobit@gmail.com>
+.\"
+.\" Permission to use, copy, modify, and/or distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd Jan 3, 2018
 .Dt WATCHDOGD 8
-.Os
+.Os "watchdogd (3.0)"
 .Sh NAME
 .Nm watchdogd
-.Nd System & Process Supervisor for Linux
+.Nd Advanced system & process monitor daemon
 .Sh SYNOPSIS
 .Nm
-.Op Fl hnsVvx
-.Op Fl a Ar WARN Op ,REBOOT
+.Op Fl hnsVx
 .Op Fl e Ar CMD
-.Op Fl f Ar WARN Op ,REBOOT
 .Op Fl l Ar LEVEL
-.Op Fl m Ar WARN Op ,REBOOT
-.Op Fl p Op PRIO
 .Op Fl t Ar SEC
 .Op Fl T Ar SEC
-.Op /dev/watchdogN
+.Op Fl a Ar WARN Op ,REBOOT
+.Op Fl f Ar WARN Op ,REBOOT
+.Op Fl m Ar WARN Op ,REBOOT
+.Op Fl p Op RTPRIO
+.Op Ar /dev/watchdogN
 .Sh DESCRIPTION
 .Nm
 is an advanced system and process supervisor daemon, primarily intended
 for embedded Linux and server systems.  It can monitor critical system
-resources, supervise the heartbeat of processes, record their deadline
-transgressions, and reset the system.
+resources, supervise the heartbeat of processes and record deadline
+transgressions before safely rebooting your system.
 .Pp
 When a system comes back up after a reset,
 .Nm
@@ -30,15 +44,34 @@ determines the reset cause and records it in a logfile for later
 analysis by an operator or network management system (NMS).  This
 information can in turn then be used to put the system in an operational
 safe state, or non-operational safe state.
+.Sh WATCHDOG
+A watchdog timer (WDT) is something most motherboards of laptops and
+servers today are equipped with.  It is basically a small timer that is
+connected to the reset circuitry so that it can reset the board when the
+timer expires.
 .Pp
-Use
+The Linux kernel provides a common userspace interface
+.Pa /dev/watchdog ,
+created automatically when the appropriate driver module is loaded.  If
+your board does not have a WDT the kernel provides a "softdog" module
+which could be good enough.
+.Pp
+The idea is to have a watchdog daemon in userspace that runs in the
+background of your system.  When there is no more CPU time for the
+watchdog daemon to run it will fail to "kick" the WDT.  This will in
+turn cause the WDT to reboot the system.
+.Sh OPTIONS
+Earlier versions of
+.Nm
+supported more command line options, from v3.0
+.Nm
+has been greatly simplified.  Use
 .Xr watchdogctl 1
 to query status and control
 .Nm .
-.Sh OPTIONS
 .Bl -tag -width Ds
-.It Fl a, -load-averate Ar WARN Op ,REBOOT
-Enable load average supervision.  REBOOT is optional, omitting it
+.It Fl a, -load-average Ar WARN Op ,REBOOT
+Enable load average check monitor.  REBOOT is optional, omitting it
 disables the reboot action.
 .It Fl e, -script Ar CMD
 Script or command to run as monitor plugin callback.  When given the
@@ -47,39 +80,86 @@ will be called instead of reboot when the REBOOT watermark is reached by
 a monitor plugin.  Hence, it is up to the script to perform a reboot if
 that is needed.
 .It Fl f, -filenr Ar WARN Op ,REBOOT
-Enable file descriptor leak supervision.  REBOOT is optional, when
+Enable file descriptor leak check monitor.  REBOOT is optional, when
 omitted the plugin will not reboot.
 .It Fl h, -help
-Show help message.
+Show summary of command line options and exit.
 .It Fl l, -loglevel Ar LEVEL
-Log level, default notice.
+Set log level: none, err, info,
+.Ar notice ,
+debug.
 .It Fl m, -meminfo Ar WARN Op ,REBOOT
-Enable system memory leak supervision.  REBOOT is optional, when omitted
+Enable memory leak check monitor.  REBOOT is optional, when omitted
 the plugin will not reboot.
 .It Fl n, -foreground
-Start in foreground, necessary when started by systemd or Finit.
-.It Fl p, -pmon Op PRIORTY
-Enable process monitor, run at elevated RT priority when active
-(monitoring at least one process).  Default RT priorty: 98.
+Start in foreground, required when started by systemd or Finit, default is to daemonize and background.
+.It Fl p, -supervisor Op RTPRIO
+Enable process supervisor, run at elevated RT priority when active
+(monitoring at least one process).  Default RT (SCHED_RR) priorty: 98.
 .It Fl s, -syslog
-Use syslog, even if running in foreground.
+Use
+.Xr syslog 3
+for log messages, warnings and error conditions.  This is the default
+when running in the background.  When running in the foreground, see
+.Fl n ,
+log messages are printed to stdout.
 .It Fl t, -interval Ar SEC
-Watchdog kick interval, in seconds.
+WDT kick interval, in SEC seconds, default: 10
 .It Fl T, -timeout Ar SEC
-Watchdog timer (WDT) timeout, in seconds.
+HW watchdog timer (WDT) timeout, in SEC seconds.
 .It Fl V, -version
-Show version information.
+Show program version and exit.
 .It Fl x, -safe-exit
-Disable watchdog (WDT) on normal exit.  Not supported in all WDT drivers
-due to HW limitations.  Some drivers emulate support by keeping an
-in-kernel thread to continue kicking the WDT.
+Disable HW watchdog (WDT) on orderly exit from
+.Nm .
+Not supported in all WDT drivers due to HW limitations.  Some drivers
+emulate support by keeping an in-kernel thread to continue kicking the
+WDT.  Make sure to try it first, or verify the WDT driver source code.
+.El
+.Sh SIGNALS
+.Nm
+responds to the following signals:
+.Pp
+.Bl -tag -width TERM -compact
+.It TERM
+Safe exit if started with the
+.Fl x
+flag, otherwise same as PWR.
+.It INT
+Same as TERM
+.It PWR
+Force a system reboot.  Systems with Finit use this to reboot.
+.It QUIT
+Same as TERM
+.It USR1
+Ignored, was used in an earlier version.
+.It USR2
+Same as USR1
 .El
 .Sh FILES
 .Bl -tag -width /var/lib/watchdogd.state -compact
-.It Pa /dev/watchdog
 .It Pa /var/lib/watchdogd.state
-.It Pa /run/watchdogd.sock
+State pre boot, lists coming (re)boot reason.  Do not rely on the
+contents of this file, it is used by
+.Nm
+to maintain state across boots.  If you want the status and reset cause,
+read
+.Pa /run/watchdogd.status
+instead.
+.It Pa /run/watchdogd.pid
+For convenience to other processes when sending signals.  Also a useful
+synchronization point, because the PID file is only created when
+.Nm
+is ready to receive signals and register processes with the process supervisor API
 .It Pa /run/watchdogd.status
+Current status, contains HW WDT status word,
+.Nm
+timeout and period, and the reset cause information from this boot.
+.It Pa /run/watchdogd.sock
+UNIX domain socket used by libwdog and
+.Nm watchdogctl
+to connect to
+.Nm
 .El
 .Sh SEE ALSO
 .Xr watchdogctl 1
