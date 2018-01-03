@@ -61,6 +61,9 @@ int   wdog_reboot_reason_clr(void);
 
 int   wdog_ping             (void);
 
+/*
+ * Process supervisor API, see also compat.h
+ */
 int   wdog_subscribe        (char *label, unsigned int timeout, unsigned int *next_ack);
 int   wdog_unsubscribe      (int id, unsigned int ack);
 int   wdog_kick             (int id, unsigned int timeout, unsigned int ack, unsigned int *next_ack);
