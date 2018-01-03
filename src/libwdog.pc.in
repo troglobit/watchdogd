@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: @PACKAGE@
-Description: Watchdog and process monitor (PMON) API
+Description: Watchdog daemon with process supervisor/instrumentation API
 Version: @VERSION@
 Requires:
 Libs: -L${libdir} -lwdog

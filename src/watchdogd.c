@@ -57,7 +57,7 @@ char  *prognm = NULL;
 int __wdt_testmode = 0;
 #endif
 
-/* Actual reboot reason as read at boot, reported by pmon API */
+/* Actual reboot reason as read at boot, reported by supervisor API */
 wdog_reason_t reboot_reason;
 
 /* Reset cause */
@@ -602,7 +602,7 @@ static int usage(int status)
 #ifdef FILENR_PERIOD
 	       "  -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT\n"
 #endif
-	       "  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio.\n"
+	       "  -p, --supervisor[=PRIO]  Enable process supervisor, at elevated RT prio.\n"
 	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
 	       "  -V, --version            Display version and exit\n"
@@ -692,8 +692,8 @@ int main(int argc, char *argv[])
 #ifdef FILENR_PERIOD
 		{"filenr",        1, 0, 'f'},
 #endif
-		{"pmon",          2, 0, 'p'},
 		{"safe-exit",     0, 0, 'x'},
+		{"supervisor",    2, 0, 'p'},
 		{"syslog",        0, 0, 's'},
 #ifndef TESTMODE_DISABLED
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
@@ -751,7 +751,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'p':
-			if (pmon_set(optarg))
+			if (supervisor_set(optarg))
 				return usage(1);
 			break;
 
@@ -760,7 +760,7 @@ int main(int argc, char *argv[])
 			break;
 
 #ifndef TESTMODE_DISABLED
-		case 'S':	/* Simulate: no interaction with kernel, for testing pmon */
+		case 'S':	/* Simulate: no interaction with kernel, for testing supervisor */
 			__wdt_testmode = 1;
 			break;
 #endif

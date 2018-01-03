@@ -1,6 +1,6 @@
-/* Watchdog API for pmon and its clients
+/* Watchdog API for the process supervisor, its clients, and others
  *
- * Copyright (c) 2015-2016  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

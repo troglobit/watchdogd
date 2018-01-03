@@ -1,6 +1,6 @@
-/* Internal libwdog and watchdogd API
+/* Internal libwdog and watchdogd API (not for public use!)
  *
- * Copyright (c) 2015-2016  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (c) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,9 +25,9 @@
 #define _PATH_PRESERVE              "/var/lib"
 #endif
 
-#define WDOG_PMON_BASENAME          "watchdogd.sock"
-#define WDOG_PMON_PATH              _PATH_VARRUN WDOG_PMON_BASENAME
-#define WDOG_PMON_TEST              _PATH_TMP    WDOG_PMON_BASENAME
+#define WDOG_SOCKNAME               "watchdogd.sock"
+#define WDOG_SUPERVISOR_PATH        _PATH_VARRUN   WDOG_SOCKNAME
+#define WDOG_SUPERVISOR_TEST        _PATH_TMP      WDOG_SOCKNAME
 #define WDOG_STATE                  _PATH_PRESERVE "/watchdogd.state"
 #define WDOG_STATE_TEST             _PATH_TMP      "watchdogd.state"
 #define WDOG_STATUS                 _PATH_VARRUN   "watchdogd.status"
@@ -49,7 +49,7 @@
 #define WDOG_RESET_COUNTER_CMD      18
 #define WDOG_CMD_ERROR              -1
 
-#define WDOG_PMON_MIN_TIMEOUT       1000 /* msec */
+#define WDOG_SUPERVISOR_MIN_TIMEOUT 1000 /* msec */
 
 typedef struct {
 	int          cmd;

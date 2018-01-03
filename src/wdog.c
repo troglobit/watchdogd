@@ -1,6 +1,6 @@
-/* Watchdog API for pmon and its clients
+/* Watchdog API for the process supervisor, its clients, and others
  *
- * Copyright (C) 2015-2016  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,12 +35,12 @@ static int api_init(void)
 	struct sockaddr_un sun;
 
 	sun.sun_family = AF_UNIX;
-	snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_PATH);
+	snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_SUPERVISOR_PATH);
 	if (access(sun.sun_path, F_OK)) {
 #ifdef TESTMODE_DISABLED
 		return -1;
 #else
-		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_TEST);
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_SUPERVISOR_TEST);
 		if (access(sun.sun_path, F_OK))
 			return -1;
 #endif

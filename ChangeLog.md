@@ -11,8 +11,8 @@ This release includes major changes to both the build system and the
 `watchdogd` command line interface, making it incompatible with previous
 versions.  Therefore the major version number has been bumped.
 
-Application writes can now ask `pkgconfig` for `CFLAGS` and `LIBS` to
-use the PMON interface in `libwdog.so`
+Application writes can now ask `pkg-config` for `CFLAGS` and `LIBS` to
+use the process supervisor interface in `libwdog.so`
 
 Reset cause is now queried and saved in `/var/lib/watchdogd.state` at
 boot.  Use the new `watchdogctl` tool to interact with and query status

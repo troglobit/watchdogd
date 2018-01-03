@@ -9,7 +9,6 @@
 .Nm
 .Op Fl hvV
 .Op clear
-.Op debug
 .Op disable | enable
 .Op loglevel Ar LEVEL
 .Op reboot Op MSEC
@@ -50,8 +49,13 @@ Reboot system using WDT, with an optional millisecond delay.
 .It Cm status
 Query status of daemon and show last reset cause, default command.
 .It Cm test Op TEST
-Run built-in test of process monitor (PMON) functionality in daemon.
-The default test runs a complete cycle:
+Run built-in tests of process supervisor functionality in daemon.  This
+can be disabled at build time, so may not be available in the installed
+.Nm .
+The default test, if none is selected, runs the complete cycle.  You may
+want to run these tests with the
+.Fl -verbose
+option to enable output.
 .Pp
 .Bl -tag -width false-unsubscribe -compact -offset indent
 .It Cm complete-cycle

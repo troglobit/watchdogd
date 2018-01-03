@@ -1,6 +1,6 @@
-/* Process monitor
+/* Process supervisor plugin
  *
- * Copyright (C) 2015  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,21 +25,20 @@
 #include "wdog.h"
 #include "pmon.h"
 
-typedef struct {
+static struct supervisor {
 	int   id;		/* 0-255, -1: Free */
 	pid_t pid;
 	char  label[16];	/* Process name, or label. */
 	int   timeout;		/* Period time, in msec. */
 	uev_t watcher;		/* Process timer */
 	int   ack;		/* Next expected ACK from process */
-} pmon_t;
+} process[256];                 /* Max ID 0-255 */
 
 static int     sd = -1;
 static int     active = 0;
 static int     rtprio = 98;
-static int     pmon_enabled = 0;
+static int     supervisor_enabled = 0;
 static uev_t   watcher;
-static pmon_t  process[256];	/* Max ID 0-255 */
 
 
 static size_t num_supervised(void)
@@ -86,20 +85,20 @@ static void set_priority(void)
 }
 
 /*
- * Create new &pmon_t for client process
+ * Create supervisor for client process
  *
  * Returns:
- * A &pmon_t object, with @pid, @label and @timeout filled in, or
- * %NULL on error, with @errno set to one of:
- * - %EINVAL when no label was given, or @timeout < %WDOG_PMON_MIN_TIMEOUT
+ * A pointer to a enw supervisor object, with @pid, @label and @timeout
+ * filled in, or %NULL on error, with @errno set to one of:
+ * - %EINVAL when no label was given, or @timeout < %WDOG_SUPERVISOR_MIN_TIMEOUT
  * - %ENOMEM when MAX number of monitored processes has been reached
  */
-static pmon_t *allocate(pid_t pid, char *label, unsigned int timeout)
+static struct supervisor *allocate(pid_t pid, char *label, unsigned int timeout)
 {
 	size_t i;
-	pmon_t *p = NULL;
+	struct supervisor *p = NULL;
 
-	if (!label || timeout < WDOG_PMON_MIN_TIMEOUT) {
+	if (!label || timeout < WDOG_SUPERVISOR_MIN_TIMEOUT) {
 		errno = EINVAL;
 		return NULL;
 	}
@@ -123,7 +122,7 @@ static pmon_t *allocate(pid_t pid, char *label, unsigned int timeout)
 	return p;
 }
 
-static void release(pmon_t *p)
+static void release(struct supervisor *p)
 {
 	memset(p, 0, sizeof(*p));
 	p->id = -1;
@@ -133,15 +132,15 @@ static void release(pmon_t *p)
  * Validate user's kick/unsubscribe against our records
  *
  * Returns:
- * Pointer to &pmon_t object, or %NULL on error, with errno set to one of:
+ * Pointer supervisor object, or %NULL on error, with errno set to one of:
  * - %EINVAL when the given ID is out of bounds
  * - %EIDRM when daemon was restarted or client disconnected but keeps kicking
  * - %EBADE when someone else tries to kick on behalf of client
  * - %EBADRQC when client uses the wrong ack code
  */
-static pmon_t *get(int id, pid_t pid, int ack)
+static struct supervisor *get(int id, pid_t pid, int ack)
 {
-	pmon_t *p;
+	struct supervisor *p;
 
 	if (id < 0 || id >= (int)NELEMS(process)) {
 		errno = EINVAL;
@@ -168,7 +167,7 @@ static pmon_t *get(int id, pid_t pid, int ack)
 }
 
 /* XXX: Use a random next-ack != req.ack */
-static void next_ack(pmon_t *p, wdog_t *req)
+static void next_ack(struct supervisor *p, wdog_t *req)
 {
 	p->ack        += 2;	/* FIXME */
 
@@ -179,7 +178,7 @@ static void next_ack(pmon_t *p, wdog_t *req)
 /* Client timed out.  Store its label in reset-cause, sync and reboot */
 static void timeout(uev_t *w, void *arg, int events)
 {
-	pmon_t *p = (pmon_t *)arg;
+	struct supervisor *p = (struct supervisor *)arg;
 	wdog_reason_t reason;
 
 	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
@@ -195,14 +194,14 @@ static void timeout(uev_t *w, void *arg, int events)
 static void cb(uev_t *w, void *arg, int events)
 {
 	int sd;
-	pmon_t *p;
+	struct supervisor *p;
 	ssize_t num;
 	wdog_t req;
 	wdog_reason_t *reason;
 
 	sd = accept(w->fd, NULL, NULL);
 	if (-1 == sd) {
-		WARN("pmon failed accepting incoming client connection");
+		WARN("Failed accepting incoming client connection");
 		return;
 	}
 
@@ -331,7 +330,7 @@ static void cb(uev_t *w, void *arg, int events)
 		break;
 
 	default:
-		ERROR("pmon: Invalid command %d", req.cmd);
+		ERROR("Invalid command %d", req.cmd);
 		req.cmd   = WDOG_CMD_ERROR;
 		req.error = EBADMSG;
 		break;
@@ -353,9 +352,9 @@ static int api_init(void)
 
 	sun.sun_family = AF_UNIX;
 	if (wdt_testmode())
-		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_TEST);
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_SUPERVISOR_TEST);
 	else
-		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_PMON_PATH);
+		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_SUPERVISOR_PATH);
 
 	sd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (-1 == sd)
@@ -377,48 +376,48 @@ error:
 	return -1;
 }
 
-int pmon_init(uev_ctx_t *ctx, int T)
+int supervisor_init(uev_ctx_t *ctx, int T)
 {
 	size_t i;
 
-	if (!pmon_enabled) {
-		INFO("Process heartbeat monitor (pmon) disabled.");
+	if (!supervisor_enabled) {
+		INFO("Process supervisor disabled.");
 		return 1;
 	}
 
 	if (sd != -1) {
-		ERROR("Plugin pmon already started.");
+		ERROR("Process supervisor already started.");
 		return 1;
 	}
 
-	INFO("Starting process heartbeat monitor, waiting for process subscribe ...");
+	INFO("Starting process supervisor, waiting for client subscribe ...");
 
 	/* XXX: Maybe store these in shm instead, in case we are restarted? */
 	for (i = 0; i < NELEMS(process); i++) {
-		memset(&process[i], 0, sizeof(pmon_t));
+		memset(&process[i], 0, sizeof(struct supervisor));
 		process[i].id = -1;
 	}
 
 	sd = api_init();
 	if (sd < 0) {
-		PERROR("Failed starting pmon");
+		PERROR("Failed starting process supervisor");
 		return 1;
 	}
 
 	return uev_io_init(ctx, &watcher, cb, NULL, sd, UEV_READ);
 }
 
-int pmon_exit(uev_ctx_t *ctx)
+int supervisor_exit(uev_ctx_t *ctx)
 {
 	size_t i;
 
-	if (!pmon_enabled)
+	if (!supervisor_enabled)
 		return 0;
 
 	uev_io_stop(&watcher);
 	shutdown(sd, SHUT_RDWR);
-	(void)remove(WDOG_PMON_PATH);
-	(void)remove(WDOG_PMON_TEST);
+	(void)remove(WDOG_SUPERVISOR_PATH);
+	(void)remove(WDOG_SUPERVISOR_TEST);
 	close(sd);
 	sd = -1;
 
@@ -426,7 +425,7 @@ int pmon_exit(uev_ctx_t *ctx)
 		if (process[i].id != -1) {
 			uev_timer_stop(&process[i].watcher);
 
-			memset(&process[i], 0, sizeof(pmon_t));
+			memset(&process[i], 0, sizeof(struct supervisor));
 			process[i].id = -1;
 		}
 	}
@@ -437,15 +436,15 @@ int pmon_exit(uev_ctx_t *ctx)
 }
 
 /*
- * Disable the pmon plugin when watchdogd is disabled
+ * Disable the supervisor plugin when watchdogd is disabled
  */
-int pmon_enable(int enable)
+int supervisor_enable(int enable)
 {
 	int    result = 0;
 	size_t i;
 
 	for (i = 0; i < NELEMS(process); i++) {
-		pmon_t *p = &process[i];
+		struct supervisor *p = &process[i];
 
 		if (p->id != -1) {
 			if (!enable)
@@ -460,12 +459,12 @@ int pmon_enable(int enable)
 	return result;
 }
 
-int pmon_set(char *optarg)
+int supervisor_set(char *optarg)
 {
 	long long min = sched_get_priority_min(SCHED_RR);
 	long long max = sched_get_priority_max(SCHED_RR);
 
-	pmon_enabled = 1;
+	supervisor_enabled = 1;
 
 	if (optarg) {
 		const char *errstr = NULL;

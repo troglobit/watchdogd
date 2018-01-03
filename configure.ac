@@ -29,7 +29,7 @@ AC_ARG_ENABLE([compat],
 	[AS_HELP_STRING([--enable-compat], [Enable compat supervisor.status and signals])],,
 	[enable_compat=no], [])
 AC_ARG_ENABLE([examples],
-	[AS_HELP_STRING([--enable-examples], [Build PMON client examples])],
+	[AS_HELP_STRING([--enable-examples], [Build process supervisor client examples])],
 	[enable_examples=yes], [])
 AC_ARG_ENABLE([loadavg],
 	[AS_HELP_STRING([--enable-loadavg=SEC], [Enable CPU load average monitor, default 5 min])],
@@ -47,7 +47,7 @@ AC_ARG_ENABLE([syslog-mark],
 AC_ARG_ENABLE(test-mode,
         AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
 AC_ARG_ENABLE(builtin-tests,
-        AS_HELP_STRING([--disable-builtin-tests], [Disable built-in PMON tests]))
+        AS_HELP_STRING([--disable-builtin-tests], [Disable process supervisor built-in tests]))
 AC_ARG_ENABLE(rcfile,
         AS_HELP_STRING([--disable-rcfile], [Disable file store reset cause backend]))
 
@@ -77,7 +77,7 @@ AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
 	AC_DEFINE(TESTMODE_DISABLED,  1, [Disable test mode])])
 
 AS_IF([test "x$enable_builtin_tests" != "xno"], enable_builtin_tests="yes",[
-	AC_DEFINE(PMON_TESTS_DISABLED,  1, [Disable PMON tests in watchdogctl])])
+	AC_DEFINE(SUPERVISOR_TESTS_DISABLED,  1, [Disable process supervisor tests in watchdogctl])])
 
 AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
 	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])

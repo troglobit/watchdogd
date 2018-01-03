@@ -38,7 +38,7 @@ void wdt_plugins_init(uev_ctx_t *ctx, int T)
 #endif
 
 	/* Start process monitor */
-	pmon_init(ctx, T);
+	supervisor_init(ctx, T);
 }
 
 /*
@@ -47,7 +47,7 @@ void wdt_plugins_init(uev_ctx_t *ctx, int T)
 void wdt_plugins_exit(uev_ctx_t *ctx)
 {
 	/* Shut down UNIX domain socket and restore priority */
-	pmon_exit(ctx);
+	supervisor_exit(ctx);
 }
 
 /*
@@ -58,7 +58,7 @@ int wdt_plugins_enable(int enable)
 	int result = 0;
 
 	/* Stop/Start process monitor */
-	result += pmon_enable(enable);
+	result += supervisor_enable(enable);
 
 	return result;
 }

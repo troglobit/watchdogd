@@ -55,18 +55,17 @@ can be used as the snmpEngineTime.
 The status can be read either from the file (status²), or by using the
 client API, like `watchdogctl` which returns (status¹).
 
-When the process supervisor/monitor (PMON) is enabled operation changes
-slightly.  This is the mode where services can register with `watchdogd`
-to monitor their internal process loop.  Each service registers with a
-period time and a name, and then promises to periodically send keepalive
-messages.  As soon as the first service registers `watchdogd` elevates
-its own priority to ensure no priority inversion occurs for its now
-critical supervisory role.  If a service fails to meet its deadline
-`watchdogd` records this in the (state) file, in non-volatile store,
-followed by a forced WDT reboot.  When the system comes back up again
-`watchdogd` reads back the (state) file and stores the information in
-the (status) file for offline analysis and sends it to syslog.  An NMS
-can query this information when needed.
+When the process supervisor is enabled operation changes slightly.  In
+this mode services can register with `watchdogd` to supervise their
+internal process loop.  Each service registers with a period time and a
+name, pledging to periodically send keepalive messages.  As soon as the
+first service registers `watchdogd` elevates its own priority to ensure
+no priority inversion occurs for its now critical supervisor role.  If a
+service fails to meet its deadline, `watchdogd` records this in the
+(state) file, in non-volatile store, followed by a forced WDT reboot.
+When the system comes back up again `watchdogd` reads back the (state)
+file, stores the information in the (status) file for offline analysis,
+and sends it to syslog.  An NMS can query this information when needed.
 
 When the system starts up (1) `watchdogd` first tries to ascertain why
 the system is starting up.  The below sequence diagram is used and each

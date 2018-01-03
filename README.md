@@ -12,7 +12,7 @@ Table of Contents
 * [Introduction](#introduction)
 * [Usage](#usage)
 * [Features](#features)
-* [Pmon API](#pmon-api)
+* [Supervisor API](#supervisor-api)
 * [Operation](#operation)
 * [Debugging](#debugging)
 * [Build & Install](#build--install)
@@ -95,7 +95,7 @@ Options:
   -a, --load-average=W[,R] Enable load average check WARN,REBOOT
   -m, --meminfo=W[,R]      Enable memory leak check, WARN,REBOOT
   -f, --filenr=W[,R]       Enable file descriptor leak check, WARN,REBOOT
-  -p, --pmon[=PRIO]        Enable process monitor, run at elevated RT prio
+  -p, --superviso[=PRIO]   Enable process supervisor, at elevated RT prio
                            Default RT prio when active: SCHED_RR @98
   
   -V, --version            Display version and exit
@@ -157,43 +157,46 @@ detected by reading the file `/proc/meminfo`, looking for the
 file descriptor usage, see [this article][filenr].  For more info on the
 details of memory usage, see [this article][meminfo].
 
-`watchdogd` v2.0 comes with a process monitor, pmon.  It must be enabled
-and a monitored client must connect using the API for pmon to start.  As
-soon pmon starts it raises the real-time priority of watchdogd to 98 to
-be able to ensure proper monitoring of its clients.
+`watchdogd` v2.0 and later comes with a process supervisor (previously
+called pmon).  It must be enabled and a monitored client must connect to
+it using the API for the supervisor to start.  As soon as it starts it
+raises the real-time priority of `watchdogd` to 98 to be able to ensure
+proper superivison of its clients.
 
 
-Pmon API
---------
+Supervisor API
+--------------
 
-To use pmon a client must have its source code instrumented with at
-least a "subscribe" and a "kick" call.  Commonly this is achieved by
-adding the `wdog_pmon_kick()` call to the main event loop.
+To have `watchdogd` supervise a process, it must be instrumented with at
+least a "subscribe" and a "kick" API call.  Commonly this is achieved by
+adding the `wdog_kick()` call to the main event loop.
 
-All API calls, except `wdog_pmon_ping()`, return POSIX OK(0) or negative
-value with `errno` set on error.  The `wdog_pmon_subscribe()` call
-returns a positive integer (including zero) for the watchdog `id`.
+All API functions, except `wdog_ping()`, return POSIX OK(0) or negative
+value with `errno` set on error.  The `wdog_subscribe()` call returns a
+positive integer (including zero) for the watchdog `id`.
 
 ```C
 /*
  * Enable or disable watchdogd at runtime.
  */
-int wdog_enable           (int enable);
-int wdog_status           (int *enabled);
+int wdog_enable      (int enable);
+int wdog_status      (int *enabled);
 
 /*
  * Check if watchdogd API is actively responding,
  * returns %TRUE(1) or %FALSE(0)
  */
-int wdog_pmon_ping        (void);
+int wdog_ping        (void);
 
 /*
- * Register with pmon, timeout in msec.  Return value is the `id`
- * to be used with the `ack` in subsequent kick()/unsubscribe()
+ * Register with process supervisor, timeout in msec
+ * Return value is the `id`, or -1 on error
  */
-int wdog_pmon_subscribe   (char *label, int timeout, int *ack);
-int wdog_pmon_unsubscribe (int id, int ack);
-int wdog_pmon_kick        (int id, int *ack);
+int wdog_subscribe   (char *label, unsigned int timeout, unsigned int *ack);
+int wdog_unsubscribe (int id, unsigned int ack);
+int wdog_kick        (int id, unsigned int timeout, unsigned int ack, unsigned int *next_ack);
+int wdog_kick2       (int id, unsigned int *ack);
+int wdog_extend_kick (int id, unsigned int timeout, unsigned int *ack);
 ```
 
 It is highly recommended to use an event loop like libev, [libuev][], or
@@ -210,23 +213,23 @@ instrument it like this:
 int ack, wid;
 
 /* Library will use process' name on NULL first arg. */
-wid = wdog_pmon_subscribe(NULL, 10000, &ack);
+wid = wdog_subscribe(NULL, 10000, &ack);
 if (-1 == wid)
         ;      /* Error handling */
 
 while (1) {
         ...
-        wdog_pmon_kick(wid, &ack);
+        wdog_kick2(wid, &ack);
         ...
 }
 ```
 
-This simple example subscribes to the watchdog with a 10 sec timeout.
-The received `wid` is used in the call to `wdog_pmon_kick()`, along with
-the received `ack` value.  Which is changed every time the application
-calls `wdog_pmon_kick()`.  The application should of course check the
-return value of `wdog_pmon_subscribe()` for errors, that code is left
-out of the example to make it easier to read.
+This example subscribe to the watchdog with a 10 sec timeout.  The `wid`
+is used in the call to `wdog_kick2()`, with the received `ack` value.
+Which is changed every time the application calls `wdog_kick2()`, so it
+is important the correct value is used.  Applications should of course
+check the return value of `wdog_subscribe()` for errors, that code is
+left out for readability.
 
 See also the [example/ex1.c][ex1] in the source distribution.  This is
 used by the automatic tests.

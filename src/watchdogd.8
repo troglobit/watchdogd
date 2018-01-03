@@ -94,7 +94,7 @@ this option only needs to be 0-1, regardless of the CPU/arch.
 Enable memory leak check, WARN,REBOOT.
 .It Fl f, -filnr Ar WARN,REBOOT
 Enable file descriptor leak check, WARN,REBOOT.
-.It Fl p, -pmon Op RTPRIO
+.It Fl p, -supervisor Op RTPRIO
 Enable process monitor, run at elevated RT prio.  Default RT prio when
 active: SCHED_RR @98.
 .It Fl h, -help
@@ -123,17 +123,16 @@ Ignored, was used in an earlier version.
 Same as USR1
 .El
 .Sh FILES
-.Bl -tag -width /var/lib/misc/watchdogd.state -compact
-.It Pa /var/lib/misc/watchdogd.state
-State post boot, lists (re)boot reason.
-.It Pa /var/run/watchdogd.pid
+.Bl -tag -width /var/lib/watchdogd.state -compact
+.It Pa /var/lib/watchdogd.state
+State post boot, lists (re)boot reason
+.It Pa /run/watchdogd.pid
 For convenience to other processes when sending signals.  Also a useful
 synchronization point, because the PID file is only created when
-.It Pa /var/run/watchdogd.sock
-For processes using PMON this is the UNXI domain socket to connect to,
-although this is completely hidden by the API.
 .Nm
-is ready to receive signals and register processes with the PMON API.
+is ready to receive signals and register processes with the process supervisor API
+.It Pa /run/watchdogd.sock
+UNIX domain socket used by libwdog to connect daemon
 .El
 .Sh AUTHORS
 .Nm

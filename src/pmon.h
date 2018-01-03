@@ -1,6 +1,6 @@
-/* Process heartbeat monitor
+/* Process supervisor plugin
  *
- * Copyright (C) 2015  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,16 +15,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef WDOG_PMON_H_
-#define WDOG_PMON_H_
+#ifndef WDOG_SUPERVISOR_H_
+#define WDOG_SUPERVISOR_H_
 
-int pmon_init   (uev_ctx_t *ctx, int T);
-int pmon_exit   (uev_ctx_t *ctx);
-int pmon_set    (char *optarg);
+int supervisor_init   (uev_ctx_t *ctx, int T);
+int supervisor_exit   (uev_ctx_t *ctx);
+int supervisor_set    (char *optarg);
 
-int pmon_enable (int enable);
+int supervisor_enable (int enable);
 
-#endif /* WDOG_PMON_H_ */
+#endif /* WDOG_SUPERVISOR_H_ */
 
 /**
  * Local Variables:
