@@ -17,7 +17,6 @@ Before Release
 * watchdogctl:
   - add set timeout command
   - add commands to enable/disable plugins
-  - reboot [MSEC] [MSG] :: use MSG as label for scripting reboot
 
 
 System Health Monitor
