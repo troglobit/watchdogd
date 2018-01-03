@@ -56,8 +56,9 @@ typedef struct {
 	int          error;	/* Set on WDOG_CMD_ERROR */
 	unsigned int id;	/* Registered ID */
 	pid_t        pid;	/* Process ID */
-	int          timeout;	/* msec */
-	int          ack, next_ack;
+	unsigned int timeout;	/* msec */
+	unsigned int ack;
+	unsigned int next_ack;
 	char         label[16];	/* process name or label */
 } wdog_t;
 

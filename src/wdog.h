@@ -52,7 +52,7 @@ int   wdog_enable           (int enable);   /* Attempt to temp. disable */
 int   wdog_status           (int *status);  /* Check if enabled */
 
 int   wdog_reboot           (int pid, char *label);
-int   wdog_reboot_timeout   (int pid, char *label, int timeout);
+int   wdog_reboot_timeout   (int pid, char *label, unsigned int timeout);
 int   wdog_reboot_counter   (unsigned int *counter);
 int   wdog_reboot_reason    (wdog_reason_t *reason);
 int   wdog_reboot_reason_raw(wdog_reason_t *reason);
@@ -60,10 +60,15 @@ char *wdog_reboot_reason_str(wdog_reason_t *reason);
 int   wdog_reboot_reason_clr(void);
 
 int   wdog_pmon_ping        (void);
-int   wdog_pmon_subscribe   (char *label, int timeout, int *ack); /* Returns ID or -errno */
-int   wdog_pmon_unsubscribe (int id,                   int  ack); /* Returns 0 if OK, or errno */
-int   wdog_pmon_extend_kick (int id,      int timeout, int *ack);
-int   wdog_pmon_kick        (int id,                   int *ack); /* Returns 0 while OK, or errno */
+
+/* Returns ID or -errno */
+int   wdog_pmon_subscribe   (char *label, unsigned int timeout, unsigned int *ack);
+/* Returns 0 if OK, or errno */
+int   wdog_pmon_unsubscribe (int id,                            unsigned int  ack);
+
+/* Returns 0 while OK, or errno */
+int   wdog_pmon_kick        (int id,                            unsigned int *ack);
+int   wdog_pmon_extend_kick (int id,      unsigned int timeout, unsigned int *ack);
 
 /*
  * Compatibility wrapper layer

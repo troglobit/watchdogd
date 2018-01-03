@@ -28,8 +28,8 @@ extern int   __wdog_testmode;
 
 int main(int argc, char *argv[])
 {
-	int id, i;
-	int ack, dbg = 0;
+	int id, i, dbg = 0;
+	unsigned int ack;
 
 	if (argc >= 2 && !strncmp(argv[1], "-V", 2))
 		dbg = 1;

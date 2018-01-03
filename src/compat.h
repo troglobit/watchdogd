@@ -70,23 +70,24 @@ static inline int wdog_clear_reason(void)
 
 static inline int wdog_subscribe(char *label, unsigned int timeout, unsigned int *next_ack)
 {
-        return wdog_pmon_subscribe(label, (int)timeout, (int *)next_ack);
+        return wdog_pmon_subscribe(label, timeout, next_ack);
 }
 
 static inline int wdog_unsubscribe(int wid, unsigned int ack)
 {
-        return wdog_pmon_unsubscribe(wid, (int)ack);
+        return wdog_pmon_unsubscribe(wid, ack);
 }
 
 static inline int wdog_kick(int wid, unsigned int timeout, unsigned int ack, unsigned int *next_ack)
 {
-        int result, new_ack = (int)ack;
+        int result;
+	unsigned int new_ack = ack;
 
-        result = wdog_pmon_extend_kick(wid, (int)timeout, &new_ack);
-        if (!result)
-                *next_ack = (unsigned int)new_ack;
+	result = wdog_pmon_extend_kick(wid, timeout, &new_ack);
+	if (!result)
+		*next_ack = new_ack;
 
-        return result;
+	return result;
 }
 
 /**

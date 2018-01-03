@@ -94,7 +94,7 @@ static void set_priority(void)
  * - %EINVAL when no label was given, or @timeout < %WDOG_PMON_MIN_TIMEOUT
  * - %ENOMEM when MAX number of monitored processes has been reached
  */
-static pmon_t *allocate(pid_t pid, char *label, int timeout)
+static pmon_t *allocate(pid_t pid, char *label, unsigned int timeout)
 {
 	size_t i;
 	pmon_t *p = NULL;

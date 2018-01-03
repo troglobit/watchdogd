@@ -97,7 +97,7 @@ int wdog_pmon_ping(void)
 	return so_error != 0;
 }
 
-static int doit(int cmd, int id, char *label, int timeout, int *ack)
+static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int *ack)
 {
 	int sd;
 	size_t len;
@@ -167,34 +167,34 @@ error:
 	return -errno;
 }
 
-int wdog_pmon_subscribe(char *label, int timeout, int *ack)
+int wdog_pmon_subscribe(char *label, unsigned int timeout, unsigned int *ack)
 {
 	return doit(WDOG_SUBSCRIBE_CMD, -1, label, timeout, ack);
 }
 
-int wdog_pmon_kick(int id, int *ack)
+int wdog_pmon_kick(int id, unsigned int *ack)
 {
 	return doit(WDOG_KICK_CMD, id, NULL, -1, ack);
 }
 
-int wdog_pmon_extend_kick(int id, int timeout, int *ack)
+int wdog_pmon_extend_kick(int id, unsigned int timeout, unsigned int *ack)
 {
 	return doit(WDOG_KICK_CMD, id, NULL, timeout, ack);
 }
 
-int wdog_pmon_unsubscribe(int id, int ack)
+int wdog_pmon_unsubscribe(int id, unsigned int ack)
 {
-	return doit(WDOG_UNSUBSCRIBE_CMD, id, NULL, -1, &ack);
+	return doit(WDOG_UNSUBSCRIBE_CMD, id, NULL, 0, &ack);
 }
 
 int wdog_set_debug(int enable)
 {
-	return doit(WDOG_SET_DEBUG_CMD, !!enable, NULL, -1, NULL);
+	return doit(WDOG_SET_DEBUG_CMD, !!enable, NULL, 0, NULL);
 }
 
 int wdog_get_debug(int *status)
 {
-	return doit(WDOG_GET_DEBUG_CMD, 0, NULL, -1, status);
+	return doit(WDOG_GET_DEBUG_CMD, 0, NULL, 0, (unsigned int *)status);
 }
 
 int __wdog_loglevel(char *level)
@@ -215,14 +215,14 @@ int wdog_set_loglevel(char *level)
 	if (val < LOG_EMERG || val > LOG_DEBUG)
 		return -1;
 
-	return doit(WDOG_SET_LOGLEVEL_CMD, val, NULL, -1, NULL);
+	return doit(WDOG_SET_LOGLEVEL_CMD, val, NULL, 0, NULL);
 }
 
 char *wdog_get_loglevel(void)
 {
 	int val;
 
-	if (doit(WDOG_GET_LOGLEVEL_CMD, 0, NULL, -1, &val))
+	if (doit(WDOG_GET_LOGLEVEL_CMD, 0, NULL, 0, (unsigned int *)&val))
 		return NULL;
 
 	for (int i = 0; prioritynames[i].c_name; i++) {
@@ -235,12 +235,12 @@ char *wdog_get_loglevel(void)
 
 int wdog_enable(int enable)
 {
-	return doit(WDOG_ENABLE_CMD, !!enable, NULL, -1, NULL);
+	return doit(WDOG_ENABLE_CMD, !!enable, NULL, 0, NULL);
 }
 
 int wdog_status(int *status)
 {
-	return doit(WDOG_STATUS_CMD, 0, NULL, -1, status);
+	return doit(WDOG_STATUS_CMD, 0, NULL, 0, (unsigned int *)status);
 }
 
 int wdog_reboot(pid_t pid, char *label)
@@ -266,7 +266,7 @@ int wdog_reboot(pid_t pid, char *label)
  * the WDT.  If SIGTERM is received within timeout no warning is sent to
  * the log and watchdogd simply exits, pending for WDT reboot.
  */
-int wdog_reboot_timeout(pid_t pid, char *label, int timeout)
+int wdog_reboot_timeout(pid_t pid, char *label, unsigned int timeout)
 {
 	return doit(WDOG_REBOOT_CMD, pid, label, timeout, NULL);
 }
@@ -278,7 +278,7 @@ int wdog_reboot_counter(unsigned int *counter)
 		return -1;
 	}
 
-	return doit(WDOG_RESET_COUNTER_CMD, 0, NULL, -1, (int *)counter);
+	return doit(WDOG_RESET_COUNTER_CMD, 0, NULL, 0, counter);
 }
 
 int wdog_reboot_reason(wdog_reason_t *reason)
@@ -288,7 +288,7 @@ int wdog_reboot_reason(wdog_reason_t *reason)
 		return -1;
 	}
 
-	return doit(WDOG_RESET_CAUSE_CMD, 0, NULL, -1, (int *)reason);
+	return doit(WDOG_RESET_CAUSE_CMD, 0, NULL, 0, (unsigned int *)reason);
 }
 
 int wdog_reboot_reason_raw(wdog_reason_t *reason)
@@ -298,7 +298,7 @@ int wdog_reboot_reason_raw(wdog_reason_t *reason)
 		return -1;
 	}
 
-	return doit(WDOG_RESET_CAUSE_RAW_CMD, 0, NULL, -1, (int *)reason);
+	return doit(WDOG_RESET_CAUSE_RAW_CMD, 0, NULL, 0, (unsigned int *)reason);
 }
 
 char *wdog_reboot_reason_str(wdog_reason_t *reason)
@@ -349,7 +349,7 @@ char *wdog_reboot_reason_str(wdog_reason_t *reason)
 
 int wdog_reboot_reason_clr(void)
 {
-	return doit(WDOG_CLEAR_CAUSE_CMD, -1, NULL, -1, NULL);
+	return doit(WDOG_CLEAR_CAUSE_CMD, -1, NULL, 0, NULL);
 }
 
 /**

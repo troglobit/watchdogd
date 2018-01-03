@@ -132,7 +132,8 @@ static int show_version(char *arg)
 #ifndef PMON_TESTS_DISABLED
 static int testit(void)
 {
-	int id, ack;
+	int id;
+	unsigned int ack;
 
 	log("Verifying watchdog connectivity");
 	if (wdog_pmon_ping())
