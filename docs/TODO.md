@@ -15,11 +15,17 @@ Before Release
   - Watch for file descriptor leaks,
   - etc.
 * Integrate script.c SIGCHLD handler with event loop
+* Refactor `supervisor.c`, factor out general socket API to `api.c`
 
 
 General
 -------
 
+* Checkers
+  - Check if process table is full, i.e. try fork()
+  - Check temperature sensor
+  - Ping, with optional outbound iface, script to run if ping fails
+  - Custom script, run operator provided checker
 * watchdogctl:
   - add set timeout command
   - add commands to enable/disable plugins
