@@ -44,12 +44,20 @@
 }
 #endif
 
+/* Command line options, if set they take precedence over .conf file */
+char *opt_config   = NULL;
+int   opt_safe     = 0;
+char *opt_script   = NULL;
+int   opt_timeout  = 0;
+int   opt_interval = 0;
+
 /* Global daemon settings */
 int magic   = 0;
 int enabled = 1;
 int loglevel = LOG_NOTICE;
 int wait_reboot = 0;
 int period = -1;
+int timeout = WDT_TIMEOUT_DEFAULT;
 int rebooting = 0;
 char  *prognm = NULL;
 
@@ -80,6 +88,9 @@ static uev_t sigpwr_watcher;
 static uev_t timeout_watcher;
 static uev_t sigusr1_watcher;
 static uev_t sigusr2_watcher;
+
+/* XXX: Move to separate header file */
+extern int conf_parse_file(char *file);
 
 
 int wdt_capability(uint32_t flag)
@@ -666,7 +677,6 @@ extern int __wdog_loglevel(char *level);
 
 int main(int argc, char *argv[])
 {
-	int timeout = WDT_TIMEOUT_DEFAULT;
 	int real_timeout = 0;
 	int T;
 	int background = 1;
@@ -714,8 +724,7 @@ int main(int argc, char *argv[])
 
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 		case 'e':
-			if (script_init(optarg))
-				return usage(1);
+			opt_script = optarg;
 			break;
 #endif
 
@@ -768,7 +777,7 @@ int main(int argc, char *argv[])
 				ERROR("Missing interval argument.");
 				return usage(1);
 			}
-			period = atoi(optarg);
+			opt_interval = atoi(optarg);
 			break;
 
 		case 'T':	/* Watchdog timeout */
@@ -776,7 +785,7 @@ int main(int argc, char *argv[])
 				ERROR("Missing timeout argument.");
 				return usage(1);
 			}
-			timeout = atoi(optarg);
+			opt_timeout = atoi(optarg);
 			break;
 
 		case 'V':
@@ -784,7 +793,7 @@ int main(int argc, char *argv[])
 			return 0;
 
 		case 'x':	/* Safe exit, i.e., don't reboot if we exit and close device */
-			magic = 1;
+			opt_safe = 1;
 			break;
 
 		default:
@@ -801,6 +810,34 @@ int main(int argc, char *argv[])
 			strlcpy(devnode, dev, sizeof(devnode));
 	}
 
+	/* Check for command line options */
+	if (!opt_config) {
+		/* Default .conf file path: "/etc" + '/' + "watchdogd" + ".conf" */
+		size_t len = strlen(SYSCONFDIR) + strlen(PACKAGE) + 7;
+
+		opt_config = malloc(len);
+		if (!opt_config) {
+			PERROR("Failed allocating memory, exiting");
+			return 1;
+		}
+		snprintf(opt_config, len, "%s/%s.conf", SYSCONFDIR, PACKAGE);
+	}
+	if (opt_script) {
+		if (script_init(opt_script))
+			return usage(1);
+	}
+	if (opt_safe)
+		magic = 1;
+	if (opt_timeout)
+		timeout = opt_timeout;
+	if (opt_interval)
+		period = opt_interval;
+
+	/* Read /etc/watchdogd.conf if it exists */
+	if (fexist(opt_config) && conf_parse_file(opt_config))
+		PERROR("Failed parsing %s", opt_config);
+
+	/* Start daemon */
 	if (background) {
 		DEBUG("Daemonizing ...");
 

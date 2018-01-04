@@ -21,8 +21,10 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([finit/finit.h], [finit=yes], [finit=no])
 
 # Check for required library versions
+PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([uev],  [libuev >= 2.1.0])
 PKG_CHECK_MODULES([lite], [libite >= 2.0.1])
+PKG_CHECK_MODULES([confuse], [libconfuse >= 3.0])
 
 # Check for configure switches
 AC_ARG_ENABLE([compat],

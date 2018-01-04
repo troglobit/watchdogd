@@ -65,11 +65,19 @@
 #define INFO(fmt, args...)   syslog(LOG_INFO,    fmt, ##args)
 #define WARN(fmt, args...)   syslog(LOG_WARNING, fmt, ##args)
 
+/* Command line options */
+extern char *opt_config;
+extern int   opt_safe;
+extern char *opt_script;
+extern int   opt_timeout;
+extern int   opt_interval;
+
 /* Global variables */
 extern int   magic;
 extern int   enabled;
 extern int   loglevel;
 extern int   period;
+extern int   timeout;
 extern char *__progname;
 #ifndef TESTMODE_DISABLED
 extern int   __wdt_testmode;
