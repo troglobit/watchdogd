@@ -826,7 +826,7 @@ int main(int argc, char *argv[])
 	 * Mark oursevles a "special" process for Finit/systemd
 	 * https://www.freedesktop.org/wiki/Software/systemd/RootStorageDaemons/
 	 */
-	arg[0][0] = '@';
+	argv[0][0] = '@';
 
 	if (wdt_init(&__info)) {
 		PERROR("Failed connecting to kernel watchdog driver");
