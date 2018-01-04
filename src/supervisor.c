@@ -176,7 +176,7 @@ static void next_ack(struct supervisor *p, wdog_t *req)
 }
 
 /* Client timed out.  Store its label in reset-cause, sync and reboot */
-static void timeout(uev_t *w, void *arg, int events)
+static void timeout_cb(uev_t *w, void *arg, int events)
 {
 	struct supervisor *p = (struct supervisor *)arg;
 	wdog_reason_t reason;
@@ -230,7 +230,7 @@ static void cb(uev_t *w, void *arg, int events)
 			DEBUG("%s[%d] next ack: %d", req.label, req.pid, req.next_ack);
 
 			/* Allow for some scheduling slack */
-			uev_timer_init(w->ctx, &p->watcher, timeout, p, p->timeout + 500, p->timeout + 500);
+			uev_timer_init(w->ctx, &p->watcher, timeout_cb, p, p->timeout + 500, p->timeout + 500);
 		}
 		break;
 
