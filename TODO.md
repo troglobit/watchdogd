@@ -14,6 +14,10 @@ Before Release
   - Watch for file descriptor leaks,
   - etc.
 
+
+General
+-------
+
 * watchdogctl:
   - add set timeout command
   - add commands to enable/disable plugins
