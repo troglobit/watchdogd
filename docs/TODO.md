@@ -15,7 +15,6 @@ Before Release
   - Watch for file descriptor leaks,
   - etc.
 * Integrate script.c SIGCHLD handler with event loop
-* Refactor `supervisor.c`, factor out general socket API to `api.c`
 
 
 General

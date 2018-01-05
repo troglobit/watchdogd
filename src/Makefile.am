@@ -3,6 +3,7 @@ AM_CPPFLAGS         = -DSYSCONFDIR=\"@sysconfdir@\"
 bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
 watchdogd_SOURCES   = watchdogd.c	wdt.h		\
+		      api.c		api.h		\
 		      conf.c		conf.h		\
 		      plugin.c          plugin.h	\
 		      script.c		script.h	\

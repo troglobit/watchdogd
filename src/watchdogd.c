@@ -17,6 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "api.h"
 #include "conf.h"
 #include "wdt.h"
 #include "plugin.h"
@@ -917,6 +918,9 @@ int main(int argc, char *argv[])
 	/* Start all enabled plugins */
 	wdt_plugins_init(&ctx, T);
 
+	/* Start client API socket */
+	api_init(&ctx);
+
 	/* Create pidfile when we're done with all set up. */
 	if (pidfile(prognm) && !wdt_testmode())
 		PERROR("Cannot create pidfile");
@@ -925,6 +929,7 @@ int main(int argc, char *argv[])
 	if (wdt_testmode())
 		return status;
 
+	api_exit();
 	while (wait_reboot) {
 		int reboot_in = 3 * real_timeout;
 
