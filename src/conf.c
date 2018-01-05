@@ -16,8 +16,8 @@
  */
 
 #include <confuse.h>
-#include "script.h"
 #include "wdt.h"
+#include "script.h"
 
 static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 {
@@ -33,7 +33,7 @@ static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 	vsyslog(LOG_ERR, fmt, args);
 }
 
-int conf_parse_file(char *file)
+int conf_parse_file(uev_ctx_t *ctx, char *file)
 {
 	cfg_opt_t opts[] = {
 		CFG_INT ("interval",   WDT_KICK_DEFAULT, CFGF_NONE),
@@ -70,7 +70,7 @@ int conf_parse_file(char *file)
 	if (!opt_safe)
 		magic = cfg_getbool(cfg, "safe-exit");
 	if (!opt_script)
-		script_init(cfg_getstr(cfg, "script"));
+		script_init(ctx, cfg_getstr(cfg, "script"));
 	if (!opt_timeout)
 		timeout = cfg_getint(cfg, "timeout");
 	if (!opt_interval)

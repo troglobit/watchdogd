@@ -17,7 +17,6 @@
 
 #include <errno.h>
 #include <stdlib.h>		/* setenv() */
-#include <signal.h>		/* sigemptyset(), sigaction() */
 #include <sys/wait.h>		/* waitpid() */
 #include <unistd.h>		/* execv(), _exit() */
 
@@ -26,8 +25,9 @@
 
 static char *exec   = NULL;
 static pid_t script = 0;
+static uev_t watcher;
 
-static void handler(int signo)
+static void cb(uev_t *w, void *arg, int events)
 {
 	int status;
 	pid_t pid = 1;
@@ -49,9 +49,9 @@ static void handler(int signo)
 	}
 }
 
-int script_init(char *script)
+int script_init(uev_ctx_t *ctx, char *script)
 {
-	struct sigaction sa;
+	static int once = 1;
 
 	if (script && access(script, X_OK)) {
 		ERROR("%s is not executable.", script);
@@ -59,10 +59,11 @@ int script_init(char *script)
 	}
 	exec = script;
 
-	sa.sa_handler = handler;
-	sa.sa_flags = 0;
-	sigemptyset(&sa.sa_mask);
-	sigaction(SIGCHLD, &sa, NULL);
+	/* Only set up signal watcher once */
+	if (once) {
+		once = 0;
+		uev_signal_init(ctx, &watcher, cb, "init", SIGCHLD);
+	}
 
 	return 0;
 }

@@ -14,7 +14,6 @@ Before Release
   - CPU loadavg,
   - Watch for file descriptor leaks,
   - etc.
-* Integrate script.c SIGCHLD handler with event loop
 
 
 General

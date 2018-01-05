@@ -17,9 +17,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "wdt.h"
 #include "api.h"
 #include "conf.h"
-#include "wdt.h"
 #include "plugin.h"
 #include "rc.h"
 
@@ -822,7 +822,7 @@ int main(int argc, char *argv[])
 		snprintf(opt_config, len, "%s/%s.conf", SYSCONFDIR, PACKAGE);
 	}
 	if (opt_script) {
-		if (script_init(opt_script))
+		if (script_init(&ctx, opt_script))
 			return usage(1);
 	}
 	if (opt_safe)
@@ -833,7 +833,7 @@ int main(int argc, char *argv[])
 		period = opt_interval;
 
 	/* Read /etc/watchdogd.conf if it exists */
-	if (fexist(opt_config) && conf_parse_file(opt_config))
+	if (fexist(opt_config) && conf_parse_file(&ctx, opt_config))
 		PERROR("Failed parsing %s", opt_config);
 
 	/* Start daemon */
