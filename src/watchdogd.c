@@ -17,6 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "conf.h"
 #include "wdt.h"
 #include "plugin.h"
 #include "rc.h"
@@ -88,9 +89,6 @@ static uev_t sigpwr_watcher;
 static uev_t timeout_watcher;
 static uev_t sigusr1_watcher;
 static uev_t sigusr2_watcher;
-
-/* XXX: Move to separate header file */
-extern int conf_parse_file(char *file);
 
 
 int wdt_capability(uint32_t flag)
