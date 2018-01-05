@@ -12,7 +12,7 @@ Table of Contents
 * [Introduction](#introduction)
 * [Usage](#usage)
 * [Features](#features)
-* [Supervisor API](#supervisor-api)
+* [libwdog API](#libwdog-api)
 * [Operation](#operation)
 * [Debugging](#debugging)
 * [Build & Install](#build--install)
@@ -99,7 +99,7 @@ Options:
   -a, --load-average=W[,R] Enable load average check WARN,REBOOT
   -m, --meminfo=W[,R]      Enable memory leak check, WARN,REBOOT
   -f, --filenr=W[,R]       Enable file descriptor leak check, WARN,REBOOT
-  -p, --superviso[=PRIO]   Enable process supervisor, at elevated RT prio
+  -p, --supervisor[=PRIO]  Enable process supervisor, at elevated RT prio
                            Default RT prio when active: SCHED_RR @98
   
   -V, --version            Display version and exit
@@ -163,21 +163,21 @@ details of memory usage, see [this article][meminfo].
 
 `watchdogd` v2.0 and later comes with a process supervisor (previously
 called pmon).  It must be enabled and a monitored client must connect to
-it using the API for the supervisor to start.  As soon as it starts it
-raises the real-time priority of `watchdogd` to 98 to be able to ensure
-proper superivison of its clients.
+it using the libwdog API for the supervisor to start.  As soon as it
+starts it raises the real-time priority of `watchdogd` to 98 to be able
+to ensure proper superivison of its clients.
 
 
-Supervisor API
---------------
+libwdog API
+-----------
 
 To have `watchdogd` supervise a process, it must be instrumented with at
 least a "subscribe" and a "kick" API call.  Commonly this is achieved by
 adding the `wdog_kick()` call to the main event loop.
 
-All API functions, except `wdog_ping()`, return POSIX OK(0) or negative
-value with `errno` set on error.  The `wdog_subscribe()` call returns a
-positive integer (including zero) for the watchdog `id`.
+All libwdog API functions, except `wdog_ping()`, return POSIX OK(0) or
+negative value with `errno` set on error.  The `wdog_subscribe()` call
+returns a positive integer (including zero) for the watchdog `id`.
 
 ```C
 /*
