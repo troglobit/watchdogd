@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2008       Michele d'Amico <michele.damico@fitre.it>
  * Copyright (C) 2008       Mike Frysinger <vapier@gentoo.org>
- * Copyright (C) 2012-2016  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2012-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -78,6 +78,8 @@ extern int   enabled;
 extern int   loglevel;
 extern int   period;
 extern int   timeout;
+extern int   rebooting;
+extern int   wait_reboot;
 extern char *__progname;
 #ifndef TESTMODE_DISABLED
 extern int   __wdt_testmode;
@@ -85,7 +87,12 @@ extern int   __wdt_testmode;
 extern unsigned int reset_counter;
 extern wdog_reason_t reboot_reason;
 
-int wdt_handover       (char *devnode);
+int wdt_init           (char *dev);
+int wdt_exit           (uev_ctx_t *ctx);
+
+int wdt_capability     (uint32_t flag);
+
+int wdt_handover       (char *dev);
 
 int wdt_enable         (int enable);
 int wdt_debug          (int enable);
@@ -100,6 +107,10 @@ int wdt_forced_reboot  (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 
 int wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid);
 int wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid);
+
+int wdt_set_bootstatus (int cause, int timeout, int interval);
+int wdt_get_bootstatus (void);
+
 
 static inline unsigned int wdt_reset_counter(void)
 {

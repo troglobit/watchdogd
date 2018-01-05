@@ -2,7 +2,8 @@ AM_CFLAGS           = -W -Wall -Wextra -Wno-unused-parameter -std=gnu99
 AM_CPPFLAGS         = -DSYSCONFDIR=\"@sysconfdir@\"
 bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
-watchdogd_SOURCES   = watchdogd.c	wdt.h		\
+watchdogd_SOURCES   = watchdogd.c			\
+		      wdt.c		wdt.h		\
 		      api.c		api.h		\
 		      conf.c		conf.h		\
 		      plugin.c          plugin.h	\
