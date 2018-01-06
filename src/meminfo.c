@@ -19,6 +19,7 @@
 
 #define PROC_FILE "/proc/meminfo"
 
+static int logmark = 0;
 static uev_t watcher;
 
 /* Default: disabled -- recommended 0.9, 0.95 */
@@ -93,8 +94,9 @@ static void cb(uev_t *w, void *arg, int events)
 //	LOG("Total RAM: %u kB, free: %u kB, cached: %u kB, Total Swap: %u kB, free: %u kB, cached: %u kB",
 //	    meminfo[MEMTOTAL].val, meminfo[MEMFREE].val, meminfo[MEMCACHED].val,
 //	    meminfo[SWAPTOTAL].val, meminfo[SWAPFREE].val, meminfo[SWAPCACHED].val);
-	LOG("Meminfo: %u kB, cached: %u kB, total: %u kB",
-	    meminfo[MEMFREE].val, meminfo[MEMCACHED].val, meminfo[MEMTOTAL].val);
+	if (logmark)
+		LOG("Meminfo: %u kB, cached: %u kB, total: %u kB",
+		    meminfo[MEMFREE].val, meminfo[MEMCACHED].val, meminfo[MEMTOTAL].val);
 #endif
 
 	/* Enable trigger warnings by default only on systems without swap */
@@ -121,25 +123,20 @@ static void cb(uev_t *w, void *arg, int events)
 	}
 }
 
-int meminfo_init(uev_ctx_t *ctx, int T)
+int meminfo_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
 {
-	if (warning == 0.0 && critical == 0.0) {
+	if (!T) {
 		INFO("Memory leak monitor disabled.");
-		return 1;
+		return uev_timer_stop(&watcher);
 	}
 
 	INFO("Memory leak monitor, period %d sec, warning: %.2f%%, reboot: %.2f%%",
 	     T, warning * 100, critical * 100);
+	logmark = mark;
+	warning = warn;
+	critical = crit;
 
 	return uev_timer_init(ctx, &watcher, cb, NULL, 1000, T * 1000);
-}
-
-/*
- * Parse '-a warning[,critical]' argument
- */
-int meminfo_set(char *arg)
-{
-	return wdt_plugin_arg("Memory leak", arg, &warning, &critical);
 }
 
 /**

@@ -1,6 +1,6 @@
 /* Memory leak monitor
  *
- * Copyright (C) 2015  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,8 +18,7 @@
 #ifndef WDOG_MEMINFO_H_
 #define WDOG_MEMINFO_H_
 
-int meminfo_init (uev_ctx_t *ctx, int T);
-int meminfo_set  (char *arg);
+int meminfo_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit);
 
 #endif /* WDOG_MEMINFO_H_ */
 

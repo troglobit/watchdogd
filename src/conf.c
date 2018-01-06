@@ -107,6 +107,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 #ifdef LOADAVG_PERIOD
 	checker(ctx, cfg, "loadavg", loadavg_init);
 #endif
+#ifdef MEMINFO_PERIOD
+	checker(ctx, cfg, "meminfo", meminfo_init);
+#endif
 
 	return cfg_free(cfg);
 }

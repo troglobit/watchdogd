@@ -27,11 +27,6 @@ void wdt_plugins_init(uev_ctx_t *ctx, int T)
 	filenr_init(ctx, FILENR_PERIOD);
 #endif
 
-#ifdef MEMINFO_PERIOD
-	/* Start memory leak monitor */
-	meminfo_init(ctx, MEMINFO_PERIOD);
-#endif
-
 	/* Start process monitor */
 	supervisor_init(ctx, T);
 }

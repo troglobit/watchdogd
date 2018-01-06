@@ -134,9 +134,6 @@ static int usage(int status)
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 	       "[-e CMD] "
 #endif
-#ifdef MEMINFO_PERIOD
-	       "[-m W,R] "
-#endif
 #ifdef FILENR_PERIOD
 	       "[-f W,R] "
 #endif
@@ -155,9 +152,6 @@ static int usage(int status)
                "  -t, --interval=SEC       WDT kick interval, in SEC seconds, default: %d\n"
                "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
-#ifdef MEMINFO_PERIOD
-	       "  -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT\n"
-#endif
 #ifdef FILENR_PERIOD
 	       "  -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT\n"
 #endif
@@ -206,17 +200,12 @@ int wdt_debug(int enable)
 #else
 #define FILENR ""
 #endif
-#ifdef MEMINFO_PERIOD
-#define MEMINFO "m:"
-#else
-#define MEMINFO ""
-#endif
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 #define RUNSCRIPT "e:"
 #else
 #define RUNSCRIPT
 #endif
-#define PLUGIN_FLAGS RUNSCRIPT FILENR MEMINFO
+#define PLUGIN_FLAGS RUNSCRIPT FILENR
 
 extern int __wdog_loglevel(char *level);
 
@@ -237,9 +226,6 @@ int main(int argc, char *argv[])
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 't'},
 		{"loglevel",      1, 0, 'l'},
-#ifdef MEMINFO_PERIOD
-		{"meminfo",       1, 0, 'm'},
-#endif
 #ifdef FILENR_PERIOD
 		{"filenr",        1, 0, 'f'},
 #endif
@@ -279,13 +265,6 @@ int main(int argc, char *argv[])
 			if (-1 == loglevel)
 				return usage(1);
 			break;
-
-#ifdef MEMINFO_PERIOD
-		case 'm':
-			if (meminfo_set(optarg))
-				return usage(1);
-			break;
-#endif
 
 		case 'F':	/* BusyBox watchdogd compat. */
 		case 'n':	/* Run in foreground */
