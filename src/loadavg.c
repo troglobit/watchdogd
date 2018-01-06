@@ -1,7 +1,7 @@
 /* CPU load average monitor
  *
- * Copyright (C) 2015  Christian Lockley <clockley1@gmail.com>
- * Copyright (C) 2015  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015       Christian Lockley <clockley1@gmail.com>
+ * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,6 +19,7 @@
 #include <sys/sysinfo.h>
 #include "plugin.h"
 
+static int logmark = 0;
 static uev_t watcher;
 
 /* Default: disabled -- recommended 0.8, 0.9 */
@@ -73,7 +74,8 @@ static void cb(uev_t *w, void *arg, int events)
 #ifdef SYSLOG_MARK
 //	LOG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
 //	    load[0], load[1], load[2], (int)num);
-	LOG("Loadavg: %.2f, %.2f, %.2f (1, 5, 15 min)", load[0], load[1], load[2]);
+	if (logmark)
+		LOG("Loadavg: %.2f, %.2f, %.2f (1, 5, 15 min)", load[0], load[1], load[2]);
 #endif
 
 #if 0
@@ -100,26 +102,21 @@ static void cb(uev_t *w, void *arg, int events)
 
 /*
  * Every T seconds we check loadavg
+ * First run is after 1 sec on init, then every period seconds
  */
-int loadavg_init(uev_ctx_t *ctx, int T)
+int loadavg_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
 {
-	if (warning == 0.0 && critical == 0.0) {
+	if (!T) {
 		INFO("Load average monitor disabled.");
-		return 1;
+		return uev_timer_stop(&watcher);
 	}
 
-	INFO("Load average monitor, period %d sec, warning: %.2f%%, reboot: %.2f%%",
-	     T, warning * 100, critical * 100);
+	INFO("Load average monitor, period %d sec, warning: %.2f, reboot: %.2f", T, warn, crit);
+	logmark = mark;
+	warning = warn;
+	critical = crit;
 
 	return uev_timer_init(ctx, &watcher, cb, NULL, 1000, T * 1000);
-}
-
-/*
- * Parse '-a warning[,critical]' argument
- */
-int loadavg_set(char *arg)
-{
-	return wdt_plugin_arg("Loadavg", arg, &warning, &critical);
 }
 
 /**

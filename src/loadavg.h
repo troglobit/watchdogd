@@ -1,7 +1,7 @@
 /* CPU load average monitor
  *
- * Copyright (C) 2015  Christian Lockley <clockley1@gmail.com>
- * Copyright (C) 2015  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015       Christian Lockley <clockley1@gmail.com>
+ * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,8 +19,7 @@
 #ifndef WDOG_LOADAVG_H_
 #define WDOG_LOADAVG_H_
 
-int loadavg_init (uev_ctx_t *ctx, int T);
-int loadavg_set  (char *arg);
+int loadavg_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit);
 
 #endif /* WDOG_LOADAVG_H_ */
 

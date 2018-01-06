@@ -17,7 +17,27 @@
 
 #include <confuse.h>
 #include "wdt.h"
+#include "plugin.h"
 #include "script.h"
+
+static void checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev_ctx_t *, int, int, float, float))
+{
+	cfg_t *sec;
+
+	sec = cfg_getnsec(cfg, sect, 0);
+	if (sec) {
+		int period, logmark;
+		float warn, crit;
+
+		period  = cfg_getint(sec, "interval");
+		logmark = cfg_getbool(sec, "logmark");
+		warn    = cfg_getfloat(sec, "warning");
+		crit    = cfg_getfloat(sec, "critical");
+		init(ctx, period, logmark, warn, crit);
+	} else {
+		init(ctx, 0, 0, 0.0, 0.0);
+	}
+}
 
 static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 {
@@ -35,11 +55,19 @@ static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 
 int conf_parse_file(uev_ctx_t *ctx, char *file)
 {
+	cfg_opt_t checker_opts[] = {
+		CFG_INT  ("interval", 300, CFGF_NONE),
+		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
+		CFG_FLOAT("warning",  0.9, CFGF_NONE),
+		CFG_FLOAT("critical", 0.95, CFGF_NONE),
+		CFG_END()
+	};
 	cfg_opt_t opts[] = {
 		CFG_INT ("interval",   WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",    WDT_TIMEOUT_DEFAULT, CFGF_NONE),
 		CFG_BOOL("safe-exit",  cfg_false, CFGF_NONE),
 		CFG_STR ("script",     NULL, CFGF_NONE),
+		CFG_SEC ("loadavg",    checker_opts, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_t *cfg;
@@ -75,6 +103,10 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		timeout = cfg_getint(cfg, "timeout");
 	if (!opt_interval)
 		period  = cfg_getint(cfg, "interval");
+
+#ifdef LOADAVG_PERIOD
+	checker(ctx, cfg, "loadavg", loadavg_init);
+#endif
 
 	return cfg_free(cfg);
 }

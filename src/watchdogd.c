@@ -134,9 +134,6 @@ static int usage(int status)
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 	       "[-e CMD] "
 #endif
-#ifdef LOADAVG_PERIOD
-	       "[-a W,R] "
-#endif
 #ifdef MEMINFO_PERIOD
 	       "[-m W,R] "
 #endif
@@ -158,10 +155,6 @@ static int usage(int status)
                "  -t, --interval=SEC       WDT kick interval, in SEC seconds, default: %d\n"
                "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
-#ifdef LOADAVG_PERIOD
-	       "\n"
-	       "  -a, --load-average=W,R   Enable load average check, WARN,REBOOT\n"
-#endif
 #ifdef MEMINFO_PERIOD
 	       "  -m, --meminfo=W,R        Enable memory leak check, WARN,REBOOT\n"
 #endif
@@ -208,11 +201,6 @@ int wdt_debug(int enable)
 	return 0;
 }
 
-#ifdef LOADAVG_PERIOD
-#define LOADAVG "a:"
-#else
-#define LOADAVG ""
-#endif
 #ifdef FILENR_PERIOD
 #define FILENR "f:"
 #else
@@ -228,7 +216,7 @@ int wdt_debug(int enable)
 #else
 #define RUNSCRIPT
 #endif
-#define PLUGIN_FLAGS RUNSCRIPT LOADAVG FILENR MEMINFO
+#define PLUGIN_FLAGS RUNSCRIPT FILENR MEMINFO
 
 extern int __wdog_loglevel(char *level);
 
@@ -242,9 +230,6 @@ int main(int argc, char *argv[])
 	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
 	char *dev = NULL;
 	struct option long_options[] = {
-#ifdef LOADAVG_PERIOD
-		{"load-average",  1, 0, 'a'},
-#endif
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 		{"script",        1, 0, 'e'},
 #endif
@@ -273,13 +258,6 @@ int main(int argc, char *argv[])
 	prognm = progname(argv[0]);
 	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "Fhl:Lnp::sSt:T:Vx?", long_options, NULL)) != EOF) {
 		switch (c) {
-		case 'a':
-#ifdef LOADAVG_PERIOD
-			if (loadavg_set(optarg))
-			    return usage(1);
-			break;
-#endif
-
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 		case 'e':
 			opt_script = optarg;
