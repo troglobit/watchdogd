@@ -25,10 +25,6 @@
 #include "script.h"
 #include "supervisor.h"
 
-void  wdt_plugins_init   (uev_ctx_t *ctx, int T);
-void  wdt_plugins_exit   (uev_ctx_t *ctx);
-
-int   wdt_plugins_enable (int enable);
 
 #endif /* WDT_PLUGIN_H_ */
 

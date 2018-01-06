@@ -364,7 +364,8 @@ int wdt_enable(int enable)
 		result += wdt_init(NULL);
 	}
 
-	result += wdt_plugins_enable(enable);
+	/* Stop/Start process supervisor */
+	result += supervisor_enable(enable);
 	if (!result)
 		enabled = enable;
 
@@ -373,8 +374,8 @@ int wdt_enable(int enable)
 
 int wdt_close(uev_ctx_t *ctx)
 {
-	/* Let plugins exit before we leave main loop */
-	wdt_plugins_exit(ctx);
+	/* Let supervisor exit before we leave main loop */
+	supervisor_exit(ctx);
 
 	if (fd != -1) {
 		if (magic) {
@@ -396,9 +397,9 @@ int wdt_close(uev_ctx_t *ctx)
 
 int wdt_exit(uev_ctx_t *ctx)
 {
-	/* Let plugins exit before we leave main loop */
+	/* Let supervisor exit before we leave main loop */
 	if (!rebooting)
-		wdt_plugins_exit(ctx);
+		supervisor_exit(ctx);
 
 	/* Be nice, sync any buffered data to disk first. */
 	sync();

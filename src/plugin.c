@@ -17,37 +17,6 @@
 
 #include "plugin.h"
 
-/*
- * Initialize all plugins
- */
-void wdt_plugins_init(uev_ctx_t *ctx, int T)
-{
-	/* Start process monitor */
-	supervisor_init(ctx, T);
-}
-
-/*
- * Cleanup at exit
- */
-void wdt_plugins_exit(uev_ctx_t *ctx)
-{
-	/* Shut down UNIX domain socket and restore priority */
-	supervisor_exit(ctx);
-}
-
-/*
- * Plugins that follow wdt_enable()
- */
-int wdt_plugins_enable(int enable)
-{
-	int result = 0;
-
-	/* Stop/Start process monitor */
-	result += supervisor_enable(enable);
-
-	return result;
-}
-
 /**
  * Local Variables:
  *  indent-tabs-mode: t

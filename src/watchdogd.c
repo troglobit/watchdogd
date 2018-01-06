@@ -405,8 +405,8 @@ int main(int argc, char *argv[])
 	/* Every period (T) seconds we kick the WDT */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
-	/* Start all enabled plugins */
-	wdt_plugins_init(&ctx, T);
+	/* Start process supervisor */
+	supervisor_init(&ctx, T);
 
 	/* Start client API socket */
 	api_init(&ctx);
