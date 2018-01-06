@@ -93,18 +93,6 @@ int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
 	return 0;
 }
 
-/*
- * Concatenate __progname with plugin name for reset cause label
- */
-char *wdt_plugin_label(char *plugin_name)
-{
-	static char name[16];
-
-	snprintf(name, sizeof(name), "%s:%s", __progname, plugin_name);
-
-	return name;
-}
-
 /**
  * Local Variables:
  *  indent-tabs-mode: t

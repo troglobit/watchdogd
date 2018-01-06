@@ -66,7 +66,7 @@ static void cb(uev_t *w, void *arg, int events)
 		if (critical > 0.0 && level > critical) {
 			ERROR("File descriptor usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
 			if (script_exec("filenr", 1, level, warning, critical))
-				wdt_forced_reboot(w->ctx, getpid(), wdt_plugin_label("filenr"), 0);
+				wdt_forced_reboot(w->ctx, getpid(), PACKAGE ":filenr", 0);
 			return;
 		}
 
