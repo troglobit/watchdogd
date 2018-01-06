@@ -62,7 +62,7 @@ static void set_priority(void)
 
 	if (num_supervised() && enabled) {
 		if (!active) {
-			prio.sched_priority = 98;
+			prio.sched_priority = rtprio;
 			DEBUG("Setting SCHED_RR rtprio %d", prio.sched_priority);
 			result = sched_setscheduler(getpid(), SCHED_RR, &prio);
 			active = 1;
