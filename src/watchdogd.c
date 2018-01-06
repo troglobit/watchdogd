@@ -134,13 +134,14 @@ static int usage(int status)
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 	       "[-e CMD] "
 #endif
-	       "[-T SEC] [-t SEC] [%s]\n\n"
+	       "[-f FILE] [-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
 	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
                "  -e, --script=CMD         Script or command to run as monitor plugin callback\n"
 #endif
+	       "  -f, --config=FILE         Use FILE name for configuration\n"
                "  -n, --foreground         Start in foreground, background is default\n"
 	       "  -s, --syslog             Use syslog, even if running in foreground\n"
 	       "  -l, --loglevel=LVL       Log level: none, err, warn, notice*, info, debug\n"
@@ -203,6 +204,7 @@ int main(int argc, char *argv[])
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 		{"script",        1, 0, 'e'},
 #endif
+		{"config",        1, 0, 'f'},
 		{"foreground",    0, 0, 'n'},
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 't'},
@@ -220,13 +222,17 @@ int main(int argc, char *argv[])
 	uev_ctx_t ctx;
 
 	prognm = progname(argv[0]);
-	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "Fhl:Lnp::sSt:T:Vx?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "f:Fhl:Lnp::sSt:T:Vx?", long_options, NULL)) != EOF) {
 		switch (c) {
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 		case 'e':
 			opt_script = optarg;
 			break;
 #endif
+
+		case 'f':
+			opt_config = optarg;
+			break;
 
 		case 'h':
 			return usage(0);
