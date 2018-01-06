@@ -360,6 +360,9 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/* Create event loop context */
+	uev_init(&ctx);
+
 	/* BusyBox watchdogd compat. */
 	if (optind < argc)
 		dev = argv[optind];
@@ -408,7 +411,6 @@ int main(int argc, char *argv[])
 	openlog(prognm, log_opts, LOG_DAEMON);
 
 	LOG("%s v%s %s ...", prognm, PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
-	uev_init(&ctx);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
 	setup_signals(&ctx);
