@@ -155,14 +155,6 @@ static int usage(int status)
 	       "  -V, --version            Display version and exit\n"
                "  -h, --help               Display this help message and exit\n"
 	       "\n"
-#if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
-	       "WARN,REBOOT ranges are 0-1 (0-100%%), except for load average which can vary\n"
-	       "a lot between systems and use-cases, not just because of the number of CPU\n"
-	       "cores.  Use `-e CMD` to call script on WARN and REBOOT, instead of performing\n"
-	       "an unconditional reboot on REBOOT.\n"
-	       "Note: the REBOOT argument is optional, omitting it disables reboot action.\n"
-	       "\n"
-#endif
 	       "Bug report address: %s\n", prognm, WDT_DEVNODE, prognm, WDT_KICK_DEFAULT,
 	       PACKAGE_BUGREPORT);
 
