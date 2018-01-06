@@ -20,7 +20,8 @@
 #include "wdt.h"
 #include "api.h"
 #include "conf.h"
-#include "plugin.h"
+#include "script.h"
+#include "supervisor.h"
 
 /* Command line options, if set they take precedence over .conf file */
 char *opt_config   = NULL;

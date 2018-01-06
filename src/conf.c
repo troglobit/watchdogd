@@ -17,8 +17,12 @@
 
 #include <confuse.h>
 #include "wdt.h"
-#include "plugin.h"
 #include "script.h"
+#include "filenr.h"
+#include "loadavg.h"
+#include "meminfo.h"
+#include "supervisor.h"
+
 
 static void checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev_ctx_t *, int, int, float, float))
 {

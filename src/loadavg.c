@@ -17,7 +17,8 @@
  */
 
 #include <sys/sysinfo.h>
-#include "plugin.h"
+#include "wdt.h"
+#include "script.h"
 
 static int logmark = 0;
 static uev_t watcher;

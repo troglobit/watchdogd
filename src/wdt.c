@@ -18,8 +18,8 @@
  */
 
 #include "wdt.h"
-#include "plugin.h"
 #include "rc.h"
+#include "supervisor.h"
 
 #ifndef HAVE_FINIT_FINIT_H
 #define check_handover(devnode)						\

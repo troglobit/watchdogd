@@ -16,8 +16,7 @@
  */
 
 #include <sched.h>
-
-#include "plugin.h"
+#include "wdt.h"
 #include "private.h"
 #include "rc.h"
 #include "wdog.h"

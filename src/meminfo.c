@@ -15,7 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "plugin.h"
+#include "wdt.h"
+#include "script.h"
 
 #define PROC_FILE "/proc/meminfo"
 

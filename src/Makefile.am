@@ -6,7 +6,6 @@ watchdogd_SOURCES   = watchdogd.c			\
 		      wdt.c		wdt.h		\
 		      api.c		api.h		\
 		      conf.c		conf.h		\
-		      plugin.c          plugin.h	\
 		      script.c		script.h	\
 		      supervisor.c	supervisor.h
 if FINIT
