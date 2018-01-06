@@ -26,9 +26,6 @@
 .Op Fl l Ar LEVEL
 .Op Fl t Ar SEC
 .Op Fl T Ar SEC
-.Op Fl a Ar WARN Op ,REBOOT
-.Op Fl f Ar WARN Op ,REBOOT
-.Op Fl m Ar WARN Op ,REBOOT
 .Op Fl p Op RTPRIO
 .Op Ar /dev/watchdogN
 .Sh DESCRIPTION
@@ -70,27 +67,18 @@ has been greatly simplified.  Use
 to query status and control
 .Nm .
 .Bl -tag -width Ds
-.It Fl a, -load-average Ar WARN Op ,REBOOT
-Enable load average check monitor.  REBOOT is optional, omitting it
-disables the reboot action.
 .It Fl e, -script Ar CMD
 Script or command to run as monitor plugin callback.  When given the
 .Ar CMD
 will be called instead of reboot when the REBOOT watermark is reached by
 a monitor plugin.  Hence, it is up to the script to perform a reboot if
 that is needed.
-.It Fl f, -filenr Ar WARN Op ,REBOOT
-Enable file descriptor leak check monitor.  REBOOT is optional, when
-omitted the plugin will not reboot.
 .It Fl h, -help
 Show summary of command line options and exit.
 .It Fl l, -loglevel Ar LEVEL
 Set log level: none, err, info,
 .Ar notice ,
 debug.
-.It Fl m, -meminfo Ar WARN Op ,REBOOT
-Enable memory leak check monitor.  REBOOT is optional, when omitted
-the plugin will not reboot.
 .It Fl n, -foreground
 Start in foreground, required when started by systemd or Finit, default is to daemonize and background.
 .It Fl p, -supervisor Op RTPRIO
