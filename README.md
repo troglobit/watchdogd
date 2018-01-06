@@ -83,7 +83,7 @@ Usage
 -----
 
 ```
-watchdogd [-hnsVx] [-a WARN[,REBOOT]] [-T SEC] [-t SEC] [/dev/watchdog]
+watchdogd [-hnsVx] [-T SEC] [-t SEC] [-p PRIO] [/dev/watchdog]
 
 Options:
   -e, --script=CMD         Script or command to run as monitor plugin callback
@@ -96,9 +96,6 @@ Options:
   -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
                            "magic" exit may not be supported by HW/driver
   
-  -a, --load-average=W[,R] Enable load average check WARN,REBOOT
-  -m, --meminfo=W[,R]      Enable memory leak check, WARN,REBOOT
-  -f, --filenr=W[,R]       Enable file descriptor leak check, WARN,REBOOT
   -p, --supervisor[=PRIO]  Enable process supervisor, at elevated RT prio
                            Default RT prio when active: SCHED_RR @98
   
@@ -114,7 +111,7 @@ Operation section, for more information.
 **Example**
 
 ```shell
-watchdogd -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2
+watchdogd -T 120 -t 30 /dev/watchdog2
 ```
 
 Most WDT drivers only support 120 sec as lowest timeout, but `watchdogd`
@@ -134,16 +131,46 @@ the WDT timer to the lowest possible value (1 sec), close the connection
 to `/dev/watchdog`, and wait for WDT reboot.  It waits at most 3x the
 WDT timeout before announcing HW WDT failure and forcing a reboot.
 
-`watchdogd(8)` supports optional monitoring of several system resources.
-First, system load average monitoring can be enabled with `-a 0.8,0.9`.
-Second, the memory leak detector `-m 0.9,0.95`.  Third, file descriptor
-leak detector `-f 0.8,0.95`.  All *very* useful on an embedded system.
+`watchdogd(8)` supports optional monitoring of several system resources
+that can be enabled in the `.conf` file.  First, system load average
+monitoring can be enabled with:
 
-The two values, separated by a comma, are the warning and reboot levels
-in percent.  The latter is optional, if omitted reboot is disabled.  The
-reboot is also disabled if `-e CMD` is given, then the script `CMD` is
-run instead, both at warning and reboot level, and it is up to the
-script to perform a reboot if needed.
+```
+loadavg {
+    interval = 300       # Every 5 mins
+    warning  = 1.5
+	critical = 2.0
+}
+```
+
+Second, the memory leak detector, a value of 1.0 means 100% memory use:
+
+```
+meminfo {
+    interval = 3600       # Every hour
+    warning  = 0.9
+	critical = 0.95
+}
+```
+
+Third, file descriptor leak detector:
+
+```
+filenr {
+    interval = 3600       # Every hour
+    warning  = 0.8
+	critical = 0.95
+}
+```
+
+All of these monitors can be *very* useful on an embedded or headless
+system with little or no operator.
+
+The two values, `warning` and `critical`, are the warning and reboot
+levels in percent.  The latter is optional, if it si omitted reboot is
+disabled.  The reboot is also disabled if `-e CMD` is given, then the
+script `CMD` is run instead, both at warning and reboot level, and it
+is up to the script to perform a reboot if needed.
 
 Determining suitable system load average levels is tricky.  It always
 depends on the system and use-case, not just the number of CPU cores.
