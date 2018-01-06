@@ -48,51 +48,6 @@ int wdt_plugins_enable(int enable)
 	return result;
 }
 
-/*
- * Parse monitor plugin warning and critical level arg.
- */
-int wdt_plugin_arg(char *desc, char *arg, double *warning, double *critical)
-{
-	char buf[16], *ptr;
-	double value;
-
-	if (!desc)
-		desc = "unknown plugin";
-
-	if (!arg) {
-		ERROR("%s argument missing.", desc);
-		return 1;
-	}
-
-	strlcpy(buf, arg, sizeof(buf));
-	ptr = strchr(buf, ',');
-	if (ptr)
-		*ptr++ = 0;
-
-	/* First argument is warning */
-	value = strtod(buf, NULL);
-	if (value <= 0) {
-	error:
-		ERROR("%s argument invalid or too small.", desc);
-		return 1;
-	}
-
-	if (warning)
-		*warning = value;
-
-	/* Second argument, if given, is warning */
-	if (ptr) {
-		value = strtod(ptr, NULL);
-		if (value <= 0)
-			goto error;
-
-		if (critical)
-			*critical = value;
-	}
-
-	return 0;
-}
-
 /**
  * Local Variables:
  *  indent-tabs-mode: t

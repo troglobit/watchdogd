@@ -30,8 +30,6 @@ void  wdt_plugins_exit   (uev_ctx_t *ctx);
 
 int   wdt_plugins_enable (int enable);
 
-int   wdt_plugin_arg     (char *desc, char *arg, double *warning, double *critical);
-
 #endif /* WDT_PLUGIN_H_ */
 
 /**
