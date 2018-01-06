@@ -34,13 +34,13 @@ AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build process supervisor client examples])],
 	[enable_examples=yes], [])
 AC_ARG_ENABLE([loadavg],
-	[AS_HELP_STRING([--enable-loadavg=SEC], [Enable CPU load average monitor, default 5 min])],
+	[AS_HELP_STRING([--enable-loadavg], [Enable CPU load average monitor])],
 	[enable_loadavg=$enableval], [enable_loadavg=no])
 AC_ARG_ENABLE([filenr],
-	[AS_HELP_STRING([--enable-filenr=SEC], [Enable file descriptor leak monitor, default 5 min])],
+	[AS_HELP_STRING([--enable-filenr], [Enable file descriptor leak monitor])],
 	[enable_filenr=$enableval], [enable_filenr=no])
 AC_ARG_ENABLE([meminfo],
-	[AS_HELP_STRING([--enable-meminfo=SEC], [Enable memory leak monitor, default 5 min])],
+	[AS_HELP_STRING([--enable-meminfo], [Enable memory leak monitor])],
 	[enable_meminfo=$enableval], [enable_meminfo=no])
 AC_ARG_ENABLE([syslog-mark],
 	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
@@ -62,15 +62,15 @@ AS_IF([test "x$enable_compat" = "xyes"], [
 
 AS_IF([test "x$enable_loadavg" != "xno"], [
 	AS_IF([test "x$enable_loadavg" = "xyes"], [enable_loadavg=300])
-	AC_DEFINE_UNQUOTED(LOADAVG_PERIOD, $enable_loadavg, [Enable CPU load average monitor])])
+	AC_DEFINE_UNQUOTED(LOADAVG_PLUGIN, $enable_loadavg, [Enable CPU load average monitor])])
 
 AS_IF([test "x$enable_filenr" != "xno"], [
 	AS_IF([test "x$enable_filenr" = "xyes"], [enable_filenr=300])
-	AC_DEFINE_UNQUOTED(FILENR_PERIOD, $enable_filenr, [Enable file descriptor leak monitor])])
+	AC_DEFINE_UNQUOTED(FILENR_PLUGIN, $enable_filenr, [Enable file descriptor leak monitor])])
 
 AS_IF([test "x$enable_meminfo" != "xno"], [
 	AS_IF([test "x$enable_meminfo" = "xyes"], [enable_meminfo=300])
-	AC_DEFINE_UNQUOTED(MEMINFO_PERIOD, $enable_meminfo, [Enable memory leak monitor])])
+	AC_DEFINE_UNQUOTED(MEMINFO_PLUGIN, $enable_meminfo, [Enable memory leak monitor])])
 
 AS_IF([test "x$enable_syslog_mark" = "xyes"], [
 	AC_DEFINE(SYSLOG_MARK, 1, [Enable periodic syslog MARK by monitor plugins])])

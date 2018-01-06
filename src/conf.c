@@ -104,13 +104,13 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	if (!opt_interval)
 		period  = cfg_getint(cfg, "interval");
 
-#ifdef FILENR_PERIOD
+#ifdef FILENR_PLUGIN
 	checker(ctx, cfg, "filenr", filenr_init);
 #endif
-#ifdef LOADAVG_PERIOD
+#ifdef LOADAVG_PLUGIN
 	checker(ctx, cfg, "loadavg", loadavg_init);
 #endif
-#ifdef MEMINFO_PERIOD
+#ifdef MEMINFO_PLUGIN
 	checker(ctx, cfg, "meminfo", meminfo_init);
 #endif
 
