@@ -22,11 +22,6 @@
  */
 void wdt_plugins_init(uev_ctx_t *ctx, int T)
 {
-#ifdef FILENR_PERIOD
-	/* Start file descriptor monitor */
-	filenr_init(ctx, FILENR_PERIOD);
-#endif
-
 	/* Start process monitor */
 	supervisor_init(ctx, T);
 }

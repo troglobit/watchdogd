@@ -134,9 +134,6 @@ static int usage(int status)
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 	       "[-e CMD] "
 #endif
-#ifdef FILENR_PERIOD
-	       "[-f W,R] "
-#endif
 	       "[-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
 	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
@@ -152,9 +149,6 @@ static int usage(int status)
                "  -t, --interval=SEC       WDT kick interval, in SEC seconds, default: %d\n"
                "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                           \"magic\" exit may not be supported by HW/driver\n"
-#ifdef FILENR_PERIOD
-	       "  -f, --filenr=W,R         Enable file descriptor leak check, WARN,REBOOT\n"
-#endif
 	       "  -p, --supervisor[=PRIO]  Enable process supervisor, at elevated RT prio.\n"
 	       "                           Default RT prio when active: SCHED_RR @98\n"
 	       "\n"
@@ -195,17 +189,12 @@ int wdt_debug(int enable)
 	return 0;
 }
 
-#ifdef FILENR_PERIOD
-#define FILENR "f:"
-#else
-#define FILENR ""
-#endif
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 #define RUNSCRIPT "e:"
 #else
 #define RUNSCRIPT
 #endif
-#define PLUGIN_FLAGS RUNSCRIPT FILENR
+#define PLUGIN_FLAGS RUNSCRIPT
 
 extern int __wdog_loglevel(char *level);
 
@@ -226,9 +215,6 @@ int main(int argc, char *argv[])
 		{"help",          0, 0, 'h'},
 		{"interval",      1, 0, 't'},
 		{"loglevel",      1, 0, 'l'},
-#ifdef FILENR_PERIOD
-		{"filenr",        1, 0, 'f'},
-#endif
 		{"safe-exit",     0, 0, 'x'},
 		{"supervisor",    2, 0, 'p'},
 		{"syslog",        0, 0, 's'},
@@ -247,13 +233,6 @@ int main(int argc, char *argv[])
 #if defined(LOADAVG_PERIOD) || defined(MEMINFO_PERIOD) || defined(FILENR_PERIOD)
 		case 'e':
 			opt_script = optarg;
-			break;
-#endif
-
-#ifdef FILENR_PERIOD
-		case 'f':
-			if (filenr_set(optarg))
-				return usage(1);
 			break;
 #endif
 
