@@ -7,6 +7,9 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
+* SIGHUP support
+* rename reboot --> reset, reboot is the command
+* When checker reboots, log to syslog as well, RC may be disabled
 * Disable reset reason state file by default, enable in .conf
 * Support enable/disable watchdog features in a `/etc/watchdogd.conf`
   - command line options win over .conf, even on SIGHUP
