@@ -71,7 +71,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_INT ("timeout",    WDT_TIMEOUT_DEFAULT, CFGF_NONE),
 		CFG_BOOL("safe-exit",  cfg_false, CFGF_NONE),
 		CFG_STR ("script",     NULL, CFGF_NONE),
+		CFG_SEC ("filenr",     checker_opts, CFGF_NONE),
 		CFG_SEC ("loadavg",    checker_opts, CFGF_NONE),
+		CFG_SEC ("meminfo",    checker_opts, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_t *cfg;
