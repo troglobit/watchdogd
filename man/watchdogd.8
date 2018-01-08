@@ -22,6 +22,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl hnsVx
+.Op Fl f Ar FILE
 .Op Fl l Ar LEVEL
 .Op Fl t Ar SEC
 .Op Fl T Ar SEC
@@ -65,6 +66,9 @@ has been greatly simplified.  Use
 to query status and control
 .Nm .
 .Bl -tag -width Ds
+.It Fl f, -config Ar FILE
+Use FILE name for configuration.  Default:
+.Pa /etc/watchdogd.conf
 .It Fl h, -help
 Show summary of command line options and exit.
 .It Fl l, -loglevel Ar LEVEL
