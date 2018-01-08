@@ -69,6 +69,14 @@ int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
 	return wdt_fload_reason(fp, reason, pid);
 }
 
+/*
+ * This function takes an argument since requirements may dictate
+ * that the back-end is reset to certain values, not just zero.
+ *
+ * In the general case, vanilla watchdogd, we always want to step
+ * the reset counter.  E.g. to detect sudden power-loss.  So this
+ * function is then called with all fields cleared but counter.
+ */
 int reset_cause_clear(wdog_reason_t *r)
 {
 	wdog_reason_t reason;
