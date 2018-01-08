@@ -25,7 +25,6 @@
 .Op Fl l Ar LEVEL
 .Op Fl t Ar SEC
 .Op Fl T Ar SEC
-.Op Fl p Op RTPRIO
 .Op Ar /dev/watchdogN
 .Sh DESCRIPTION
 .Nm
@@ -74,9 +73,6 @@ Set log level: none, err, info,
 debug.
 .It Fl n, -foreground
 Start in foreground, required when started by systemd or Finit, default is to daemonize and background.
-.It Fl p, -supervisor Op RTPRIO
-Enable process supervisor, run at elevated RT priority when active
-(monitoring at least one process).  Default RT (SCHED_RR) priorty: 98.
 .It Fl s, -syslog
 Use
 .Xr syslog 3
