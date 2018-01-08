@@ -16,6 +16,8 @@
  */
 
 #include <confuse.h>
+#include <sched.h>
+
 #include "wdt.h"
 #include "script.h"
 #include "filenr.h"
@@ -43,6 +45,35 @@ static void checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(ue
 	}
 }
 
+static void supervisor(uev_ctx_t *ctx, cfg_t *cfg)
+{
+	if (!ctx || !cfg)
+		return;
+
+	/* Start or stop process supervisor */
+	supervisor_init(ctx, cfg_getbool(cfg, "enabled"), cfg_getint(cfg, "priority"));
+}
+
+static int validate_priority(cfg_t *cfg, cfg_opt_t *opt)
+{
+	const char *errstr = NULL;
+	long long val = cfg_getint(cfg, opt->name);
+	long long pmin = sched_get_priority_min(SCHED_RR);
+	long long pmax = sched_get_priority_max(SCHED_RR);
+
+	if (val < pmin)
+		errstr = "too small";
+	if (val > pmax)
+		errstr = "too large";
+
+	if (errstr) {
+		ERROR("Watchdog RT priority '%lld' is %s!", val, errstr);
+		return -1;
+	}
+
+	return 0;
+}
+
 static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 {
 	char fmt[80];
@@ -59,6 +90,11 @@ static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 
 int conf_parse_file(uev_ctx_t *ctx, char *file)
 {
+	cfg_opt_t supervisor_opts[] =  {
+		CFG_BOOL("enabled",  cfg_false, CFGF_NONE),
+		CFG_INT ("priority", 98, CFGF_NONE),
+		CFG_END()
+	};
 	cfg_opt_t checker_opts[] = {
 		CFG_INT  ("interval", 300, CFGF_NONE),
 		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
@@ -70,6 +106,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_INT ("interval",   WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",    WDT_TIMEOUT_DEFAULT, CFGF_NONE),
 		CFG_BOOL("safe-exit",  cfg_false, CFGF_NONE),
+		CFG_SEC ("supervisor", supervisor_opts, CFGF_NONE),
 		CFG_STR ("script",     NULL, CFGF_NONE),
 		CFG_SEC ("filenr",     checker_opts, CFGF_NONE),
 		CFG_SEC ("loadavg",    checker_opts, CFGF_NONE),
@@ -86,6 +123,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 
 	/* Custom logging, rather than default Confuse stderr logging */
 	cfg_set_error_function(cfg, conf_errfunc);
+
+	/* Validators */
+	cfg_set_validate_func(cfg, "supervisor|priority", validate_priority);
 
 	switch (cfg_parse(cfg, file)) {
 	case CFG_FILE_ERROR:
@@ -109,6 +149,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		timeout = cfg_getint(cfg, "timeout");
 	if (!opt_interval)
 		period  = cfg_getint(cfg, "interval");
+
+	/* Process supervisor */
+	supervisor(ctx, cfg_getnsec(cfg, "supervisor", 0));
 
 #ifdef FILENR_PLUGIN
 	checker(ctx, cfg, "filenr", filenr_init);

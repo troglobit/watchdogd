@@ -31,9 +31,8 @@ static struct supervisor {
 	int   ack;		/* Next expected ACK from process */
 } process[256];                 /* Max ID 0-255 */
 
-static int     active = 0;
-static int     rtprio = 98;
-static int     supervisor_enabled = 0;
+static int rtprio = 98;
+static int supervisor_enabled = 0;
 
 
 static size_t num_supervised(void)
@@ -59,24 +58,18 @@ static void set_priority(void)
 	int result = 0;
 	struct sched_param prio;
 
-	if (num_supervised() && enabled) {
-		if (!active) {
-			prio.sched_priority = rtprio;
-			DEBUG("Setting SCHED_RR rtprio %d", prio.sched_priority);
-			result = sched_setscheduler(getpid(), SCHED_RR, &prio);
-			active = 1;
-		}
+	if (num_supervised() && supervisor_enabled) {
+		DEBUG("Setting SCHED_RR rtprio %d", rtprio);
+		prio.sched_priority = rtprio;
+		result = sched_setscheduler(getpid(), SCHED_RR, &prio);
 	} else {
-		if (active) {
-			prio.sched_priority = 0;
-			DEBUG("Setting SCHED_OTHER prio %d", prio.sched_priority);
-			result = sched_setscheduler(getpid(), SCHED_OTHER, &prio);
-			active = 0;
-		}
+		DEBUG("Setting SCHED_OTHER prio %d", 0);
+		prio.sched_priority = 0;
+		result = sched_setscheduler(getpid(), SCHED_OTHER, &prio);
 	}
 
 	if (result && !wdt_testmode())
-		PERROR("Failed setting process %spriority", active ? "realtime " : "");
+		PERROR("Failed setting process %spriority", supervisor_enabled ? "realtime " : "");
 }
 
 /*
@@ -187,11 +180,14 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 {
+	size_t num;
 	struct supervisor *p;
 	wdog_reason_t *reason;
 
 	if (!supervisor_enabled)
 		return 1;
+
+	num = num_supervised();
 
 	switch (req->cmd) {
 	case WDOG_SUBSCRIBE_CMD:
@@ -277,26 +273,32 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		return 1;
 	}
 
+	if (num != num_supervised())
+		set_priority();
+
 	return 0;
 }
 
-int supervisor_init(uev_ctx_t *ctx, int T)
+int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime)
 {
 	size_t i;
-
-	if (!supervisor_enabled) {
-		INFO("Process supervisor disabled.");
-		return 1;
-	}
-
-	INFO("Starting process supervisor, waiting for client subscribe ...");
+	static int already = 0;
 
 	/* XXX: Maybe store these in shm instead, in case we are restarted? */
-	for (i = 0; i < NELEMS(process); i++) {
+	for (i = 0; !already && i < NELEMS(process); i++) {
 		memset(&process[i], 0, sizeof(struct supervisor));
 		process[i].id = -1;
 	}
+	already = 1;
 
+	supervisor_enabled = enabled;
+	if (!enabled) {
+		INFO("Process supervisor disabled.");
+		return supervisor_enable(0);
+	}
+
+	INFO("Starting process supervisor, waiting for client subscribe ...");
+	rtprio = realtime;
 	set_priority();
 
 	return 0;
@@ -345,28 +347,6 @@ int supervisor_enable(int enable)
 	set_priority();
 
 	return result;
-}
-
-int supervisor_set(char *optarg)
-{
-	long long min = sched_get_priority_min(SCHED_RR);
-	long long max = sched_get_priority_max(SCHED_RR);
-
-	supervisor_enabled = 1;
-
-	if (optarg) {
-		const char *errstr = NULL;
-
-		rtprio = strtonum(optarg, min, max, &errstr);
-		if (errstr) {
-			ERROR("Watchdog RT priority '%s' is %s!", optarg, errstr);
-			return 1;
-		}
-	} else {
-		rtprio = max - 1;
-	}
-
-	return 0;
 }
 
 /**

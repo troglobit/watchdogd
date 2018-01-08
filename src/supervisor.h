@@ -18,9 +18,8 @@
 #ifndef WDOG_SUPERVISOR_H_
 #define WDOG_SUPERVISOR_H_
 
-int supervisor_init   (uev_ctx_t *ctx, int T);
+int supervisor_init   (uev_ctx_t *ctx, int enabled, int realtime);
 int supervisor_exit   (uev_ctx_t *ctx);
-int supervisor_set    (char *optarg);
 
 int supervisor_enable (int enable);
 

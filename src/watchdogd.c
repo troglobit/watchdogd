@@ -137,25 +137,23 @@ static int usage(int status)
 #endif
 	       "[-f FILE] [-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
-	       "  %s -a 0.8,0.9 -T 120 -t 30 /dev/watchdog2\n\n"
+	       "  %s -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
 #if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
-               "  -e, --script=CMD         Script or command to run as monitor plugin callback\n"
+               "  -e, --script=CMD    Script or command to run as monitor plugin callback\n"
 #endif
-	       "  -f, --config=FILE         Use FILE name for configuration\n"
-               "  -n, --foreground         Start in foreground, background is default\n"
-	       "  -s, --syslog             Use syslog, even if running in foreground\n"
-	       "  -l, --loglevel=LVL       Log level: none, err, warn, notice*, info, debug\n"
+	       "  -f, --config=FILE   Use FILE name for configuration\n"
+               "  -n, --foreground    Start in foreground, background is default\n"
+	       "  -s, --syslog        Use syslog, even if running in foreground\n"
+	       "  -l, --loglevel=LVL  Log level: none, err, warn, notice*, info, debug\n"
 	       "\n"
-               "  -T, --timeout=SEC        HW watchdog timer (WDT) timeout, in SEC seconds\n"
-               "  -t, --interval=SEC       WDT kick interval, in SEC seconds, default: %d\n"
-               "  -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM,\n"
-	       "                           \"magic\" exit may not be supported by HW/driver\n"
-	       "  -p, --supervisor[=PRIO]  Enable process supervisor, at elevated RT prio.\n"
-	       "                           Default RT prio when active: SCHED_RR @98\n"
+               "  -T, --timeout=SEC   HW watchdog timer (WDT) timeout, in SEC seconds\n"
+               "  -t, --interval=SEC  WDT kick interval, in SEC seconds, default: %d\n"
+               "  -x, --safe-exit     Disable watchdog on exit from SIGINT/SIGTERM,\n"
+	       "                      \"magic\" exit may not be supported by HW/driver\n"
 	       "\n"
-	       "  -V, --version            Display version and exit\n"
-               "  -h, --help               Display this help message and exit\n"
+	       "  -V, --version       Display version and exit\n"
+               "  -h, --help          Display this help message and exit\n"
 	       "\n"
 	       "Bug report address: %s\n", prognm, WDT_DEVNODE, prognm, WDT_KICK_DEFAULT,
 	       PACKAGE_BUGREPORT);
@@ -211,7 +209,6 @@ int main(int argc, char *argv[])
 		{"interval",      1, 0, 't'},
 		{"loglevel",      1, 0, 'l'},
 		{"safe-exit",     0, 0, 'x'},
-		{"supervisor",    2, 0, 'p'},
 		{"syslog",        0, 0, 's'},
 #ifndef TESTMODE_DISABLED
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
@@ -248,11 +245,6 @@ int main(int argc, char *argv[])
 		case 'n':	/* Run in foreground */
 			background = 0;
 			use_syslog--;
-			break;
-
-		case 'p':
-			if (supervisor_set(optarg))
-				return usage(1);
 			break;
 
 		case 's':
@@ -405,9 +397,6 @@ int main(int argc, char *argv[])
 
 	/* Every period (T) seconds we kick the WDT */
 	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
-
-	/* Start process supervisor */
-	supervisor_init(&ctx, T);
 
 	/* Start client API socket */
 	api_init(&ctx);
