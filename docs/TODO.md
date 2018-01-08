@@ -10,12 +10,6 @@ Before Release
 * SIGHUP support
 * rename reboot --> reset, reboot is the command
 * When checker reboots, log to syslog as well, RC may be disabled
-* Support enable/disable watchdog features in a `/etc/watchdogd.conf`
-  - command line options win over .conf, even on SIGHUP
-  - Supervise processes,
-  - CPU loadavg,
-  - Watch for file descriptor leaks,
-  - etc.
 
 
 General
