@@ -57,6 +57,9 @@ wdog_reason_t reboot_reason;
 wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
 unsigned int reset_counter = 0;
 
+/*
+ * Connect to kernel wdt driver
+ */
 int wdt_open(const char *dev)
 {
 	static int cause = 0;
@@ -96,7 +99,8 @@ static void period_cb(uev_t *w, void *arg, int event)
 }
 
 /*
- * Connect to kernel wdt driver
+ * Initialize, or reinitialize, connection to WDT.  Set timeout and
+ * start a WDT kick timer.
  */
 int wdt_init(uev_ctx_t *ctx, const char *dev)
 {
@@ -159,7 +163,7 @@ int wdt_capability(uint32_t flag)
  * the PC Watchdog card to reset its internal timer so it doesn't trigger
  * a computer reset.
  */
-int wdt_kick(char *msg)
+int wdt_kick(const char *msg)
 {
 	int dummy;
 
@@ -199,8 +203,6 @@ int wdt_set_timeout(int count)
 	DEBUG("Setting watchdog timeout to %d sec.", count);
 	if (ioctl(fd, WDIOC_SETTIMEOUT, &arg))
 		return 1;
-
-	DEBUG("Previous timeout was %d sec", arg);
 
 	return 0;
 }

@@ -28,7 +28,7 @@
 /*
  * Communicate WDT ownership handover to Finit
  */
-int wdt_handover(char *devnode)
+int wdt_handover(const char *devnode)
 {
 	int sd, rc = -1, retry = 3;
 	size_t len;
