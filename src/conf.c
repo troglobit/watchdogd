@@ -48,13 +48,12 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev
 	return rc;
 }
 
-static void supervisor(uev_ctx_t *ctx, cfg_t *cfg)
+static int supervisor(uev_ctx_t *ctx, cfg_t *cfg)
 {
-	if (!ctx || !cfg)
-		return;
+	if (!cfg)
+		return supervisor_init(ctx, 0, 0);
 
-	/* Start or stop process supervisor */
-	supervisor_init(ctx, cfg_getbool(cfg, "enabled"), cfg_getint(cfg, "priority"));
+	return supervisor_init(ctx, cfg_getbool(cfg, "enabled"), cfg_getint(cfg, "priority"));
 }
 
 static int validate_priority(cfg_t *cfg, cfg_opt_t *opt)
@@ -70,7 +69,7 @@ static int validate_priority(cfg_t *cfg, cfg_opt_t *opt)
 		errstr = "too large";
 
 	if (errstr) {
-		ERROR("Watchdog RT priority '%lld' is %s!", val, errstr);
+		cfg_error(cfg, "supervisor priority '%lld' is %s!", val, errstr);
 		return -1;
 	}
 
@@ -158,7 +157,6 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	if (!opt_interval)
 		period  = cfg_getint(cfg, "interval");
 
-	/* Process supervisor */
 	supervisor(ctx, cfg_getnsec(cfg, "supervisor", 0));
 
 #ifdef FILENR_PLUGIN
