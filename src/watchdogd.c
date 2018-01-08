@@ -298,9 +298,9 @@ int main(int argc, char *argv[])
 	openlog(prognm, log_opts, LOG_DAEMON);
 
 	/* Read /etc/watchdogd.conf if it exists */
-	if (fexist(opt_config) && conf_parse_file(&ctx, opt_config))
-		PERROR("Failed parsing %s", opt_config);
+	conf_parse_file(&ctx, opt_config);
 
+	/* Hello world ... */
 	LOG("%s v%s %s ...", prognm, PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */

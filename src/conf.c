@@ -165,10 +165,13 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	};
 	cfg_t *cfg;
 
-	if (!ctx || !file) {
-		ERROR("Internal error, no event context or .conf file.");
+	if (!ctx) {
+		ERROR("Internal error, no event context");
 		return 1;
 	}
+
+	if (!file || !fexist(file))
+		return 0;
 
 	cfg = cfg_init(opts, CFGF_NONE);
 	if (!cfg) {
