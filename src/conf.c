@@ -16,9 +16,11 @@
  */
 
 #include <confuse.h>
+#include <libgen.h>
 #include <sched.h>
 
 #include "wdt.h"
+#include "rc.h"
 #include "script.h"
 #include "filenr.h"
 #include "loadavg.h"
@@ -45,6 +47,46 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev
 		rc = init(ctx, 0, 0, 0.0, 0.0);
 	}
 
+	return rc;
+}
+
+static int reset_cause(uev_ctx_t *ctx, cfg_t *cfg)
+{
+	if (!cfg)
+		return reset_cause_init(0, NULL);
+
+	return reset_cause_init(cfg_getbool(cfg, "enabled"), cfg_getstr(cfg, "file"));
+}
+
+static int validate_file(cfg_t *cfg, cfg_opt_t *opt)
+{
+	int rc = -1;
+	char *file, *dir, *tmp;
+
+	file = cfg_getstr(cfg, opt->name);
+	if (!file)
+		return 0;
+
+	tmp = strdup(file);
+	if (!tmp) {
+		cfg_error(cfg, "failed allocating memory");
+		return -1;
+	}
+
+	dir = dirname(tmp);
+	if (file[0] != '/' || !dir) {
+		cfg_error(cfg, "reset-cause file must be an absolute path, skipping.");
+		goto done;
+	}
+
+	if (access(dir, R_OK | W_OK)) {
+		cfg_error(cfg, "reset-cause dir '%s' not writable, error %d:%s.", dir, errno, strerror(errno));
+		goto done;
+	}
+
+	rc = 0;
+done:
+	free(tmp);
 	return rc;
 }
 
@@ -97,6 +139,11 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_INT ("priority", 98, CFGF_NONE),
 		CFG_END()
 	};
+	cfg_opt_t reset_cause_opts[] =  {
+		CFG_BOOL("enabled",  cfg_false, CFGF_NONE),
+		CFG_STR ("file", NULL, CFGF_NONE),
+		CFG_END()
+	};
 	cfg_opt_t checker_opts[] = {
 		CFG_INT  ("interval", 300, CFGF_NONE),
 		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
@@ -105,14 +152,15 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_END()
 	};
 	cfg_opt_t opts[] = {
-		CFG_INT ("interval",   WDT_KICK_DEFAULT, CFGF_NONE),
-		CFG_INT ("timeout",    WDT_TIMEOUT_DEFAULT, CFGF_NONE),
-		CFG_BOOL("safe-exit",  cfg_false, CFGF_NONE),
-		CFG_SEC ("supervisor", supervisor_opts, CFGF_NONE),
-		CFG_STR ("script",     NULL, CFGF_NONE),
-		CFG_SEC ("filenr",     checker_opts, CFGF_NONE),
-		CFG_SEC ("loadavg",    checker_opts, CFGF_NONE),
-		CFG_SEC ("meminfo",    checker_opts, CFGF_NONE),
+		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
+		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
+		CFG_BOOL("safe-exit",   cfg_false, CFGF_NONE),
+		CFG_SEC ("supervisor",  supervisor_opts, CFGF_NONE),
+		CFG_SEC ("reset-cause", reset_cause_opts, CFGF_NONE),
+		CFG_STR ("script",      NULL, CFGF_NONE),
+		CFG_SEC ("filenr",      checker_opts, CFGF_NONE),
+		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
+		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_t *cfg;
@@ -133,6 +181,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 
 	/* Validators */
 	cfg_set_validate_func(cfg, "supervisor|priority", validate_priority);
+	cfg_set_validate_func(cfg, "reset-cause|file", validate_file);
 
 	switch (cfg_parse(cfg, file)) {
 	case CFG_FILE_ERROR:
@@ -158,6 +207,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		period  = cfg_getint(cfg, "interval");
 
 	supervisor(ctx, cfg_getnsec(cfg, "supervisor", 0));
+	reset_cause(ctx, cfg_getnsec(cfg, "reset-cause", 0));
 
 #ifdef FILENR_PLUGIN
 	checker(ctx, cfg, "filenr", filenr_init);
