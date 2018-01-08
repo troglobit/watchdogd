@@ -317,10 +317,6 @@ int main(int argc, char *argv[])
 	if (opt_interval)
 		period = opt_interval;
 
-	/* Read /etc/watchdogd.conf if it exists */
-	if (fexist(opt_config) && conf_parse_file(&ctx, opt_config))
-		PERROR("Failed parsing %s", opt_config);
-
 	/* Start daemon */
 	if (background) {
 		DEBUG("Daemonizing ...");
@@ -336,6 +332,10 @@ int main(int argc, char *argv[])
 
 	setlogmask(LOG_UPTO(loglevel));
 	openlog(prognm, log_opts, LOG_DAEMON);
+
+	/* Read /etc/watchdogd.conf if it exists */
+	if (fexist(opt_config) && conf_parse_file(&ctx, opt_config))
+		PERROR("Failed parsing %s", opt_config);
 
 	LOG("%s v%s %s ...", prognm, PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
 
