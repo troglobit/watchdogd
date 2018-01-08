@@ -44,7 +44,6 @@ int __wdt_testmode = 0;
 #endif
 
 /* Event contexts */
-static uev_t period_watcher;
 static uev_t sigterm_watcher;
 static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
@@ -106,11 +105,6 @@ static void setup_signals(uev_ctx_t *ctx)
 	/* Ignore signals older watchdogd used, in case of older userland */
 	uev_signal_init(ctx, &sigusr1_watcher, ignore_cb, "USR1", SIGUSR1);
 	uev_signal_init(ctx, &sigusr2_watcher, ignore_cb, "USR2", SIGUSR2);
-}
-
-static void period_cb(uev_t *w, void *arg, int event)
-{
-	wdt_kick("Kicking watchdog.");
 }
 
 static char *progname(char *arg0)
@@ -177,11 +171,9 @@ extern int __wdog_loglevel(char *level);
 
 int main(int argc, char *argv[])
 {
-	int real_timeout = 0;
-	int T;
 	int background = 1;
 	int use_syslog = 1;
-	int c, status, cause;
+	int c, status;
 	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
 	char *dev = NULL;
 	struct option long_options[] = {
@@ -320,55 +312,10 @@ int main(int argc, char *argv[])
 	 */
 	argv[0][0] = '@';
 
-	if (wdt_init(dev)) {
+	if (wdt_init(&ctx, dev)) {
 		PERROR("Failed connecting to kernel watchdog driver");
 		return 1;
 	}
-
-	/* Read boot cause from watchdog ... */
-	cause = wdt_get_bootstatus();
-
-	/* Check capabilities */
-	if (magic && !wdt_capability(WDIOF_MAGICCLOSE)) {
-		WARN("WDT cannot be disabled, disabling safe exit.");
-		magic = 0;
-	}
-
-	if (!wdt_capability(WDIOF_POWERUNDER))
-		WARN("WDT does not support PWR fail condition, treating as card reset.");
-
-	/* Set requested WDT timeout right before we enter the event loop. */
-	if (wdt_set_timeout(timeout))
-		PERROR("Failed setting HW watchdog timeout: %d", timeout);
-
-	/* Sanity check with driver that setting actually took. */
-	real_timeout = wdt_get_timeout();
-	if (real_timeout < 0) {
-		real_timeout = WDT_TIMEOUT_DEFAULT;
-		PERROR("Failed reading current watchdog timeout");
-	} else {
-		if (real_timeout <= period) {
-			ERROR("Warning, watchdog timeout <= kick interval: %d <= %d",
-			      real_timeout, period);
-		}
-	}
-
-	/* If user did not provide '-t' interval, set to half WDT timeout */
-	if (-1 == period) {
-		period = real_timeout / 2;
-		if (!period)
-			period = 1;
-	}
-
-	/* ... save boot cause in /var/run/watchdogd.status */
-	wdt_set_bootstatus(cause, real_timeout, period);
-
-	/* Calculate period (T) in milliseconds for libuEv */
-	T = period * 1000;
-	DEBUG("Watchdog kick interval set to %d sec.", period);
-
-	/* Every period (T) seconds we kick the WDT */
-	uev_timer_init(&ctx, &period_watcher, period_cb, NULL, T, T);
 
 	/* Start client API socket */
 	api_init(&ctx);
@@ -383,16 +330,16 @@ int main(int argc, char *argv[])
 
 	api_exit();
 	while (wait_reboot) {
-		int reboot_in = 3 * real_timeout;
+		int reboot_in = 3 * timeout;
 
 		INFO("Waiting for HW WDT reboot ...");
 		while (reboot_in > 0) {
-			unsigned int rest = sleep(real_timeout);
+			unsigned int rest = sleep(timeout);
 
 			while (rest)
 				rest = sleep(rest);
 
-			reboot_in -= real_timeout;
+			reboot_in -= timeout;
 		}
 
 		LOG("HW WDT did not reboot, forcing reboot now ...");

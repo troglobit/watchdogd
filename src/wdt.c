@@ -23,12 +23,12 @@
 
 #ifndef HAVE_FINIT_FINIT_H
 #define check_handover(devnode)						\
-	return 1;
+	return -1;
 #else
 #define check_handover(devnode)						\
 {									\
 	if (EBUSY != errno)						\
-		return 1;						\
+		return -1;						\
 									\
 	/*								\
 	 * If we're called in a system with Finit running, tell it to	\
@@ -37,7 +37,7 @@
 	fd = wdt_handover(devnode);					\
 	if (fd == -1) {							\
 		PERROR("Failed communicating WDT handover with finit");	\
-		return 1;						\
+		return -1;						\
 	}								\
 									\
 	wdt_kick("WDT handover complete.");				\
@@ -46,6 +46,7 @@
 
 static int fd = -1;
 static char devnode[42] = WDT_DEVNODE;
+static uev_t period_watcher;
 static uev_t timeout_watcher;
 static struct watchdog_info info;
 
@@ -56,14 +57,12 @@ wdog_reason_t reboot_reason;
 wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
 unsigned int reset_counter = 0;
 
-
-/*
- * Connect to kernel wdt driver
- */
-int wdt_init(char *dev)
+int wdt_open(const char *dev)
 {
-	if (wdt_testmode())
-		return 0;
+	static int cause = 0;
+
+	if (fd >= 0)
+		return cause;
 
 	if (dev) {
 		if (!strncmp(dev, "/dev", 4))
@@ -77,6 +76,74 @@ int wdt_init(char *dev)
 	memset(&info, 0, sizeof(info));
 	if (!ioctl(fd, WDIOC_GETSUPPORT, &info))
 		INFO("%s: %s, capabilities 0x%04x", devnode, info.identity, info.options);
+
+	/* Check capabilities */
+	if (magic && !wdt_capability(WDIOF_MAGICCLOSE)) {
+		WARN("WDT cannot be disabled, disabling safe exit.");
+		magic = 0;
+	}
+
+	if (!wdt_capability(WDIOF_POWERUNDER))
+		WARN("WDT does not support PWR fail condition, treating as card reset.");
+
+	/* Read boot cause from watchdog ... */
+	return cause = wdt_get_bootstatus();
+}
+
+static void period_cb(uev_t *w, void *arg, int event)
+{
+	wdt_kick("Kicking watchdog.");
+}
+
+/*
+ * Connect to kernel wdt driver
+ */
+int wdt_init(uev_ctx_t *ctx, const char *dev)
+{
+	int T, cause;
+
+	if (wdt_testmode())
+		return 0;
+
+	cause = wdt_open(dev);
+	if (cause < 0)
+		return 1;
+
+	/* Set requested WDT timeout right before we enter the event loop. */
+	if (wdt_set_timeout(timeout))
+		PERROR("Failed setting HW watchdog timeout: %d", timeout);
+
+	/* Sanity check with driver that setting actually took. */
+	timeout = wdt_get_timeout();
+	if (timeout < 0) {
+		timeout = WDT_TIMEOUT_DEFAULT;
+		PERROR("Failed reading current watchdog timeout");
+	} else {
+		if (timeout <= period) {
+			ERROR("Warning, watchdog timeout <= kick interval: %d <= %d",
+			      timeout, period);
+		}
+	}
+
+	/* If user did not provide '-t' interval, set to half WDT timeout */
+	if (-1 == period) {
+		period = timeout / 2;
+		if (!period)
+			period = 1;
+	}
+
+	/* Save/update /run/watchdogd.status */
+	wdt_set_bootstatus(cause, timeout, period);
+
+	/* Calculate period (T) in milliseconds for libuEv */
+	T = period * 1000;
+	DEBUG("Watchdog kick interval set to %d sec.", period);
+
+	/* Every period (T) seconds we kick the WDT */
+	if (!ctx)
+		uev_timer_set(&period_watcher, T, T);
+	else
+		uev_timer_init(ctx, &period_watcher, period_cb, NULL, T, T);
 
 	return 0;
 }
@@ -361,7 +428,7 @@ int wdt_enable(int enable)
 			fd = -1;
 		}
 	} else {
-		result += wdt_init(NULL);
+		result += wdt_init(NULL, NULL);
 	}
 
 	/* Stop/Start process supervisor */

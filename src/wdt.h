@@ -86,7 +86,7 @@ extern int   __wdt_testmode;
 extern unsigned int reset_counter;
 extern wdog_reason_t reboot_reason;
 
-int wdt_init           (char *dev);
+int wdt_init           (uev_ctx_t *ctx, const char *dev);
 int wdt_exit           (uev_ctx_t *ctx);
 
 int wdt_capability     (uint32_t flag);
@@ -99,8 +99,10 @@ int wdt_debug          (int enable);
 int wdt_kick           (char *msg);
 int wdt_set_timeout    (int count);
 int wdt_get_timeout    (void);
-int wdt_get_bootstatus (void);
+
+int wdt_open           (const char *dev);
 int wdt_close          (uev_ctx_t *ctx);
+
 int wdt_reboot         (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
 int wdt_forced_reboot  (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 
