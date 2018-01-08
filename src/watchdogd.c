@@ -26,7 +26,6 @@
 /* Command line options, if set they take precedence over .conf file */
 char *opt_config   = NULL;
 int   opt_safe     = 0;
-char *opt_script   = NULL;
 int   opt_timeout  = 0;
 int   opt_interval = 0;
 
@@ -131,17 +130,10 @@ static char *progname(char *arg0)
 static int usage(int status)
 {
 	printf("Usage:\n"
-	       "  %s [-hnsVx] "
-#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
-	       "[-e CMD] "
-#endif
-	       "[-f FILE] [-T SEC] [-t SEC] [%s]\n\n"
+	       "  %s [-hnsVx] [-f FILE] [-T SEC] [-t SEC] [%s]\n\n"
 	       "Example:\n"
 	       "  %s -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
-#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
-               "  -e, --script=CMD    Script or command to run as monitor plugin callback\n"
-#endif
 	       "  -f, --config=FILE   Use FILE name for configuration\n"
                "  -n, --foreground    Start in foreground, background is default\n"
 	       "  -s, --syslog        Use syslog, even if running in foreground\n"
@@ -181,13 +173,6 @@ int wdt_debug(int enable)
 	return 0;
 }
 
-#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
-#define RUNSCRIPT "e:"
-#else
-#define RUNSCRIPT
-#endif
-#define PLUGIN_FLAGS RUNSCRIPT
-
 extern int __wdog_loglevel(char *level);
 
 int main(int argc, char *argv[])
@@ -200,9 +185,6 @@ int main(int argc, char *argv[])
 	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
 	char *dev = NULL;
 	struct option long_options[] = {
-#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
-		{"script",        1, 0, 'e'},
-#endif
 		{"config",        1, 0, 'f'},
 		{"foreground",    0, 0, 'n'},
 		{"help",          0, 0, 'h'},
@@ -220,14 +202,8 @@ int main(int argc, char *argv[])
 	uev_ctx_t ctx;
 
 	prognm = progname(argv[0]);
-	while ((c = getopt_long(argc, argv, PLUGIN_FLAGS "f:Fhl:Lnp::sSt:T:Vx?", long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "f:Fhl:LnsSt:T:Vx?", long_options, NULL)) != EOF) {
 		switch (c) {
-#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
-		case 'e':
-			opt_script = optarg;
-			break;
-#endif
-
 		case 'f':
 			opt_config = optarg;
 			break;
@@ -305,10 +281,6 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 		snprintf(opt_config, len, "%s/%s.conf", SYSCONFDIR, PACKAGE);
-	}
-	if (opt_script) {
-		if (script_init(&ctx, opt_script))
-			return usage(1);
 	}
 	if (opt_safe)
 		magic = 1;

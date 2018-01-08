@@ -199,13 +199,12 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	/* Read settings, command line options take precedence */
 	if (!opt_safe)
 		magic = cfg_getbool(cfg, "safe-exit");
-	if (!opt_script)
-		script_init(ctx, cfg_getstr(cfg, "script"));
 	if (!opt_timeout)
 		timeout = cfg_getint(cfg, "timeout");
 	if (!opt_interval)
 		period  = cfg_getint(cfg, "interval");
 
+	script_init(ctx, cfg_getstr(cfg, "script"));
 	supervisor(ctx, cfg_getnsec(cfg, "supervisor", 0));
 	reset_cause(ctx, cfg_getnsec(cfg, "reset-cause", 0));
 

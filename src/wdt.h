@@ -68,7 +68,6 @@
 /* Command line options */
 extern char *opt_config;
 extern int   opt_safe;
-extern char *opt_script;
 extern int   opt_timeout;
 extern int   opt_interval;
 

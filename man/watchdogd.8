@@ -22,7 +22,6 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl hnsVx
-.Op Fl e Ar CMD
 .Op Fl l Ar LEVEL
 .Op Fl t Ar SEC
 .Op Fl T Ar SEC
@@ -67,12 +66,6 @@ has been greatly simplified.  Use
 to query status and control
 .Nm .
 .Bl -tag -width Ds
-.It Fl e, -script Ar CMD
-Script or command to run as monitor plugin callback.  When given the
-.Ar CMD
-will be called instead of reboot when the REBOOT watermark is reached by
-a monitor plugin.  Hence, it is up to the script to perform a reboot if
-that is needed.
 .It Fl h, -help
 Show summary of command line options and exit.
 .It Fl l, -loglevel Ar LEVEL

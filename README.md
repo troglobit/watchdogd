@@ -86,7 +86,6 @@ Usage
 watchdogd [-hnsVx] [-T SEC] [-t SEC] [-p PRIO] [/dev/watchdog]
 
 Options:
-  -e, --script=CMD         Script or command to run as monitor plugin callback
   -n, --foreground         Start in foreground (background is default)
   -s, --syslog             Use syslog, even if running in foreground
   -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
@@ -167,10 +166,9 @@ All of these monitors can be *very* useful on an embedded or headless
 system with little or no operator.
 
 The two values, `warning` and `critical`, are the warning and reboot
-levels in percent.  The latter is optional, if it si omitted reboot is
-disabled.  The reboot is also disabled if `-e CMD` is given, then the
-script `CMD` is run instead, both at warning and reboot level, and it
-is up to the script to perform a reboot if needed.
+levels in percent.  The latter is optional, if it is omitted reboot is
+disabled.  A script can also be run instead of reboot, see the `.conf`
+file for details.
 
 Determining suitable system load average levels is tricky.  It always
 depends on the system and use-case, not just the number of CPU cores.
