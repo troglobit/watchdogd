@@ -26,8 +26,9 @@
 #include "supervisor.h"
 
 
-static void checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev_ctx_t *, int, int, float, float))
+static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev_ctx_t *, int, int, float, float))
 {
+	int rc;
 	cfg_t *sec;
 
 	sec = cfg_getnsec(cfg, sect, 0);
@@ -39,10 +40,12 @@ static void checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(ue
 		logmark = cfg_getbool(sec, "logmark");
 		warn    = cfg_getfloat(sec, "warning");
 		crit    = cfg_getfloat(sec, "critical");
-		init(ctx, period, logmark, warn, crit);
+		rc = init(ctx, period, logmark, warn, crit);
 	} else {
-		init(ctx, 0, 0, 0.0, 0.0);
+		rc = init(ctx, 0, 0, 0.0, 0.0);
 	}
+
+	return rc;
 }
 
 static void supervisor(uev_ctx_t *ctx, cfg_t *cfg)
