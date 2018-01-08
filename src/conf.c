@@ -115,6 +115,11 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	};
 	cfg_t *cfg;
 
+	if (!ctx || !file) {
+		ERROR("Internal error, no event context or .conf file.");
+		return 1;
+	}
+
 	cfg = cfg_init(opts, CFGF_NONE);
 	if (!cfg) {
 		PERROR("Failed initializing configuration file parser");
