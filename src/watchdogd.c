@@ -47,6 +47,7 @@ int __wdt_testmode = 0;
 static uev_t sigterm_watcher;
 static uev_t sigint_watcher;
 static uev_t sigquit_watcher;
+static uev_t sighup_watcher;
 static uev_t sigpwr_watcher;
 static uev_t sigusr1_watcher;
 static uev_t sigusr2_watcher;
@@ -82,6 +83,15 @@ static void reboot_cb(uev_t *w, void *arg, int events)
 	wdt_forced_reboot(w->ctx, 1, (char *)arg, timeout);
 }
 
+static void reload_cb(uev_t *w, void *arg, int events)
+{
+	INFO("SIGHUP received, reloading %s", opt_config ?: "nothing");
+	if (conf_parse_file(w->ctx, opt_config))
+		return;
+
+	wdt_init(w->ctx, NULL);
+}
+
 static void ignore_cb(uev_t *w, void *arg, int events)
 {
 	DEBUG("Ignoring SIG%s", (char *)arg);
@@ -98,6 +108,9 @@ static void setup_signals(uev_ctx_t *ctx)
 	uev_signal_init(ctx, &sigquit_watcher, reboot_cb, "client", SIGQUIT);
 #endif
 	uev_signal_init(ctx, &sigint_watcher,  exit_cb, NULL, SIGINT);
+
+	/* Reload .conf file */
+	uev_signal_init(ctx, &sighup_watcher, reload_cb, NULL, SIGHUP);
 
 	/* Watchdog reboot support */
 	uev_signal_init(ctx, &sigpwr_watcher, reboot_cb, "init", SIGPWR);

@@ -139,13 +139,14 @@ int wdt_init(uev_ctx_t *ctx, const char *dev)
 	T = period * 1000;
 	DEBUG("Watchdog kick interval set to %d sec.", period);
 
-	/* Every period (T) seconds we kick the WDT */
-	if (!ctx)
-		uev_timer_set(&period_watcher, T, T);
-	else
-		uev_timer_init(ctx, &period_watcher, period_cb, NULL, T, T);
+	/*
+	 * On SIGHUP this stops the current kick before re-init.
+	 * Otherwise this does nothing, libuEv takes care of us.
+	 */
+	uev_timer_stop(&period_watcher);
 
-	return 0;
+	/* Every period (T) seconds we kick the WDT */
+	return uev_timer_init(ctx, &period_watcher, period_cb, NULL, T, T);
 }
 
 int wdt_capability(uint32_t flag)

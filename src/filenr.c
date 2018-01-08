@@ -89,6 +89,7 @@ int filenr_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
 	warning = warn;
 	critical = crit;
 
+	uev_timer_stop(&watcher);
 	return uev_timer_init(ctx, &watcher, cb, NULL, 1000, T * 1000);
 }
 

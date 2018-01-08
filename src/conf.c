@@ -171,7 +171,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	}
 
 	if (!file || !fexist(file))
-		return 0;
+		return 1;
 
 	cfg = cfg_init(opts, CFGF_NONE);
 	if (!cfg) {

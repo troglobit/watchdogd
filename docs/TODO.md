@@ -7,7 +7,6 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
-* SIGHUP support
 * rename reboot --> reset, reboot is the command
 * When checker reboots, log to syslog as well, RC may be disabled
 
