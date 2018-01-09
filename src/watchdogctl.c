@@ -108,6 +108,11 @@ static int do_reset(char *arg)
 	return wdog_reboot_timeout(0, msg, msec);
 }
 
+static int do_reload(char *Arg)
+{
+	return wdog_reload();
+}
+
 static int set_loglevel(char *arg)
 {
 	int result;
@@ -277,6 +282,7 @@ static int usage(int code)
 //	       "  force-reset          Forced reset, alias to `reboot 0`\n"
 	       "  reboot [MSEC] [MSG]  Reboot using WDT, optional MSEC (milliseconds) delay\n"
 	       "                       The optional MSG is presented as 'label' on reboot\n"
+	       "  reload               Reload daemon configuration file, like SIGHUP\n"
 	       "  status               Show watchdog and supervisor status, default command\n"
 	       "  version              Show program version\n"
 		"\n"
@@ -332,6 +338,7 @@ int main(int argc, char *argv[])
 		{ "help",              show_usage,   NULL },
 		{ "loglevel",          set_loglevel, NULL },
 		{ "reboot",            do_reset,     NULL },
+		{ "reload",            do_reload,    NULL },
 		{ "status",            show_status,  NULL },
 #ifndef SUPERVISOR_TESTS_DISABLED
 		{ "test",              run_test,     NULL },

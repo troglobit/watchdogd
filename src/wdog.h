@@ -60,6 +60,7 @@ char *wdog_reboot_reason_str(wdog_reason_t *reason);
 int   wdog_reboot_reason_clr(void);
 
 int   wdog_ping             (void);
+int   wdog_reload           (void);
 
 /*
  * Process supervisor API, see also compat.h

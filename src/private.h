@@ -47,6 +47,7 @@
 #define WDOG_SET_LOGLEVEL_CMD       16
 #define WDOG_GET_LOGLEVEL_CMD       17
 #define WDOG_RESET_COUNTER_CMD      18
+#define WDOG_RELOAD_CMD             19
 #define WDOG_CMD_ERROR              -1
 
 #define WDOG_SUPERVISOR_MIN_TIMEOUT 1000 /* msec */

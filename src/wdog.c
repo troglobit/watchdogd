@@ -363,6 +363,11 @@ int wdog_reboot_reason_clr(void)
 	return doit(WDOG_CLEAR_CAUSE_CMD, -1, NULL, 0, NULL);
 }
 
+int wdog_reload(void)
+{
+	return doit(WDOG_RELOAD_CMD, -1, NULL, 0, NULL);
+}
+
 /**
  * Local Variables:
  *  c-file-style: "linux"

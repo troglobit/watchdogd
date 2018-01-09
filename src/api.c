@@ -19,6 +19,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include "wdt.h"
+#include "conf.h"
 
 static int     sd = -1;
 static uev_t   watcher;
@@ -75,6 +76,12 @@ static void cmd(uev_t *w, void *arg, int events)
 
 	case WDOG_GET_LOGLEVEL_CMD:
 		req.next_ack = loglevel;
+		break;
+
+	case WDOG_RELOAD_CMD:
+		INFO("Reloading %s", opt_config ?: "nothing");
+		if (!conf_parse_file(w->ctx, opt_config))
+			wdt_init(w->ctx, NULL);
 		break;
 
 	case WDOG_REBOOT_CMD:
