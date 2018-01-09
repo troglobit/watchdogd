@@ -2,6 +2,8 @@ ACLOCAL_AMFLAGS     = -I m4
 DISTCLEANFILES      = *~ DEADJOE semantic.cache *.gdb *.elf core core.* *.d *.sock
 DISTCHECK_CONFIGURE_FLAGS = --with-systemd=$$dc_install_base/$(systemd)
 
+confdir             = $(sysconfdir)
+conf_DATA           = watchdogd.conf
 doc_DATA            = README.md LICENSE
 EXTRA_DIST          = README.md LICENSE ChangeLog.md
 DIST_SUBDIRS        = examples
