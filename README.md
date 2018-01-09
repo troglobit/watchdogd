@@ -83,7 +83,7 @@ Usage
 -----
 
 ```
-watchdogd [-hnsVx] [-T SEC] [-t SEC] [-p PRIO] [/dev/watchdog]
+watchdogd [-hnsVx] [-T SEC] [-t SEC] [/dev/watchdog]
 
 Options:
   -n, --foreground         Start in foreground (background is default)
@@ -94,9 +94,6 @@ Options:
   -t, --interval=SEC       WDT kick interval in SEC seconds, default: 10
   -x, --safe-exit          Disable watchdog on exit from SIGINT/SIGTERM
                            "magic" exit may not be supported by HW/driver
-  
-  -p, --supervisor[=PRIO]  Enable process supervisor, at elevated RT prio
-                           Default RT prio when active: SCHED_RR @98
   
   -V, --version            Display version and exit
   -h, --help               Display this help message and exit
