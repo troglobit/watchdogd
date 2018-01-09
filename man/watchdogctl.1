@@ -25,6 +25,7 @@
 .Op clear
 .Op disable | enable
 .Op loglevel Ar LEVEL
+.Op reload
 .Op reset Op MSEC
 .Op status
 .Op test Op TEST
@@ -59,6 +60,11 @@ Adjust daemon log level: none, err, warn,
 info, debug.
 .\" Change daemon log level, see also
 .\" .Cm debug .
+.It Cm reload
+Reload daemon configuration file, like sending SIGHUP, but the command
+does not return until
+.Nm watchdogd
+has completed.
 .It Cm reset Op MSEC
 Perform system reset, with an optional millisecond delay.  On systems with
 .Xr finit 8 ,
