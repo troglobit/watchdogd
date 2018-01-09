@@ -28,6 +28,7 @@
 #include "supervisor.h"
 
 
+#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev_ctx_t *, int, int, float, float))
 {
 	int rc;
@@ -49,6 +50,7 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev
 
 	return rc;
 }
+#endif
 
 static int reset_cause(uev_ctx_t *ctx, cfg_t *cfg)
 {
