@@ -18,7 +18,7 @@
 #ifndef WDOG_MEMINFO_H_
 #define WDOG_MEMINFO_H_
 
-int meminfo_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit);
+int meminfo_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script);
 
 #endif /* WDOG_MEMINFO_H_ */
 

@@ -19,7 +19,7 @@
 #ifndef WDOG_LOADAVG_H_
 #define WDOG_LOADAVG_H_
 
-int loadavg_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit);
+int loadavg_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script);
 
 #endif /* WDOG_LOADAVG_H_ */
 

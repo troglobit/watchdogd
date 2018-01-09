@@ -21,6 +21,7 @@
 #define PROC_FILE "/proc/meminfo"
 
 static int logmark = 0;
+static char *exec = NULL;
 static uev_t watcher;
 
 /* Default: disabled -- recommended 0.9, 0.95 */
@@ -113,18 +114,18 @@ static void cb(uev_t *w, void *arg, int events)
 		if (level > warning) {
 			if (critical > 0.0 && level > critical) {
 				ERROR("Memory usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
-				if (script_exec("meminfo", 1, level, warning, critical))
+				if (script_exec(exec, "meminfo", 1, level, warning, critical))
 					wdt_forced_reset(w->ctx, getpid(), PACKAGE ":meminfo", 0);
 				return;
 			}
 
 			WARN("Memory use very high, %.2f > %0.2f, possible leak!", level, warning);
-			script_exec("meminfo", 0, level, warning, critical);
+			script_exec(exec, "meminfo", 0, level, warning, critical);
 		}
 	}
 }
 
-int meminfo_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
+int meminfo_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script)
 {
 	if (!T) {
 		INFO("Memory leak monitor disabled.");
@@ -136,6 +137,11 @@ int meminfo_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
 	logmark = mark;
 	warning = warn;
 	critical = crit;
+	if (script) {
+		if (exec)
+			free(exec);
+		exec = strdup(script);
+	}
 
 	uev_timer_stop(&watcher);
 	return uev_timer_init(ctx, &watcher, cb, NULL, 1000, T * 1000);

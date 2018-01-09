@@ -21,6 +21,7 @@
 #include "script.h"
 
 static int logmark = 0;
+static char *exec = NULL;
 static uev_t watcher;
 
 /* Default: disabled -- recommended 0.8, 0.9 */
@@ -91,13 +92,13 @@ static void cb(uev_t *w, void *arg, int events)
 	if (avg > warning) {
 		if (above_watermark(avg, &si)) {
 			ERROR("System load too high, %.2f > %0.2f, rebooting system ...", avg, critical);
-			if (script_exec("loadavg", 1, avg, warning, critical))
+			if (script_exec(exec, "loadavg", 1, avg, warning, critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":loadavg", 0);
 			return;
 		}
 
 		WARN("System load average very high, %.2f > %0.2f!", avg, warning);
-		script_exec("loadavg", 0, avg, warning, critical);
+		script_exec(exec, "loadavg", 0, avg, warning, critical);
 	}
 }
 
@@ -105,7 +106,7 @@ static void cb(uev_t *w, void *arg, int events)
  * Every T seconds we check loadavg
  * First run is after 1 sec on init, then every period seconds
  */
-int loadavg_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
+int loadavg_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script)
 {
 	if (!T) {
 		INFO("Load average monitor disabled.");
@@ -116,6 +117,11 @@ int loadavg_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
 	logmark = mark;
 	warning = warn;
 	critical = crit;
+	if (script) {
+		if (exec)
+			free(exec);
+		exec = strdup(script);
+	}
 
 	uev_timer_stop(&watcher);
 	return uev_timer_init(ctx, &watcher, cb, NULL, 1000, T * 1000);

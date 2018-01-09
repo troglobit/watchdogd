@@ -23,8 +23,7 @@
 #include "wdt.h"
 #include "script.h"
 
-static char *exec   = NULL;
-static pid_t script = 0;
+static char *global_exec = NULL;
 static uev_t watcher;
 
 static void cb(uev_t *w, void *arg, int events)
@@ -32,20 +31,15 @@ static void cb(uev_t *w, void *arg, int events)
 	int status;
 	pid_t pid = 1;
 
-	while (pid > 0) {
-		pid = waitpid(-1, &status, WNOHANG);
-		if (pid == script) {
-			script = 0;
+	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+		/* Script exit OK. */
+		if (WIFEXITED(status))
+			continue;
 
-			/* Script exit OK. */
-			if (WIFEXITED(status))
-				continue;
-
-			/* Script exit status ... */
-			status = WEXITSTATUS(status);
-			if (status)
-				WARN("Script %s returned error: %d", exec, status);
-		}
+		/* Script exit status ... */
+		status = WEXITSTATUS(status);
+		if (status)
+			WARN("Script (PID %d) returned error: %d", pid, status);
 	}
 }
 
@@ -57,7 +51,10 @@ int script_init(uev_ctx_t *ctx, char *script)
 		ERROR("%s is not executable.", script);
 		return -1;
 	}
-	exec = script;
+
+	if (global_exec)
+		free(global_exec);
+	global_exec = strdup(script);
 
 	/* Only set up signal watcher once */
 	if (once) {
@@ -68,7 +65,7 @@ int script_init(uev_ctx_t *ctx, char *script)
 	return 0;
 }
 
-int script_exec(char *nm, int iscrit, double val, double warn, double crit)
+int script_exec(char *exec, char *nm, int iscrit, double val, double warn, double crit)
 {
 	pid_t pid;
 	char warning[5], critical[5], value[5];
@@ -80,8 +77,12 @@ int script_exec(char *nm, int iscrit, double val, double warn, double crit)
 		NULL,
 	};
 
-	if (!exec)
-		return 1;
+	/* Fall back to global setting checker lacks own script */
+	if (!exec) {
+		if (!global_exec)
+			return 1;
+		argv[0] = global_exec;
+	}
 
 	snprintf(value, sizeof(value), "%.2f", val);
 	argv[3] = value;
@@ -98,8 +99,8 @@ int script_exec(char *nm, int iscrit, double val, double warn, double crit)
 		PERROR("Cannot start script %s", exec);
 		return -1;
 	}
+	LOG("Started script %s, PID %d", exec, pid);
 
-	script = pid;
 	return 0;
 }
 

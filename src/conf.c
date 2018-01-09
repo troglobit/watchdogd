@@ -29,7 +29,8 @@
 
 
 #if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
-static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev_ctx_t *, int, int, float, float))
+static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
+		   int (*init)(uev_ctx_t *, int, int, float, float, char *))
 {
 	int rc;
 	cfg_t *sec;
@@ -37,15 +38,17 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect, int (*init)(uev
 	sec = cfg_getnsec(cfg, sect, 0);
 	if (sec) {
 		int period, logmark;
+		char *script;
 		float warn, crit;
 
 		period  = cfg_getint(sec, "interval");
 		logmark = cfg_getbool(sec, "logmark");
 		warn    = cfg_getfloat(sec, "warning");
 		crit    = cfg_getfloat(sec, "critical");
-		rc = init(ctx, period, logmark, warn, crit);
+		script  = cfg_getstr(sec, "script");
+		rc = init(ctx, period, logmark, warn, crit, script);
 	} else {
-		rc = init(ctx, 0, 0, 0.0, 0.0);
+		rc = init(ctx, 0, 0, 0.0, 0.0, NULL);
 	}
 
 	return rc;
@@ -151,6 +154,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
 		CFG_FLOAT("warning",  0.9, CFGF_NONE),
 		CFG_FLOAT("critical", 0.95, CFGF_NONE),
+		CFG_STR  ("script",   NULL, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_opt_t opts[] = {

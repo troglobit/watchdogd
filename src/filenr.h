@@ -18,7 +18,7 @@
 #ifndef WDOG_FILENR_H_
 #define WDOG_FILENR_H_
 
-int filenr_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit);
+int filenr_init (uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script);
 
 #endif /* WDOG_FILENR_H_ */
 

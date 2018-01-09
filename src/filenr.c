@@ -21,6 +21,7 @@
 #define PROC_FILE "/proc/sys/fs/file-nr"
 
 static int logmark = 0;
+static char *exec = NULL;
 static uev_t watcher;
 
 /* Default: disabled -- recommended 0.8, 0.95 */
@@ -66,17 +67,17 @@ static void cb(uev_t *w, void *arg, int events)
 	if (level > warning) {
 		if (critical > 0.0 && level > critical) {
 			ERROR("File descriptor usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
-			if (script_exec("filenr", 1, level, warning, critical))
+			if (script_exec(exec, "filenr", 1, level, warning, critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":filenr", 0);
 			return;
 		}
 
 		WARN("File descriptor use very high, %.2f > %0.2f, possible leak!", level, warning);
-		script_exec("filenr", 0, level, warning, critical);
+		script_exec(exec, "filenr", 0, level, warning, critical);
 	}
 }
 
-int filenr_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
+int filenr_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script)
 {
 	if (!T) {
 		INFO("File descriptor leak monitor disabled.");
@@ -88,6 +89,11 @@ int filenr_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit)
 	logmark = mark;
 	warning = warn;
 	critical = crit;
+	if (script) {
+		if (exec)
+			free(exec);
+		exec = strdup(script);
+	}
 
 	uev_timer_stop(&watcher);
 	return uev_timer_init(ctx, &watcher, cb, NULL, 1000, T * 1000);
