@@ -12,6 +12,10 @@ AC_CONFIG_FILES([Makefile watchdogd.service src/libwdog.pc src/Makefile examples
 #m4_include([m4/local-macros.m4])
 AC_CONFIG_MACRO_DIR([m4])
 
+# Change default prefix, we're usually needed on the first tape
+AC_PREFIX_DEFAULT([])
+
+# Checks for programs.
 AC_PROG_CC
 AC_PROG_LN_S
 AC_PROG_INSTALL
