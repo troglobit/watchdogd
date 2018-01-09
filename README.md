@@ -319,12 +319,11 @@ Build & Install
 ---------------
 
 `watchdogd` is tailored for Linux systems and should build against any
-(old) C libray.  However, `watchdogd` v2.1 and later require two
-external libraries that were previously a built-in, [libite][]
-and [libuEv][].  Neither of them should present any surprises, both use
-de facto standard `configure` scripts and support `pkg-config` which the
-`watchdogd` `configure` script use to locate requried libraries and
-header files.
+(old) C libray.  However, `watchdogd` require threee external libraries:
+[libite][], [libuEv][], and [libConfuse][].  Neither should present any
+surprises, all of them use de facto standard `configure` scripts and
+support `pkg-config`, which the `watchdogd` `configure` script use to
+locate requried libraries and header files.
 
 Hence, the regular `./configure && make` is usually sufficient to build
 `watchdogd`.  But, if libraries are installed in non-standard locations
@@ -377,6 +376,7 @@ more details, see the file [CONTRIBUTING][contrib].
 [original code]:   http://www.mail-archive.com/uclinux-dev@uclinux.org/msg04191.html
 [libite]:          https://github.com/troglobit/libite/
 [libuEv]:          https://github.com/troglobit/libuev/
+[libConfuse]:      https://github.com/martinh/libconfuse/
 [License]:         https://en.wikipedia.org/wiki/ISC_license
 [License Badge]:   https://img.shields.io/badge/License-ISC-blue.svg
 [Travis]:          https://travis-ci.org/troglobit/watchdogd
