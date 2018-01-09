@@ -502,6 +502,15 @@ static void reboot_timeout_cb(uev_t *w, void *arg, int events)
  */
 int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 {
+#ifdef HAVE_FINIT_FINIT_H
+	static int in_progress = 0;
+
+	if (in_progress) {
+		DEBUG("Reboot already in progress, due to supervisor/checker reset.");
+		return 0;
+	}
+#endif
+
 	if (!ctx || !reason)
 		return errno = EINVAL;
 
@@ -513,6 +522,14 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 	/* Save reboot cause */
 	reason->counter = reset_counter + 1;
 	reset_cause_set(reason, pid);
+
+#ifdef HAVE_FINIT_FINIT_H
+	if (!rebooting) {
+		in_progress = 1;
+		kill(1, SIGINT);
+		timeout = 10000;
+	}
+#endif
 
 	if (timeout > 0)
 		return uev_timer_init(ctx, &timeout_watcher, reboot_timeout_cb, NULL, timeout, 0);
