@@ -67,7 +67,7 @@ to query status and control
 .Nm .
 .Bl -tag -width Ds
 .It Fl f, -config Ar FILE
-Use FILE name for configuration.  Default:
+Use FILE for daemon configuration.  Default:
 .Pa /etc/watchdogd.conf
 .It Fl h, -help
 Show summary of command line options and exit.
@@ -112,6 +112,8 @@ Same as TERM
 Force a system reboot.  Systems with Finit use this to reboot.
 .It QUIT
 Same as TERM
+.It HUP
+Reload configuration file
 .It USR1
 Ignored, was used in an earlier version.
 .It USR2
@@ -119,6 +121,8 @@ Same as USR1
 .El
 .Sh FILES
 .Bl -tag -width /var/lib/watchdogd.state -compact
+.It Pa /etc/watchdogd.conf
+Daemon configuration file. Read once when starting up and on SIGHUP.
 .It Pa /var/lib/watchdogd.state
 State pre boot, lists coming (re)boot reason.  Do not rely on the
 contents of this file, it is used by

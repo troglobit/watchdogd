@@ -141,7 +141,7 @@ static int usage(int status)
 	       "Example:\n"
 	       "  %s -T 120 -t 30 /dev/watchdog2\n\n"
                "Options:\n"
-	       "  -f, --config=FILE   Use FILE name for configuration\n"
+	       "  -f, --config=FILE   Use FILE for daemon configuration\n"
                "  -n, --foreground    Start in foreground, background is default\n"
 	       "  -s, --syslog        Use syslog, even if running in foreground\n"
 	       "  -l, --loglevel=LVL  Log level: none, err, warn, notice*, info, debug\n"
