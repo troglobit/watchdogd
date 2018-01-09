@@ -54,7 +54,11 @@ int script_init(uev_ctx_t *ctx, char *script)
 
 	if (global_exec)
 		free(global_exec);
-	global_exec = strdup(script);
+
+	if (script)
+		global_exec = strdup(script);
+	else
+		global_exec = NULL;
 
 	/* Only set up signal watcher once */
 	if (once) {
