@@ -84,9 +84,10 @@ Usage
 -----
 
 ```
-watchdogd [-hnsVx] [-T SEC] [-t SEC] [/dev/watchdog]
+watchdogd [-hnsVx] [-f FILE] [-T SEC] [-t SEC] [/dev/watchdog]
 
 Options:
+  -f, --config=FILE        Use FILE for daemon configuration
   -n, --foreground         Start in foreground (background is default)
   -s, --syslog             Use syslog, even if running in foreground
   -l, --loglevel=LVL       Log level: none, err, info, notice*, debug
