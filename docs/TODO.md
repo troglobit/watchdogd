@@ -7,6 +7,8 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
+* watchdogctl log debug --> log change: "Setting log level debug"
+* Add watchdogctl reload to initiate SIGHUP with feedback when done
 * rename reboot --> reset, reboot is the command
 * When checker reboots, log to syslog as well, RC may be disabled
 
