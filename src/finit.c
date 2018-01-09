@@ -25,10 +25,7 @@
 #include <lite/lite.h>
 #include "wdt.h"
 
-/*
- * Communicate WDT ownership handover to Finit
- */
-int wdt_handover(const char *devnode)
+int wdt_register(void)
 {
 	int sd, rc = -1, retry = 3;
 	size_t len;
@@ -48,7 +45,6 @@ int wdt_handover(const char *devnode)
 	 * Try connecting to Finit, we should get a reply immediately,
 	 * if nobody is at home we close the connection and continue.
 	 */
-	DEBUG("Attempting WDT handover with Finit ...");
 	memset(&sun, 0, sizeof(sun));
 	sun.sun_family = AF_UNIX;
 	strlcpy(sun.sun_path, INIT_SOCKET, sizeof(sun.sun_path));
@@ -75,10 +71,23 @@ int wdt_handover(const char *devnode)
 		goto err;
 
 	if (rq.cmd == INIT_CMD_ACK)
-		rc = open(devnode, O_WRONLY);
+		rc = 0;
 err:
 	close(sd);
+
 	return rc;
+}
+
+/*
+ * Communicate WDT ownership handover to Finit
+ */
+int wdt_handover(const char *devnode)
+{
+	DEBUG("Attempting WDT handover with Finit ...");
+	if (wdt_register())
+		return -1;
+
+	return open(devnode, O_WRONLY);
 }
 
 /**

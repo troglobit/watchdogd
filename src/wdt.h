@@ -89,9 +89,11 @@ extern wdog_reason_t reboot_reason;
 int wdt_init           (uev_ctx_t *ctx, const char *dev);
 int wdt_exit           (uev_ctx_t *ctx);
 
-int wdt_handover       (const char *dev);
 int wdt_open           (const char *dev);
 int wdt_close          (uev_ctx_t *ctx);
+
+int wdt_register       (void);
+int wdt_handover       (const char *dev);
 
 int wdt_capability     (uint32_t flag);
 

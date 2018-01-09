@@ -21,29 +21,6 @@
 #include "rc.h"
 #include "supervisor.h"
 
-#ifndef HAVE_FINIT_FINIT_H
-#define check_handover(devnode)						\
-	return -1;
-#else
-#define check_handover(devnode)						\
-{									\
-	if (EBUSY != errno)						\
-		return -1;						\
-									\
-	/*								\
-	 * If we're called in a system with Finit running, tell it to	\
-	 * disable its built-in watchdog daemon.			\
-	 */								\
-	fd = wdt_handover(devnode);					\
-	if (fd == -1) {							\
-		PERROR("Failed communicating WDT handover with finit");	\
-		return -1;						\
-	}								\
-									\
-	wdt_kick("WDT handover complete.");				\
-}
-#endif
-
 static int fd = -1;
 static char devnode[42] = WDT_DEVNODE;
 static uev_t period_watcher;
@@ -73,8 +50,28 @@ int wdt_open(const char *dev)
 	}
 
 	fd = open(devnode, O_WRONLY);
-	if (fd == -1)
-		check_handover(devnode);
+	if (fd == -1) {
+#ifndef HAVE_FINIT_FINIT_H
+		return -1;
+#else
+		if (EBUSY != errno)
+			return -1;
+
+		/*
+		 * If we're called in a system with Finit running, tell it to
+		 * disable its built-in watchdog daemon.
+		 */
+		fd = wdt_handover(devnode);
+		if (fd == -1) {
+			PERROR("Failed communicating WDT handover with finit");
+			return -1;
+		}
+
+		wdt_kick("WDT handover complete.");
+	} else {
+		wdt_register();
+#endif /* HAVE_FINIT_FINIT_H */
+	}
 
 	memset(&info, 0, sizeof(info));
 	if (!ioctl(fd, WDIOC_GETSUPPORT, &info))
