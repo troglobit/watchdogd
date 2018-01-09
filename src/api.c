@@ -25,6 +25,7 @@ static int     sd = -1;
 static uev_t   watcher;
 
 extern int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req);
+extern const char *__wdog_levellog(int log);
 
 
 /* Client connected to domain socket sent a request */
@@ -33,6 +34,7 @@ static void cmd(uev_t *w, void *arg, int events)
 	int sd;
 	ssize_t num;
 	wdog_t req;
+	const char *tmp;
 
 	sd = accept(w->fd, NULL, NULL);
 	if (-1 == sd) {
@@ -70,8 +72,15 @@ static void cmd(uev_t *w, void *arg, int events)
 		break;
 
 	case WDOG_SET_LOGLEVEL_CMD:
-		loglevel = req.id;
-		setlogmask(LOG_UPTO(loglevel));
+		tmp = __wdog_levellog(req.id);
+		if (!tmp) {
+			req.cmd = WDOG_CMD_ERROR;
+			req.error = EINVAL;
+		} else {
+			LOG("Changing log level %s --> %s", __wdog_levellog(loglevel) , tmp);
+			loglevel = req.id;
+			setlogmask(LOG_UPTO(loglevel));
+		}
 		break;
 
 	case WDOG_GET_LOGLEVEL_CMD:

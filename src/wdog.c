@@ -218,6 +218,16 @@ int __wdog_loglevel(char *level)
 	return atoi(level);
 }
 
+const char *__wdog_levellog(int log)
+{
+	for (int i = 0; prioritynames[i].c_name; i++) {
+		if (prioritynames[i].c_val == log)
+			return prioritynames[i].c_name;
+	}
+
+	return NULL;
+}
+
 int wdog_set_loglevel(char *level)
 {
 	int val;
@@ -236,12 +246,7 @@ char *wdog_get_loglevel(void)
 	if (doit(WDOG_GET_LOGLEVEL_CMD, 0, NULL, 0, (unsigned int *)&val))
 		return NULL;
 
-	for (int i = 0; prioritynames[i].c_name; i++) {
-		if (prioritynames[i].c_val == val)
-			return prioritynames[i].c_name;
-	}
-
-	return NULL;
+	return (char *)__wdog_levellog(val);
 }
 
 int wdog_enable(int enable)
