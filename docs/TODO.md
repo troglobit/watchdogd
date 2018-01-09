@@ -11,7 +11,6 @@ Before Release
   descriptor and memory leaks, e.g. send an SNMP trap or email
 * Add watchdogctl reload to initiate SIGHUP with feedback when done
 * rename reboot --> reset, reboot is the command
-* When checker reboots, log to syslog as well, RC may be disabled
 
 
 General
