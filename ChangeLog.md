@@ -44,7 +44,7 @@ from the daemon.
   customer(s) using `watchdogd` 2.0 with a supervisor patch
 - Added `libwdog` example clients
 - Added customer specific compat `/var/run/supervisor.status`
-- Support for delayed reboot in user API, `wdog_reboot_timeout()`
+- Support for delayed reboot in user API, `wdog_reset_timeout()`
 
 
 [2.0.1][] - 2016-06-12

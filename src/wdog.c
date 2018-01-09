@@ -259,9 +259,9 @@ int wdog_status(int *status)
 	return doit(WDOG_STATUS_CMD, 0, NULL, 0, (unsigned int *)status);
 }
 
-int wdog_reboot(pid_t pid, char *label)
+int wdog_reset(pid_t pid, char *label)
 {
-	return doit(WDOG_REBOOT_CMD, pid, label, 0, NULL);
+	return doit(WDOG_RESET_CMD, pid, label, 0, NULL);
 }
 
 /*
@@ -278,16 +278,16 @@ int wdog_reboot(pid_t pid, char *label)
  * special mode waiting only for SIGTERM.
  *
  * The timeout is the amount of time, in milliseconds, that watchdogd
- * will wait for SIGTERM before exiting and handing over the reboot to
+ * will wait for SIGTERM before exiting and handing over the reset to
  * the WDT.  If SIGTERM is received within timeout no warning is sent to
- * the log and watchdogd simply exits, pending for WDT reboot.
+ * the log and watchdogd simply exits, pending for WDT reset.
  */
-int wdog_reboot_timeout(pid_t pid, char *label, unsigned int timeout)
+int wdog_reset_timeout(pid_t pid, char *label, unsigned int timeout)
 {
-	return doit(WDOG_REBOOT_CMD, pid, label, timeout, NULL);
+	return doit(WDOG_RESET_CMD, pid, label, timeout, NULL);
 }
 
-int wdog_reboot_counter(unsigned int *counter)
+int wdog_reset_counter(unsigned int *counter)
 {
 	if (!counter) {
 		errno = EINVAL;
@@ -297,7 +297,7 @@ int wdog_reboot_counter(unsigned int *counter)
 	return doit(WDOG_RESET_COUNTER_CMD, 0, NULL, 0, counter);
 }
 
-int wdog_reboot_reason(wdog_reason_t *reason)
+int wdog_reset_reason(wdog_reason_t *reason)
 {
 	if (!reason) {
 		errno = EINVAL;
@@ -307,7 +307,7 @@ int wdog_reboot_reason(wdog_reason_t *reason)
 	return doit(WDOG_RESET_CAUSE_CMD, 0, NULL, 0, (unsigned int *)reason);
 }
 
-int wdog_reboot_reason_raw(wdog_reason_t *reason)
+int wdog_reset_reason_raw(wdog_reason_t *reason)
 {
 	if (!reason) {
 		errno = EINVAL;
@@ -317,7 +317,7 @@ int wdog_reboot_reason_raw(wdog_reason_t *reason)
 	return doit(WDOG_RESET_CAUSE_RAW_CMD, 0, NULL, 0, (unsigned int *)reason);
 }
 
-char *wdog_reboot_reason_str(wdog_reason_t *reason)
+char *wdog_reset_reason_str(wdog_reason_t *reason)
 {
 	if (!reason) {
 		errno = EINVAL;
@@ -363,7 +363,7 @@ char *wdog_reboot_reason_str(wdog_reason_t *reason)
 	return "Unknown failure";
 }
 
-int wdog_reboot_reason_clr(void)
+int wdog_reset_reason_clr(void)
 {
 	return doit(WDOG_CLEAR_CAUSE_CMD, -1, NULL, 0, NULL);
 }

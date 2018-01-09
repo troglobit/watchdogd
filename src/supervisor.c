@@ -175,7 +175,7 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 	reason.wid = p->id;
 	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
 	strlcpy(reason.label, p->label, sizeof(reason.label));
-	wdt_reboot(w->ctx, p->pid, &reason, 0);
+	wdt_reset(w->ctx, p->pid, &reason, 0);
 }
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
@@ -251,7 +251,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 
 	case WDOG_RESET_CAUSE_CMD:
 		reason = (wdog_reason_t *)req;
-		*reason = reboot_reason;
+		*reason = reset_reason;
 		break;
 
 	case WDOG_RESET_CAUSE_RAW_CMD:

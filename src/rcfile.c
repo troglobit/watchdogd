@@ -54,7 +54,7 @@ int reset_cause_set(wdog_reason_t *reason, pid_t pid)
 	fp = fopen(state, "w");
 	if (!fp) {
 		PERROR("Failed opening %s to save reset cause %s[%d]: %s",
-		       state, reason->label, pid, wdog_reboot_reason_str(reason));
+		       state, reason->label, pid, wdog_reset_reason_str(reason));
 		return 1;
 	}
 

@@ -93,8 +93,8 @@ static void cmd(uev_t *w, void *arg, int events)
 			wdt_init(w->ctx, NULL);
 		break;
 
-	case WDOG_REBOOT_CMD:
-		if (wdt_forced_reboot(w->ctx, req.id, req.label, req.timeout)) {
+	case WDOG_RESET_CMD:
+		if (wdt_forced_reset(w->ctx, req.id, req.label, req.timeout)) {
 			req.cmd   = WDOG_CMD_ERROR;
 			req.error = errno;
 		}

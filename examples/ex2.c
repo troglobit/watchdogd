@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
 	wdog_get_debug(&id);
 	DEBUG("OK (debug:%d)!", id);
 
-	wdog_reboot_reason(&reason);
-	printf("Reset reason: %s\n", wdog_reboot_reason_str(&reason));
+	wdog_reset_reason(&reason);
+	printf("Reset reason: %s\n", wdog_reset_reason_str(&reason));
 	printf("wid %d, label %s, cause: %d, counter: %u\n",
 	       reason.wid, reason.label, reason.cause, reason.counter);
 

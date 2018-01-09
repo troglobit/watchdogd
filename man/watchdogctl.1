@@ -25,7 +25,7 @@
 .Op clear
 .Op disable | enable
 .Op loglevel Ar LEVEL
-.Op reboot Op MSEC
+.Op reset Op MSEC
 .Op status
 .Op test Op TEST
 .Sh DESCRIPTION
@@ -59,8 +59,12 @@ Adjust daemon log level: none, err, warn,
 info, debug.
 .\" Change daemon log level, see also
 .\" .Cm debug .
-.It Cm reboot Op MSEC
-Reboot system using WDT, with an optional millisecond delay.
+.It Cm reset Op MSEC
+Perform system reset, with an optional millisecond delay.  On systems with
+.Xr finit 8 ,
+.Nm watchdogd
+will ask Finit to do an orderly shutdown (stop services, sync and
+unmount all file systems) before performing the WDT reset.
 .It Cm status
 Query status of daemon and show last reset cause, default command.
 .It Cm test Op TEST

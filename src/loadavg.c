@@ -92,7 +92,7 @@ static void cb(uev_t *w, void *arg, int events)
 		if (above_watermark(avg, &si)) {
 			ERROR("System load too high, %.2f > %0.2f, rebooting system ...", avg, critical);
 			if (script_exec("loadavg", 1, avg, warning, critical))
-				wdt_forced_reboot(w->ctx, getpid(), PACKAGE ":loadavg", 0);
+				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":loadavg", 0);
 			return;
 		}
 

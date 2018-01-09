@@ -54,7 +54,7 @@ static int premature = 0;
 
 static int do_clear(char *arg)
 {
-	return wdog_reboot_reason_clr();
+	return wdog_reset_reason_clr();
 }
 
 static int do_counter(char *arg)
@@ -62,7 +62,7 @@ static int do_counter(char *arg)
 	int rc;
 	unsigned int counter = 0;
 
-	rc = wdog_reboot_counter(&counter);
+	rc = wdog_reset_counter(&counter);
 	if (!rc)
 		printf("%u\n", counter);
 
@@ -103,9 +103,9 @@ static int do_reset(char *arg)
 		msg = arg;
 
 	if (!msg || !msg[0])
-		msg = "*REBOOT*";
+		msg = "*RESET*";
 
-	return wdog_reboot_timeout(0, msg, msec);
+	return wdog_reset_timeout(0, msg, msec);
 }
 
 static int do_reload(char *Arg)
@@ -279,8 +279,8 @@ static int usage(int code)
 	       "  help                 This help text\n"
 //	       "  debug                Toggle watchdogd debug level\n"
 	       "  loglevel LVL         Adjust log level: none, err, warn, notice*, info, debug\n"
-//	       "  force-reset          Forced reset, alias to `reboot 0`\n"
-	       "  reboot [MSEC] [MSG]  Reboot using WDT, optional MSEC (milliseconds) delay\n"
+//	       "  force-reset          Forced reset, alias to `reset 0`\n"
+	       "  reset [MSEC] [MSG]   Perform system reset, optional MSEC (milliseconds) delay\n"
 	       "                       The optional MSG is presented as 'label' on reboot\n"
 	       "  reload               Reload daemon configuration file, like SIGHUP\n"
 	       "  status               Show watchdog and supervisor status, default command\n"
@@ -296,13 +296,13 @@ static int usage(int code)
 	       "  test    [TEST]       Run process supervisor built-in test, see below\n"
 	       "\n"
 	       "Tests:\n"
-	       "  complete-cycle**     Verify subscribe, kick, and unsubscribe (no reboot)\n"
-	       "  disable-enable       Verify WDT disable, and re-enable (no reboot)\n"
-	       "  false-ack            Verify kick with invalid ACK (reboot)\n"
-	       "  false-unsubscribe    Verify unsubscribe with invalid ACK (reboot)\n"
-	       "  failed-kick          Verify reboot on missing kick (reboot)\n"
-	       "  no-kick              Verify reboot on missing first kick (reboot)\n"
-	       "  premature-trigger    Verify no premature trigger before unsubscribe (reboot)\n"
+	       "  complete-cycle**     Verify subscribe, kick, and unsubscribe (no reset)\n"
+	       "  disable-enable       Verify WDT disable, and re-enable (no reset)\n"
+	       "  false-ack            Verify kick with invalid ACK (reset)\n"
+	       "  false-unsubscribe    Verify unsubscribe with invalid ACK (reset)\n"
+	       "  failed-kick          Verify reset on missing kick (reset)\n"
+	       "  no-kick              Verify reset on missing first kick (reset)\n"
+	       "  premature-trigger    Verify no premature trigger before unsubscribe (reset)\n"
 #endif /* SUPERVISOR_TESTS_DISABLED */
 	       "____\n"
 	       "*  default log level\n"
@@ -334,10 +334,11 @@ int main(int argc, char *argv[])
 		{ "counter",           do_counter,   NULL },
 		{ "disable",           do_enable,    "0"  },
 		{ "enable",            do_enable,    "1"  },
-		{ "force-reset",       do_reset,     NULL },
 		{ "help",              show_usage,   NULL },
 		{ "loglevel",          set_loglevel, NULL },
 		{ "reboot",            do_reset,     NULL },
+		{ "reset",             do_reset,     NULL },
+		{ "force-reset",       do_reset,     NULL },
 		{ "reload",            do_reload,    NULL },
 		{ "status",            show_status,  NULL },
 #ifndef SUPERVISOR_TESTS_DISABLED

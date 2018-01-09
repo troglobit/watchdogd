@@ -80,7 +80,7 @@ static void reboot_cb(uev_t *w, void *arg, int events)
 		timeout = 10000;
 
 	/* XXX: A future version may try to figure out PID of sender */
-	wdt_forced_reboot(w->ctx, 1, (char *)arg, timeout);
+	wdt_forced_reset(w->ctx, 1, (char *)arg, timeout);
 }
 
 static void reload_cb(uev_t *w, void *arg, int events)

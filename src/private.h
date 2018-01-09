@@ -40,7 +40,7 @@
 #define WDOG_GET_DEBUG_CMD          5
 #define WDOG_ENABLE_CMD             10
 #define WDOG_STATUS_CMD             11
-#define WDOG_REBOOT_CMD             12
+#define WDOG_RESET_CMD              12
 #define WDOG_RESET_CAUSE_CMD        13
 #define WDOG_RESET_CAUSE_RAW_CMD    14
 #define WDOG_CLEAR_CAUSE_CMD        15

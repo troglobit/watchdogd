@@ -51,13 +51,13 @@ char *wdog_get_loglevel     (void);
 int   wdog_enable           (int enable);   /* Attempt to temp. disable */
 int   wdog_status           (int *status);  /* Check if enabled */
 
-int   wdog_reboot           (int pid, char *label);
-int   wdog_reboot_timeout   (int pid, char *label, unsigned int timeout);
-int   wdog_reboot_counter   (unsigned int *counter);
-int   wdog_reboot_reason    (wdog_reason_t *reason);
-int   wdog_reboot_reason_raw(wdog_reason_t *reason);
-char *wdog_reboot_reason_str(wdog_reason_t *reason);
-int   wdog_reboot_reason_clr(void);
+int   wdog_reset            (int pid, char *label);
+int   wdog_reset_timeout    (int pid, char *label, unsigned int timeout);
+int   wdog_reset_counter    (unsigned int *counter);
+int   wdog_reset_reason     (wdog_reason_t *reason);
+int   wdog_reset_reason_raw (wdog_reason_t *reason);
+char *wdog_reset_reason_str (wdog_reason_t *reason);
+int   wdog_reset_reason_clr (void);
 
 int   wdog_ping             (void);
 int   wdog_reload           (void);

@@ -37,7 +37,7 @@ static inline void wdog_forced_reset(char *label)
 	if (!label || !label[0])
 		label = "XBAD_LABEL";
 
-	if (wdog_reboot(getpid(), label)) {
+	if (wdog_reset(getpid(), label)) {
 		/*
 		 * Fallback handling in case API fails, the user expects
 		 * a reboot now.  Try an orderly reboot first simulating
@@ -50,22 +50,22 @@ static inline void wdog_forced_reset(char *label)
 
 static inline int wdog_get_reason(wdog_reason_t *reason)
 {
-	return wdog_reboot_reason(reason);
+	return wdog_reset_reason(reason);
 }
 
 static inline int wdog_get_reason_raw(wdog_reason_t *reason)
 {
-	return wdog_reboot_reason_raw(reason);
+	return wdog_reset_reason_raw(reason);
 }
 
 static inline char *wdog_get_reason_str(wdog_reason_t *reason)
 {
-	return wdog_reboot_reason_str(reason);
+	return wdog_reset_reason_str(reason);
 }
 
 static inline int wdog_clear_reason(void)
 {
-	return wdog_reboot_reason_clr();
+	return wdog_reset_reason_clr();
 }
 
 static inline int wdog_pmon_ping(void)

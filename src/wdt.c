@@ -27,8 +27,8 @@ static uev_t period_watcher;
 static uev_t timeout_watcher;
 static struct watchdog_info info;
 
-/* Actual reboot reason as read at boot, reported by supervisor API */
-wdog_reason_t reboot_reason;
+/* Actual reset reason as read at boot, reported by supervisor API */
+wdog_reason_t reset_reason;
 
 /* Reset cause */
 wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
@@ -261,7 +261,7 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 	fprintf(fp, WDT_REASON_WID ": %d\n", r->wid);
 	fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
 	fprintf(fp, WDT_REASON_CSE ": %d\n", r->cause);
-	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reboot_reason_str(r));
+	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reset_reason_str(r));
 
 	return fclose(fp);
 }
@@ -333,11 +333,11 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 	 * recreating the status file(s).
 	 */
 	if (fexist(status)) {
-		load_bootstatus(status, &reboot_reason, &pid);
-		reset_cause   = reboot_reason.cause;
-		reset_counter = reboot_reason.counter;
+		load_bootstatus(status, &reset_reason, &pid);
+		reset_cause   = reset_reason.cause;
+		reset_counter = reset_reason.counter;
 
-		return create_bootstatus(status, &reboot_reason, cause, timeout, interval, pid);
+		return create_bootstatus(status, &reset_reason, cause, timeout, interval, pid);
 	}
 
 	memset(&reason, 0, sizeof(reason));
@@ -358,7 +358,7 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 	}
 
 	if (!create_bootstatus(status, &reason, cause, timeout, interval, pid))
-		memcpy(&reboot_reason, &reason, sizeof(reboot_reason));
+		memcpy(&reset_reason, &reason, sizeof(reset_reason));
 
 	/*
 	 * Prepare for power-loss or otherwise uncontrolled reset
@@ -372,7 +372,7 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 	if (wdt_testmode())
 		return 0;
 
-	return compat_supervisor(&reboot_reason);
+	return compat_supervisor(&reset_reason);
 }
 
 int wdt_get_bootstatus(void)
@@ -500,7 +500,7 @@ static void reboot_timeout_cb(uev_t *w, void *arg, int events)
  * most likely /var/lib/misc/watchdogd.state -- see the FHS for details
  * http://www.pathname.com/fhs/pub/fhs-2.3.html#VARLIBVARIABLESTATEINFORMATION
  */
-int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
+int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 {
 #ifdef HAVE_FINIT_FINIT_H
 	static int in_progress = 0;
@@ -538,7 +538,7 @@ int wdt_reboot(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 }
 
 /* timeout is in milliseconds */
-int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
+int wdt_forced_reset(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 {
 	wdog_reason_t reason;
 
@@ -546,7 +546,7 @@ int wdt_forced_reboot(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 	reason.cause = WDOG_FORCED_RESET;
 	strlcpy(reason.label, label, sizeof(reason.label));
 
-	return wdt_reboot(ctx, pid, &reason, timeout);
+	return wdt_reset(ctx, pid, &reason, timeout);
 }
 
 
