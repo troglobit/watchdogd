@@ -70,13 +70,14 @@ driver).  If `watchdogd` is stopped, or does not get enough CPU time to
 run, the WDT will detect this and reboot the system.  This is the normal
 mode of operation.
 
-However, with few command line options it can also monitor other aspect
-of the system, such as:
+However, with a few lines in `/etc/watchdogd.conf`, it can also monitor
+other aspects of the system, such as:
 
 - Load average
 - Memory leaks
 - File descriptor leaks
 - Process live locks
+- Reset counter, for snmpEngineBoots (RFC 2574)
 
 
 Usage
@@ -188,6 +189,31 @@ called pmon).  It must be enabled and a monitored client must connect to
 it using the libwdog API for the supervisor to start.  As soon as it
 starts it raises the real-time priority of `watchdogd` to 98 to be able
 to ensure proper superivison of its clients.
+
+```
+supervisor {
+    enabled = true
+    priority = 98
+}
+```
+
+[See below][#libwdog-api] for details on how to have your process
+internal deadlines be supervised.
+
+When a process fails to meet its deadlines, or a monitor plugin reaches
+critical level, `watchdogd` initiates a controlled reset.  To see the
+reset cause after reboot, the following section must be enabled in the
+`/etc/watchdogd.conf` file:
+
+```
+reset-cause {
+    enabled = true
+#	file    = /var/lib/watchdogd.state
+}
+```
+
+The `file` setting is optional, the default is usually sufficient, but
+make sure the destination directory is writable if you change it.
 
 
 libwdog API
