@@ -14,10 +14,16 @@ if [ $? -eq 0 ]; then
     echo "Test FAIL! (1)"
     exit 1
 fi
+
+cat <<EOF >/tmp/watchdogd.conf
+supervisor {
+  enabled = true
+}
+EOF
 sleep 1
 
 echo "Starting watchdogd ..."
-./src/watchdogd $ARGD -n -p --test-mode &
+./src/watchdogd $ARGD -n -f /tmp/watchdogd.conf --test-mode &
 WDOG=$!
 sleep 5
 
@@ -33,6 +39,9 @@ if [ $result -ne 0 ]; then
     echo "Test FAIL! (2)"
     exit 1
 fi
+
+# Clean up a bit
+rm /tmp/watchdogd.conf
 
 echo "Test OK!"
 exit 0
