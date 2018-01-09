@@ -7,6 +7,7 @@ Monitor the health of the system and its processes.
 Before Release
 --------------
 
+* Install default `watchdogd.conf`
 * Allow script per monitor plugin, may want to run a script on file
   descriptor and memory leaks, e.g. send an SNMP trap or email
 * watchdogctl log debug --> log change: "Setting log level debug"
