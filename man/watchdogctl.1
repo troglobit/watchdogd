@@ -44,6 +44,7 @@ Show version information.
 Show help message.
 .El
 .Sh COMMANDS
+Short forms of the below commands are allowed, as long as it is unique.
 .Bl -tag -width Ds
 .It Cm clear
 Clear reset cause.
@@ -66,6 +67,9 @@ Reload daemon configuration file, like sending SIGHUP, but the command
 does not return until
 .Nm watchdogd
 has completed.
+.It Cm reboot Op MSEC
+Alias to
+.Cm reset .
 .It Cm reset Op MSEC
 Perform system reset, with an optional millisecond delay.  On systems with
 .Xr finit 8 ,
@@ -75,8 +79,9 @@ unmount all file systems) before performing the WDT reset.
 .It Cm status
 Query status of daemon and show last reset cause, default command.
 .It Cm test Op TEST
-Run built-in tests of process supervisor functionality in daemon.  This
-can be disabled at build time, so may not be available in the installed
+Run built-in tests of process supervisor functionality in daemon.  These
+tests can be disabled at build time, so they may not be available in the
+installed
 .Nm .
 The default test, if none is selected, runs the complete cycle.  You may
 want to run these tests with the
