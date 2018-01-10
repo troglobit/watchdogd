@@ -4,7 +4,7 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[3.0][] - 2017-10-XX
+[3.0][] - 2018-01-xx
 --------------------
 
 This release includes major changes to both the build system and the
@@ -18,16 +18,26 @@ Reset cause is now queried and saved in `/var/lib/watchdogd.state` at
 boot.  Use the new `watchdogctl` tool to interact with and query status
 from the daemon.
 
+A configuration file, `/etc/watchdogd.conf`, with many more options for
+the health monitor plugins, the process supervisor, and the reset cause.
+
 ### Changes
-- Added `watchdogctl` tool to interact with daemon
-- New official Watch Dog Detective logo, courtesy of Ron Leishman
+- A configuration file, `/etC/watchdogd.conf`, has been added
+- A new tool, `watchdogctl`, to interact with daemon has been added
+- New official Watch Dog Detective logo, courtesy of Ron Leishman,
+  licensed for use with the watchdogd project
+- New or updated manual pages for daemon, ctrl tool, and the .conf file
+- Health monitor plugins now support running external script instead of
+  default reboot action
+- Health monitor plugins no longer need critical/reboot level set, only
+  warning is required to enable a monitor
 - Completely overhauled `watchdogd` command line options and arguments.
   Some options in previous releases were not options but optional
   arguments, while others were useless options for a daemon:
   - Watchdog device node is now an argument not a `-d` option
   - No more `--logfile=FILE` option, redirect `stderr` instead
   - `-n` now prevents the daemon from forking to the background
-  - `-f` is now used by the `--filenr` monitor plugin
+  - `-f` is now used by the `--config` file option
   - When running in the foreground, output syslog also to `stderr`,
     unless the `-s`, or `--syslog`, option is given
   - `-l, --loglevel` replaces `--verbose` option
@@ -36,8 +46,10 @@ from the daemon.
 - No more support for attaching an external supervisor process using
   `SIGUSR1` and `SIGUSR2`
 - Conversion to GNU Configure and Build system
+- Default install prefix changed, from `/usr/local` to `/`
 - Added `pkg-config` support to `libwdog`
-- Save reset cause in `/var/lib/watchdogd.state` by default
+- Save reset cause in `/var/lib/watchdogd.state`, by default disabled
+  enable with the .conf file
 - Possible to disble default reset cause backend and plug in your own.
   See `src/rc.h` for the API required of your own backend
 - Updates to `libwdog` API, including a compatiblity mode for current
@@ -45,6 +57,10 @@ from the daemon.
 - Added `libwdog` example clients
 - Added customer specific compat `/var/run/supervisor.status`
 - Support for delayed reboot in user API, `wdog_reset_timeout()`
+- Fully integrated with Finit, PID 1.  Both `reboot(1)` and reset via
+  `watchdogd`, e.g. `watchdogctl reset`, is delegated via Finit to
+  properly shut down the system, sync and unmount all file systems
+  before delegating the actual reset to the WDT.
 
 
 [2.0.1][] - 2016-06-12
@@ -117,9 +133,3 @@ support for process monitoring with an instrumentation API.
 [2.0.1]:      https://github.com/troglobit/watchdogd/compare/2.0...2.0.1
 [2.0]:        https://github.com/troglobit/watchdogd/compare/1.6...2.0
 [1.6]:        https://github.com/troglobit/watchdogd/compare/1.5...1.6
-
-<!--
-  -- Local Variables:
-  -- mode: markdown
-  -- End:
-  -->
