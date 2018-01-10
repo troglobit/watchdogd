@@ -109,6 +109,10 @@ Show program version.
 .El
 .Sh FILES
 .Bl -tag -width /run/watchdogd.status -compact
+.It Pa /etc/watchdogd.conf
+Daemon configuration file. Read once when starting up and on SIGHUP or
+.Cm reload
+command.
 .It Pa /run/watchdogd.status
 Read to present WDT status and reset cause
 .It Pa /run/watchdogd.sock
@@ -117,6 +121,7 @@ Used to connect to
 .El
 .Sh SEE ALSO
 .Xr watchdogd 8
+.Xr watchdogd.conf 5
 .Sh AUTHORS
 .Nm watchdogd
 is an improved version of the original, created by Michele d'Amico and
