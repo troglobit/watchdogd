@@ -24,9 +24,11 @@ Introduction
 ------------
 
 `watchdogd(8)` is an advanced system and process supervisor daemon,
-primarily intended for embedded Linux and server systems.  It monitors
-critical system resources, supervises the heartbeat of processes,
-records deadline transgressions, and resets the system if needed.
+primarily intended for embedded Linux and server systems.  By default it
+periodically kicks the system watchdog timer (WDT) to prevent it from
+resetting the system.  In its more advanced guise it monitors critical
+system resources, supervises the heartbeat of processes, records
+deadline transgressions, and initiates a controlled reset if needed.
 
 When a system comes back up after a reset, `watchdogd` determines the
 reset cause and records it in a file for later analysis by an operator
@@ -70,8 +72,8 @@ driver).  If `watchdogd` is stopped, or does not get enough CPU time to
 run, the WDT will detect this and reboot the system.  This is the normal
 mode of operation.
 
-However, with a few lines in `/etc/watchdogd.conf`, it can also monitor
-other aspects of the system, such as:
+With a few lines in `/etc/watchdogd.conf`, it can also monitor other
+aspects of the system, such as:
 
 - Load average
 - Memory leaks
@@ -101,23 +103,15 @@ Options:
   -h, --help               Display this help message and exit
 ```
 
-By default, with any arguments given on the command line, `watchdogd`
-opens `/dev/watchdog`, forks to the background and then tries to to set
-a 20 sec WDT timeout.  It then kicks every 10 sec.  See below, in the
-Operation section, for more information.
+Without any arguments, `watchdogd` opens `/dev/watchdog`, forks to the
+background, tries to to set a 20 sec WDT timeout, and then kicks every
+10 sec.  See the [Operation](#operation) section for more information.
 
 **Example**
 
 ```shell
 watchdogd -T 120 -t 30 /dev/watchdog2
 ```
-
-Most WDT drivers only support 120 sec as lowest timeout, but `watchdogd`
-tries to set 20 sec timeout.  Example values above are recommendations.
-
-`watchdogd` runs at the default UNIX priority (nice) level, unless the
-process monitor is activated, in which case it runs at an elevated real
-time priority.
 
 
 Features
@@ -137,7 +131,7 @@ monitoring can be enabled with:
 loadavg {
     interval = 300       # Every 5 mins
     warning  = 1.5
-	critical = 2.0
+    critical = 2.0
 }
 ```
 
@@ -147,7 +141,7 @@ Second, the memory leak detector, a value of 1.0 means 100% memory use:
 meminfo {
     interval = 3600       # Every hour
     warning  = 0.9
-	critical = 0.95
+    critical = 0.95
 }
 ```
 
@@ -157,7 +151,7 @@ Third, file descriptor leak detector:
 filenr {
     interval = 3600       # Every hour
     warning  = 0.8
-	critical = 0.95
+    critical = 0.95
 }
 ```
 
@@ -209,7 +203,7 @@ reset cause after reboot, the following section must be enabled in the
 ```
 reset-cause {
     enabled = true
-#	file    = /var/lib/watchdogd.state
+#   file    = /var/lib/watchdogd.state
 }
 ```
 
@@ -293,17 +287,20 @@ Operation
 
 By default, `watchdogd` forks off a daemon in the background, opens the
 `/dev/watchdog` device, attempts to set the default WDT timeout to 20
-seconds and then goes into an endless loop where it kicks the watchdog
-every 10 seconds.
+seconds, and then enters its main loop where it kicks the watchdog every
+10 seconds.
 
-If a device driver does not support setting the WDT timeout, `watchdogd`
+If a WDT device driver does not support setting the timeout, `watchdogd`
 attempts to query the actual (possibly hard coded) watchdog timeout and
 then uses half that time as the kick interval.
 
-When `watchdogd` backgrounds itself syslog is implicitly used for all
+When `watchdogd` backgrounds itself, syslog is implicitly used for all
 informational and debug messages.  If a user requests to run the daemon
 in the foreground `watchdogd` will also log to `STDERR` and `STDOUT`,
 unless the user gives the `--syslog` argument to force use of syslog.
+
+The `/etc/watchdogd.conf` file and the command line control toool
+`watchdogctl` can be used to enable more features and query status.
 
 
 Debugging
@@ -314,6 +311,9 @@ everywhere.  Use the `--loglevel=debug` command line option to enable
 full debug output to stderr or the syslog, depending on how you start
 `watchdogd`.  The default log level is `notice`, which enables `LOG()`,
 `WARN()` and error messages.
+
+The `watchdogctl debug` command can be used at runtime to enable the
+debug log level, without having to restart a running daemon.
 
 
 Build & Install
