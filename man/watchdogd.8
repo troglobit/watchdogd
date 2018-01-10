@@ -122,7 +122,10 @@ Same as USR1
 .Sh FILES
 .Bl -tag -width /var/lib/watchdogd.state -compact
 .It Pa /etc/watchdogd.conf
-Daemon configuration file. Read once when starting up and on SIGHUP.
+Daemon configuration file. Read once when starting up and on SIGHUP or
+.Cm reload
+command from
+.Xr watchdogctl 1 .
 .It Pa /var/lib/watchdogd.state
 State pre boot, lists coming (re)boot reason.  Do not rely on the
 contents of this file, it is used by
@@ -148,6 +151,7 @@ to connect to
 .El
 .Sh SEE ALSO
 .Xr watchdogctl 1
+.Xr watchdogd.conf 5
 .Sh AUTHORS
 .Nm
 is an improved version of the original, created by Michele d'Amico and
