@@ -113,6 +113,23 @@ static int do_reload(char *Arg)
 	return wdog_reload();
 }
 
+static int do_debug(char *arg)
+{
+	int result;
+
+	arg = wdog_get_loglevel();
+	if (string_compare("notice", arg))
+		arg = "debug";
+	else
+		arg = "notice";
+
+	result = wdog_set_loglevel(arg);
+	if (verbose)
+		printf("loglevel: %s\n", wdog_get_loglevel());
+
+	return result;
+}
+
 static int set_loglevel(char *arg)
 {
 	int result;
@@ -277,7 +294,7 @@ static int usage(int code)
 	       "\n"
 	       "Commands:\n"
 	       "  help                 This help text\n"
-//	       "  debug                Toggle watchdogd debug level\n"
+	       "  debug                Toggle watchdogd debug level (notice <--> debug)\n"
 	       "  loglevel LVL         Adjust log level: none, err, warn, notice*, info, debug\n"
 //	       "  force-reset          Forced reset, alias to `reset 0`\n"
 	       "  reset [MSEC] [MSG]   Perform system reset, optional MSEC (milliseconds) delay\n"
@@ -335,6 +352,7 @@ int main(int argc, char *argv[])
 		{ "disable",           do_enable,    "0"  },
 		{ "enable",            do_enable,    "1"  },
 		{ "help",              show_usage,   NULL },
+		{ "debug",             do_debug,     NULL },
 		{ "loglevel",          set_loglevel, NULL },
 		{ "reboot",            do_reset,     NULL },
 		{ "reset",             do_reset,     NULL },

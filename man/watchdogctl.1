@@ -24,6 +24,7 @@
 .Op Fl hvV
 .Op clear
 .Op disable | enable
+.Op debug
 .Op loglevel Ar LEVEL
 .Op reload
 .Op reset Op MSEC
@@ -48,10 +49,10 @@ Show help message.
 Clear reset cause.
 .It Cm counter
 Show reset counter, number of reboots since power-on.
-.\" .It Cm debug
-.\" Toggle daemon debug log level.  See also the
-.\" .Cm log
-.\" command.
+.It Cm debug
+Toggle daemon debug log level.  See also the
+.Cm loglevel
+command.
 .It Cm disble | enable
 Temporarily disable, or enable, daemon.
 .It Cm loglevel Ar LEVEL
