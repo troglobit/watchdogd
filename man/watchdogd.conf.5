@@ -1,0 +1,228 @@
+.\"
+.\" Copyright (c) 2018  Joachim Nilsson <troglobit@gmail.com>
+.\"
+.\" Permission to use, copy, modify, and/or distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd Jan 10, 2018
+.Dt WATCHDOGD 5 SMM
+.Os
+.Sh NAME
+.Nm watchdogd.conf
+.Nd watchdogd configuration file
+.Sh DESCRIPTION
+The default
+.Xr watchdogd 8
+use-case does not require a configuration file.  However, enabling a
+health monitor plugin or the process supervisor is done using
+.Pa /etc/watchdogd.conf .
+.Pp
+.Sy Warning:
+do not set the below WDT timeout and kick interval too low.  The daemon
+(usually) runs as a regular
+.Ql SCHED_OTHER
+background task and the monitor plugins (as well as your other services)
+need CPU time as well.
+.Sh SYNTAX
+This file is a standard UNIX .conf file with sub-sections and '=' for
+assignment.  The '#' character marks start of a comment to end of line,
+and the '\\' character can be used as an escape character.  Whitesapce
+is ignored, unless inside a string.
+.Pp
+.Bl -tag -width TERM
+.It Cm timeout = Ar SEC
+The WDT timeout before reset.  Default: 20 sec.
+.It Cm interval = Ar SEC
+The kick interval, i.e. how often
+.Xr watchdogd 8
+should reset the WDT timer.  Default: 10 sec
+.It Cm safe-exit = Ar true | false
+With safe-exit enabled (true) the daemon will ask the driver disable the
+WDT before exiting (SIGINT).  However, some WDT drivers (or HW) may not
+support this.  Default: disabled
+.It Cm supervisor Ar {}
+Instrumented processes can have their main loop supervised.  Processes
+subscribe to this service using the libwdog API, see the docs for more
+on this, at which point
+.Nm watchdogd
+switches to
+.Ql SCHED_RR
+with the below elevated realtime priority.  When the last process
+unsubscribes the daemon reverts back to
+.Ql SCHED_OTHER .
+.Pp
+.Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable supervisor, default: disabled
+.It Cm priority = Ar NUM
+The realtime priorty.  Default: 98
+.El
+.It Cm reset-cause Ar {}
+This section controls the reset cause \& reset counter.  By default this
+is disabled, since not all systems allow writing to disk, e.g. embedded
+systems using MTD devices with limited number of write cycles.
+.Pp
+Another backend can be implemented and linked to the daemon, but make
+sure to
+.Ql --disable-rcfile
+with the configure script first.
+.Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable storing reset cause, default: disabled
+.It Cm file = Ar "/var/lib/watchdogd.state"
+The default file setting is a non-volatile path, according to the FHS.
+It can be changed to another location, but make sure that location is
+writable first.
+.El
+.It Cm script = Ar "/path/to/script.sh"
+Script or command to run instead of reboot when a monitor plugin reaches
+any of its critical or warning level.  Setting this will disable the
+default reboot action on critical, it is therefore up to the script to
+peform reboot, if needed.  The script is called as:
+.Bd -unfilled -offset indent
+script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
+.Ed
+.Pp
+Health monitor plugins also have their own local script setting.
+.It Cm filenr Ar {}
+Monitors file desriptor leaks based on
+.Ql /proc/sys/fs/file-nr .
+.Bl -tag -width TERM
+.It Cm interval = Ar SEC
+Poll interval, default: 300 sec
+.It Cm logmark = Ar true | false
+Log current stats every poll interval.  Default: disabled
+.It Cm warning = Ar LEVEL
+High watermark level, alert sent to log.
+.It Cm critical = Ar LEVEL
+Critical watermark level, alert sent to log, followed by reboot or
+script action.
+.It Cm script = Ar "/path/to/filenr-script.sh"
+If the global
+.Ql script
+setting is not enough, this is a per-monitor script setting.  It is
+called in the same way as the global script, same arguments.
+.El
+.It Cm loadavg Ar {}
+Monitors load average based on
+.Xr sysinfo 2
+from
+.Ql /proc/loadavg .
+The trigger level for warning and critical watermarks is composed from
+the average of the 1 and 5 min marks.
+.Pp
+.Sy Note:
+load average is a blunt instrument and highly use-case dependent.  Peak
+loads of 16.00 on an 8 core system may be responsive and still useful
+but 2.00 on a 2 core system may be completely bogged down.  Read up on
+the subject and test your system before enabling the critical level.
+.Bl -tag -width TERM
+.It Cm interval = Ar SEC
+Poll interval, default: 300 sec
+.It Cm logmark = Ar true | false
+Log current stats every poll interval.  Default: disabled
+.It Cm warning = Ar LEVEL
+High watermark level, alert sent to log.
+.It Cm critical = Ar LEVEL
+Critical watermark level, alert sent to log, followed by reboot or
+script action.
+.It Cm script = Ar "/path/to/loadavg-script.sh"
+If the global
+.Ql script
+setting is not enough, this is a per-monitor script setting.  It is
+called in the same way as the global script, same arguments.
+.El
+.It Cm meminfo Ar {}
+Monitors free RAM based on data from
+.Ql /proc/meminfo .
+.Bl -tag -width TERM
+.It Cm interval = Ar SEC
+Poll interval, default: 300 sec
+.It Cm logmark = Ar true | false
+Log current stats every poll interval.  Default: disabled
+.It Cm warning = Ar LEVEL
+High watermark level, alert sent to log.
+.It Cm critical = Ar LEVEL
+Critical watermark level, alert sent to log, followed by reboot or
+script action.
+.It Cm script = Ar "/path/to/meminfo-script.sh"
+If the global
+.Ql script
+setting is not enough, this is a per-monitor script setting.  It is
+called in the same way as the global script, same arguments.
+.El
+.El
+.Sh EXAMPLE
+.Bd -unfilled -offset indent
+### /etc/watchdogd.conf
+timeout   = 20
+interval  = 10
+safe-exit = false
+
+supervisor {
+    enabled  = false
+    priority = 98
+}
+
+reset-cause {
+    enabled = false
+#    file    = "/var/lib/watchdogd.state"
+}
+
+### Checkers/Monitors ##################################################
+#
+# Script or command to run instead of reboot when a monitor plugin
+# reaches any of its critical or warning level.  Setting this will
+# disable the built-in reboot on critical, it is therefore up to the
+# script to peform reboot, if needed.  The script is called as:
+#
+#    script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
+#
+#script = "/path/to/script.sh"
+
+# Monitors file desriptor leaks based on /proc/sys/fs/file-nr
+filenr {
+    interval = 300
+    logmark  = false
+    warning  = 0.9
+    critical = 0.95
+#    script = "/path/to/filenr-script.sh"
+}
+
+# Monitors load average based on sysinfo() from /proc/loadavg
+# The level is composed from the average of the 1 and 5 min marks.
+loadavg {
+    interval = 300
+    logmark  = false
+    warning  = 1.0
+    critical = 2.0
+#    script = "/path/to/loadavg-script.sh"
+}
+
+# Monitors free RAM based on data from /proc/meminfo
+meminfo {
+    interval = 300
+    logmark  = false
+    warning  = 0.9
+    critical = 0.95
+#    script = "/path/to/meminfo-script.sh"
+}
+.Ed
+.Sh SEE ALSO
+.Xr watchdogd 8
+.Xr watchdoctl 1
+.Sh AUTHORS
+.Nm
+is an improved version of the original, created by Michele d'Amico and
+adapted to uClinux-dist by Mike Frysinger.  It is maintained by Joachim
+Nilsson at
+.Lk https://github.com/troglobit/watchdogd "GitHub" .
