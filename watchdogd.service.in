@@ -1,15 +1,15 @@
 [Unit]
 Description=Advanced watchdog daemon
-Documentation=man:watchdogd(8) man:watchdogctl(1)
+Documentation=man:watchdogd(8) man:watchdogctl(1) man:watchdogd.conf(5)
 Documentation=file:@DOCDIR@/README.md
-Documentation=http://github.com/troglobit/watchdogd
+Documentation=https://github.com/troglobit/watchdogd
 Documentation=http://troglobit.com/project/watchdogd
 
 [Service]
 Type=simple
 Restart=always
 RestartSec=3
-ExecStart=@SBINDIR@/watchdogd -n -s -a 0.9 -f 0.9 -m 0.9
+ExecStart=@SBINDIR@/watchdogd -nsx
 
 [Install]
 WantedBy=multi-user.target
