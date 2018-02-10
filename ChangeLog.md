@@ -4,7 +4,7 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[3.0][] - 2018-01-xx
+[3.0][] - 2018-02-10
 --------------------
 
 This release includes major changes to both the build system and the
@@ -22,7 +22,7 @@ A configuration file, `/etc/watchdogd.conf`, with many more options for
 the health monitor plugins, the process supervisor, and the reset cause.
 
 ### Changes
-- A configuration file, `/etC/watchdogd.conf`, has been added
+- A configuration file, `/etc/watchdogd.conf`, has been added
 - A new tool, `watchdogctl`, to interact with daemon has been added
 - New official Watch Dog Detective logo, courtesy of Ron Leishman,
   licensed for use with the watchdogd project
@@ -46,6 +46,7 @@ the health monitor plugins, the process supervisor, and the reset cause.
 - No more support for attaching an external supervisor process using
   `SIGUSR1` and `SIGUSR2`
 - Conversion to GNU Configure and Build system
+- Native support for building Debian packages
 - Default install prefix changed, from `/usr/local` to `/`
 - Added `pkg-config` support to `libwdog`
 - Save reset cause in `/var/lib/watchdogd.state`, by default disabled
