@@ -1,6 +1,10 @@
 autoreconf.*
+tmp/*
 debhelper-build-stamp
 files
+libwdog*.log
+libwdog*.substvars
+libwdog*/
 watchdogd.debhelper.log
 watchdogd.post*
 watchdogd.pre*
