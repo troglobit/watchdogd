@@ -2,7 +2,7 @@ AM_CFLAGS           = -W -Wall -Wextra -Wno-unused-parameter -std=gnu99
 AM_CPPFLAGS         = -DSYSCONFDIR=\"@sysconfdir@\"
 bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
-watchdogd_SOURCES   = watchdogd.c			\
+watchdogd_SOURCES   = watchdogd.c	private.h	\
 		      wdt.c		wdt.h		\
 		      api.c		api.h		\
 		      conf.c		conf.h		\
@@ -21,7 +21,7 @@ if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c		meminfo.h
 endif
 if RCFILE
-watchdogd_SOURCES  += rcfile.c
+watchdogd_SOURCES  += rcfile.c		rc.h
 endif
 
 watchdogd_CFLAGS    = $(uev_CFLAGS) $(lite_CFLAGS) $(confuse_CFLAGS) $(AM_CFLAGS)
