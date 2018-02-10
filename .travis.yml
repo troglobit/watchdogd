@@ -43,10 +43,10 @@ install:
 script:
   - ./autogen.sh
   - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix=/tmp --enable-examples
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig make distcheck
   - make clean
   - make V=1 -j5
   - make install-strip
-  - make distcheck
   - tree /tmp
   - ldd /tmp/sbin/watchdogd
   - LD_LIBRARY_PATH=/tmp/lib /tmp/sbin/watchdogd -h
