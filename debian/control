@@ -1,17 +1,33 @@
 Source: watchdogd
 Section: admin
-Priority: extra
+Priority: optional
 Maintainer: Joachim Nilsson <troglobit@gmail.com>
-Build-Depends: debhelper (>= 9), dh-systemd (>= 1.5)
+Build-Depends: debhelper (>= 9), dh-systemd (>= 1.5), pkg-config
 Standards-Version: 3.9.8
 Homepage: https://github.com/troglobit/watchdogd
 
 Package: watchdogd
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, makedev (>= 2.3.1-24) | udev, lsb-base (>= 3.2-14)
+Depends: ${shlibs:Depends}, ${misc:Depends}, libwdog (= ${binary:Version}), lsb-base (>= 3.2-14)
 Conflicts: watchdog
 Description: Advanced system and process supervisor for (embedded) Linux
  The watchdog daemon runs in the background on your system, monitoring
  system load, file descriptor, and memory leaks.  Periodically it kicks
  /dev/watchdog, if the system is overloaded and watchdogd misses a kick
  the system will be rebooted.
+
+Package: libwdog
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Client library for watchdogd
+ This library is used by watchdogctl to connect to watchdogd.  Tt can
+ also be used by an application to query status and even connect to the
+ daemon for the purpose of monitoring critical services the application
+ provides to the system.
+
+Package: libwdog-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, libwdog (= ${binary:Version})
+Description: Static library, header files, and docs for libwdog
