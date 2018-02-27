@@ -153,7 +153,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_INT  ("interval", 300, CFGF_NONE),
 		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
 		CFG_FLOAT("warning",  0.9, CFGF_NONE),
-		CFG_FLOAT("critical", 0.95, CFGF_NONE),
+		CFG_FLOAT("critical", 0.0, CFGF_NONE), /* Disabled by default */
 		CFG_STR  ("script",   NULL, CFGF_NONE),
 		CFG_END()
 	};
