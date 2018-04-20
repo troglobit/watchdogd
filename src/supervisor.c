@@ -168,6 +168,7 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 {
 	struct supervisor *p = (struct supervisor *)arg;
 	wdog_reason_t reason;
+	char msg[128];
 
 	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
 
@@ -175,7 +176,10 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 	reason.wid = p->id;
 	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
 	strlcpy(reason.label, p->label, sizeof(reason.label));
-	wdt_reset(w->ctx, p->pid, &reason, 0);
+	
+	snprintf(msg, sizeof(msg), "\"supervisor %s %d\"", reason.label, p->pid);
+	if (script_exec(NULL, msg, 1, 0.0, 0.0, 0.0))
+		wdt_reset(w->ctx, p->pid, &reason, 0);
 }
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
