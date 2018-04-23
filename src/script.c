@@ -108,6 +108,37 @@ int script_exec(char *exec, char *nm, int iscrit, double val, double warn, doubl
 	return 0;
 }
 
+int supervisor_script_exec(char *exec, char *label, pid_t proc_pid)
+{
+	pid_t pid;
+	char value[10];
+	char *argv[] = {
+		exec,
+		"supervisor",
+		label,
+		NULL,
+		NULL
+	};
+
+	/* Fall back to global setting checker lacks own script */
+	if (!exec)
+		return 1;
+
+	snprintf(value, sizeof(value), "%u", proc_pid);
+	argv[3] = value;
+
+	pid = fork();
+	if (!pid)
+		_exit(execv(argv[0], argv));
+	if (pid < 0) {
+		PERROR("Cannot start script %s", exec);
+		return -1;
+	}
+	LOG("Started script %s, PID %d", exec, pid);
+
+	return 0;
+}
+
 /**
  * Local Variables:
  *  indent-tabs-mode: t
