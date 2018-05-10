@@ -432,6 +432,7 @@ int wdt_enable(int enable)
 	}
 
 	/* Stop/Start process supervisor */
+	DEBUG("%sabling supervisor ...", enable ? "En" : "Dis");
 	result += supervisor_enable(enable);
 	if (!result)
 		enabled = enable;

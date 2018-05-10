@@ -337,6 +337,7 @@ int supervisor_enable(int enable)
 		struct supervisor *p = &process[i];
 
 		if (p->id != -1) {
+			DEBUG("%sabling %s, id:%d ...", enable ? "En" : "Dis", p->label, p->id);
 			if (!enable)
 				result += uev_timer_stop(&p->watcher);
 			else
