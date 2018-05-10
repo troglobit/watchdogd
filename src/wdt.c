@@ -78,8 +78,8 @@ int wdt_open(const char *dev)
 		INFO("%s: %s, capabilities 0x%04x", devnode, info.identity, info.options);
 
 	/* Check capabilities */
-	if (magic && !wdt_capability(WDIOF_MAGICCLOSE)) {
-		WARN("WDT cannot be disabled, disabling safe exit.");
+	if (!wdt_capability(WDIOF_MAGICCLOSE)) {
+		WARN("WDT cannot be disabled at runtime.");
 		magic = 0;
 	}
 
@@ -422,7 +422,7 @@ int wdt_enable(int enable)
 
 			INFO("Attempting to disable HW watchdog timer.");
 			if (-1 == write(fd, "V", 1))
-				PERROR("Failed disabling HW watchdog, system will likely reboot now");
+				PERROR("Failed disabling HW watchdog, system will likely reboot now ...");
 
 			close(fd);
 			fd = -1;
@@ -449,7 +449,7 @@ int wdt_close(uev_ctx_t *ctx)
 		if (magic) {
 			INFO("Disabling HW watchdog timer before (safe) exit.");
 			if (-1 == write(fd, "V", 1))
-				PERROR("Failed disabling HW watchdog before exit, system will likely reboot now");
+				PERROR("Failed disabling HW watchdog, system will likely reboot now ...");
 		} else {
 			LOG("Exiting, watchdog still active.  Expect reboot!");
 			/* Be nice, sync any buffered data to disk first. */
