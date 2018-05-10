@@ -176,8 +176,13 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		return 1;
 	}
 
-	if (!file || !fexist(file))
+	if (!file)
 		return 1;
+
+	if (!fexist(file)) {
+		WARN("Configuration file %s does not exist", file);
+		return 1;
+	}
 
 	cfg = cfg_init(opts, CFGF_NONE);
 	if (!cfg) {
