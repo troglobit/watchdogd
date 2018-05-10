@@ -39,6 +39,7 @@ unsigned int reset_counter = 0;
  */
 int wdt_open(const char *dev)
 {
+	static int once  = 0;
 	static int cause = 0;
 
 	if (fd >= 0)
@@ -73,6 +74,14 @@ int wdt_open(const char *dev)
 #endif /* HAVE_FINIT_FINIT_H */
 	}
 
+	/* Skip capability check etc. if done already */
+	if (once)
+		return 0;
+
+	/* For future calls due to SIGHUP, disable/enable, etc. */
+	once = 1;
+
+	/* Query WDT/driver capabilities */
 	memset(&info, 0, sizeof(info));
 	if (!ioctl(fd, WDIOC_GETSUPPORT, &info))
 		INFO("%s: %s, capabilities 0x%04x", devnode, info.identity, info.options);
@@ -132,6 +141,10 @@ int wdt_init(uev_ctx_t *ctx, const char *dev)
 		if (!period)
 			period = 1;
 	}
+
+	/* No ctx on re-enable at runtime */
+	if (!ctx)
+		return 0;
 
 	/* Save/update /run/watchdogd.status */
 	wdt_set_bootstatus(cause, timeout, period);
@@ -414,10 +427,10 @@ int wdt_enable(int enable)
 
 	if (!enable) {
 		/* Attempt to disable HW watchdog */
-		if (fd != -1) {
+		while (fd != -1) {
 			if (!wdt_capability(WDIOF_MAGICCLOSE)) {
-				ERROR("WDT cannot be disabled, aborting operation.");
-				return 1;
+				INFO("WDT cannot be disabled, continuing ...");
+				break;
 			}
 
 			INFO("Attempting to disable HW watchdog timer.");
