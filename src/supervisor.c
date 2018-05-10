@@ -25,7 +25,7 @@
 static struct supervisor {
 	int   id;		/* 0-255, -1: Free */
 	pid_t pid;
-	char  label[16];	/* Process name, or label. */
+	char  label[48];	/* Process name, or label. */
 	int   timeout;		/* Period time, in msec. */
 	uev_t watcher;		/* Process timer */
 	int   ack;		/* Next expected ACK from process */
