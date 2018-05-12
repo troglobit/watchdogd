@@ -21,6 +21,7 @@
 #include "rc.h"
 #include "wdog.h"
 #include "supervisor.h"
+#include "script.h"
 
 static struct supervisor {
 	int   id;		/* 0-255, -1: Free */
@@ -33,6 +34,7 @@ static struct supervisor {
 
 static int rtprio = 98;
 static int supervisor_enabled = 0;
+static char *exec = NULL;
 
 
 static size_t num_supervised(void)
@@ -175,7 +177,9 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 	reason.wid = p->id;
 	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
 	strlcpy(reason.label, p->label, sizeof(reason.label));
-	wdt_reset(w->ctx, p->pid, &reason, 0);
+	
+	if (supervisor_script_exec(exec, reason.label, p->pid))
+		wdt_reset(w->ctx, p->pid, &reason, 0);
 }
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
@@ -279,7 +283,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 	return 0;
 }
 
-int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime)
+int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime, char *script)
 {
 	size_t i;
 	static int already = 0;
@@ -295,6 +299,12 @@ int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime)
 	if (!enabled) {
 		INFO("Process supervisor disabled.");
 		return supervisor_enable(0);
+	}
+
+	if (script) {
+		if (exec)
+			free(exec);
+		exec = strdup(script);
 	}
 
 	INFO("Starting process supervisor, waiting for client subscribe ...");

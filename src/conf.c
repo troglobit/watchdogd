@@ -98,9 +98,9 @@ done:
 static int supervisor(uev_ctx_t *ctx, cfg_t *cfg)
 {
 	if (!cfg)
-		return supervisor_init(ctx, 0, 0);
+		return supervisor_init(ctx, 0, 0, NULL);
 
-	return supervisor_init(ctx, cfg_getbool(cfg, "enabled"), cfg_getint(cfg, "priority"));
+	return supervisor_init(ctx, cfg_getbool(cfg, "enabled"), cfg_getint(cfg, "priority"), cfg_getstr(cfg, "script"));
 }
 
 static int validate_priority(cfg_t *cfg, cfg_opt_t *opt)
@@ -142,6 +142,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	cfg_opt_t supervisor_opts[] =  {
 		CFG_BOOL("enabled",  cfg_false, CFGF_NONE),
 		CFG_INT ("priority", 98, CFGF_NONE),
+		CFG_STR ("script",   NULL, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_opt_t reset_cause_opts[] =  {
