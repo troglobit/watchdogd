@@ -48,6 +48,7 @@
 #define WDT_TIMEOUT_DEFAULT  20
 #define WDT_KICK_DEFAULT     (WDT_TIMEOUT_DEFAULT / 2)
 
+#define WDT_REASON_TME "Date                "
 #define WDT_REASON_PID "PID                 "
 #define WDT_REASON_WID "Watchdog ID         "
 #define WDT_REASON_LBL "Label               "

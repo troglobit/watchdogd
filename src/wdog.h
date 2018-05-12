@@ -18,9 +18,11 @@
 #ifndef WDOG_H_
 #define WDOG_H_
 
+#include <time.h>
+
 /* Reset cause codes */
 typedef enum {
-	WDOG_SYSTEM_NONE = 0,        /* XXX: After reset/power-on */
+	WDOG_SYSTEM_NONE = 0,    /* After reset/power-on */
 	WDOG_SYSTEM_OK,
 	WDOG_FAILED_SUBSCRIPTION,
 	WDOG_FAILED_KICK,
@@ -40,6 +42,7 @@ typedef struct
 	wdog_cause_t  cause;     /* Reset cause */
 	unsigned int  enabled;   /* Unused, kept for compat. */
 	char          label[48]; /* Process name causing reset, or label */
+	struct tm     date;      /* Recorded time of reset */
 } wdog_reason_t;
 
 int   wdog_set_debug        (int enable);   /* Toggle debug loglevel in daemon */

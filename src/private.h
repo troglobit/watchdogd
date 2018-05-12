@@ -61,6 +61,7 @@ typedef struct {
 	unsigned int ack;
 	unsigned int next_ack;
 	char         label[48];	/* process name or label */
+	char         padding[128];
 } wdog_t;
 
 #endif /* WDOG_PRIVATE_H_ */

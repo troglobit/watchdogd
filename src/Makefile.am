@@ -1,5 +1,4 @@
 AM_CFLAGS           = -W -Wall -Wextra -Wno-unused-parameter -std=gnu99
-AM_CPPFLAGS         = -DSYSCONFDIR=\"@sysconfdir@\"
 bin_PROGRAMS        = watchdogctl
 sbin_PROGRAMS       = watchdogd
 watchdogd_SOURCES   = watchdogd.c	private.h	\
@@ -24,6 +23,8 @@ if RCFILE
 watchdogd_SOURCES  += rcfile.c		rc.h
 endif
 
+watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE
+watchdogd_CPPFLAGS += -DSYSCONFDIR=\"@sysconfdir@\"
 watchdogd_CFLAGS    = $(uev_CFLAGS) $(lite_CFLAGS) $(confuse_CFLAGS) $(AM_CFLAGS)
 watchdogd_LDADD     = $(uev_LIBS)   $(lite_LIBS) $(confuse_LIBS) libwdog.la
 
