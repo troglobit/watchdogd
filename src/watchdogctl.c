@@ -37,8 +37,10 @@ struct command {
 	char  *arg;
 };
 
-static pid_t pid = 0;
 extern char *__progname;
+
+static wdog_cause_t cause = WDOG_FAILED_TO_MEET_DEADLINE;
+static pid_t pid = 0;
 static int verbose = 0;
 
 #ifndef SUPERVISOR_TESTS_DISABLED
@@ -85,10 +87,37 @@ static int do_enable(char *arg)
 	return result;
 }
 
-int parse_arg(char *arg, char **msg)
+static int parse_cause(char *arg)
 {
 	const char *errstr;
-	int msec = -1;
+	int cause;
+
+	if (!arg || arg[0] == '?' || string_match(arg, "help")) {
+		printf("Reset cause values:\n"
+		       "  1   System OK\n"
+		       "  2   PID failed subscribing\n"
+		       "  3   PID failed kick\n"
+		       "  4   PID failed unsubscribing\n"
+		       "  5   PID failed to meet its deadline\n"
+		       "  6   Forced reset\n"
+		       "  7   Failed, unknown\n"
+		       "  8   File descriptor leak\n"
+		       "  9   Memory leak\n"
+		       "  10  CPU overload\n");
+		exit(1);
+	}
+
+	cause = strtonum(arg, 1, 10, &errstr);
+	if (errstr)
+		errx(1, "Error, reset cause is %s", errstr);
+
+	return cause;
+}
+
+static int parse_arg(char *arg, char **msg)
+{
+	const char *errstr;
+	int msec = 0;
 
 	if (arg && isdigit(arg[0])) {
 		char *ptr;
@@ -116,17 +145,13 @@ static int do_failed(char *arg)
 	char *msg = NULL;
 	int msec = parse_arg(arg, &msg);
 
-	return wdog_reset_timeout(pid, msg, msec);
+	return wdog_failed(cause, pid, msg, msec);
 }
 
 static int do_reset(char *arg)
 {
 	char *msg = NULL;
-	int msec;
-
-	msec = parse_arg(arg, &msg);
-	if (msec < 0)
-		msec = 0;
+	int msec = parse_arg(arg, &msg);
 
 	return wdog_reset_timeout(pid, msg, msec);
 }
@@ -312,20 +337,22 @@ static int usage(int code)
 	       "\n"
 	       "Options:\n"
 	       "  -h, --help           Display this help text and exit\n"
-	       "  -p, --pid=PID        PID to use for command\n"
+	       "  -c, --cause=CAUSE    Reset cause for fail command.  List causes with: -c help\n"
+	       "  -p, --pid=PID        PID to use for fail and reset command\n"
 	       "  -v, --verbose        Verbose output, otherwise commands are silent\n"
 	       "  -V, --version        Show program version\n"
 	       "\n"
 	       "Commands:\n"
 	       "  help                 This help text\n"
 	       "  debug                Toggle watchdogd debug level (notice <--> debug)\n"
-	       "  loglevel LVL         Adjust log level: none, err, warn, notice*, info, debug\n"
-	       "  failed [MSEC] [MSG]  Like reset command, PID failed to meet deadline, records\n"
-	       "                       reset reason but does not reboot unless MSEC is given\n"
+	       "  loglevel LVL         Set log level: none, err, warn, notice*, info, debug\n"
+	       "  fail [MSEC] [MSG]    Like reset command but can record any reset cause.\n"
+	       "                       Only performs an actual reset if MSEC is given\n"
+	       "                       Default reset cause: 5, failed to meet deadline\n"
 //	       "  force-reset          Forced reset, alias to `reset 0`\n"
-	       "  reset [MSEC] [MSG]   Perform system reset, optional MSEC (milliseconds) delay\n"
-	       "                       The optional MSG is presented as 'label' on reboot.  Use\n"
-	       "                       `-p PID` option to perform reset as PID\n"
+	       "  reset [MSEC] [MSG]   Perform system reset, optional MSEC (millisecond) delay.\n"
+	       "                       The optional MSG is presented as 'label' on reboot.\n"
+	       "                       Use `-p PID` option to perform reset as PID\n"
 	       "  reload               Reload daemon configuration file, like SIGHUP\n"
 	       "  status               Show watchdog and supervisor status, default command\n"
 	       "  version              Show program version\n"
@@ -368,6 +395,7 @@ int main(int argc, char *argv[])
 	int c;
 	char *cmd, arg[120];
 	struct option long_options[] = {
+		{ "cause",             1, 0, 'c' },
 		{ "help",              0, 0, 'h' },
 		{ "pid",               1, 0, 'p' },
 		{ "verbose",           0, 0, 'v' },
@@ -395,8 +423,12 @@ int main(int argc, char *argv[])
 		{ NULL,                NULL,         NULL }
 	};
 
-	while ((c = getopt_long(argc, argv, "hp:Vv" OPT_T, long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "c:hp:Vv" OPT_T, long_options, NULL)) != EOF) {
 		switch (c) {
+		case 'c':
+			cause = parse_cause(optarg);
+			break;
+
 		case 'h':
 			return usage(0);
 

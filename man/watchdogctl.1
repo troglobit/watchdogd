@@ -22,6 +22,7 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl hvV
+.Op Fl c Ar CAUSE
 .Op Fl p Ar PID
 .Op clear
 .Op disable | enable
@@ -29,7 +30,7 @@
 .Op loglevel Ar LEVEL
 .Op reload
 .Op reset Oo MSEC Oc Oo MSG Oc
-.Op failed Oo MSEC Oc Oo MSG Oc
+.Op fail Oo MSEC Oc Oo MSG Oc
 .Op status
 .Op test Op TEST
 .Sh DESCRIPTION
@@ -38,10 +39,38 @@ provides a safe way of querying status and controlling
 .Xr watchdogd 8 .
 .Sh OPTIONS
 .Bl -tag -width Ds
+.It Fl c, -cause Ar CAUSE
+Reset cause for fail command.  Possible values:
+.Pp
+.Bl -tag -width false-unsubscribe -compact -offset indent
+.It Cm 1
+System OK
+.It Cm 2
+PID failed subscribing
+.It Cm 3
+PID failed kick
+.It Cm 4
+PID failed unsubscribing
+.It Cm 5
+PID failed to meet its deadline
+.It Cm 6
+Forced reset
+.It Cm 7
+Failed, unknown
+.It Cm 8
+File descriptor leak
+.It Cm 9
+Memory leak
+.It Cm 10
+CPU overload
+.El
+.Pp
+Causes can also be listed at runtime with:
+.Fl c Ar help
 .It Fl h, -help
 Show help message.
 .It Fl p, -pid Ar PID
-PID to use for command.
+PID to use for fail and reset command.
 .It Fl v, -verbose
 Enable verbose mode, otherwise commands are silent.
 .It Fl V, -version
@@ -84,13 +113,14 @@ reset.  On systems with
 .Nm watchdogd
 will ask Finit to do an orderly shutdown (stop services, sync and
 unmount all file systems) before performing the WDT reset.
-.It Cm failed Oo MSEC Oc Oo MSG Oc
+.It Cm fail Oo MSEC Oc Oo MSG Oc
 Like the
 .Cm reset
-command, a PID failed to meet its deadline, records reset reason but
-does not reboot unless
+command, records reset cause (see above
+.Fl c CAUSE )
+but does not reboot unless
 .Ar MSEC
-is given.  Omitting the
+is given.  I.e., omitting the
 .Ar MSEC
 argument does not have the same effect as in the
 .Cm reset

@@ -62,36 +62,55 @@ static struct supervisor *find_supervised(pid_t pid)
 	return NULL;
 }
 
-static int do_reset(uev_ctx_t *ctx, struct supervisor *p, int timeout)
+static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_cause_t c, int timeout)
 {
 	wdog_reason_t reason;
 
 	memset(&reason, 0, sizeof(reason));
 	reason.wid = p->id;
-	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
+	reason.cause = c;
 	strlcpy(reason.label, p->label, sizeof(reason.label));
 
 	return wdt_reset(ctx, p->pid, &reason, timeout);
 }
 
-static int supervisor_reset(uev_ctx_t *ctx, wdog_t *req)
+static int supervisor_action(uev_ctx_t *ctx, wdog_t *req, int is_reset)
 {
 	struct supervisor *p;
+	wdog_cause_t cause;
 	char *label = req->label;
+	int timeout;
+
+	if (is_reset) {
+		cause = WDOG_FAILED_TO_MEET_DEADLINE;
+		timeout = (int)req->timeout;
+	} else {
+		cause = req->cmd - WDOG_FAILED_BASE_CMD;
+		timeout = req->timeout > 0 ? req->timeout : -1;
+	}
 
 	p = find_supervised(req->id);
 	if (p) {
 		if (!string_compare(req->label, WDOG_RESET_STR_DEFAULT))
 			strlcpy(p->label, req->label, sizeof(p->label));
 
-		return do_reset(ctx, p, req->timeout);
+		return action(ctx, p, cause, timeout);
 	}
 
-	/* Only 'failed' command uses timeout < 0 */
-	if (req->timeout < 0)
+	if (timeout < 0)
 		return 1;	/* Cannot find failed PID */
 
-	return wdt_forced_reset(ctx, req->id, label, req->timeout);
+	return wdt_forced_reset(ctx, req->id, label, timeout);
+}
+
+static int supervisor_failed(uev_ctx_t *ctx, wdog_t *req)
+{
+	return supervisor_action(ctx, req, 0);
+}
+
+static int supervisor_reset(uev_ctx_t *ctx, wdog_t *req)
+{
+	return supervisor_action(ctx, req, 1);
 }
 
 /*
@@ -219,7 +238,7 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 
 	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...",
 	      p->label, p->pid);
-	do_reset(w->ctx, p, 0);
+	action(w->ctx, p, WDOG_FAILED_TO_MEET_DEADLINE, 0);
 }
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
@@ -302,6 +321,13 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 
 	case WDOG_RESET_CMD:
 		if (supervisor_reset(ctx, req)) {
+			req->cmd   = WDOG_CMD_ERROR;
+			req->error = errno;
+		}
+		break;
+
+	case WDOG_FAILED_SYSTEMOK_CMD...WDOG_FAILED_OVERLOAD_CMD:
+		if (supervisor_failed(ctx, req)) {
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		}

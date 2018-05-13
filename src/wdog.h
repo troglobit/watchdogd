@@ -54,6 +54,8 @@ char *wdog_get_loglevel     (void);
 int   wdog_enable           (int enable);   /* Attempt to temp. disable */
 int   wdog_status           (int *status);  /* Check if enabled */
 
+int   wdog_failed           (wdog_cause_t cause, int pid, char *label, unsigned int timeout);
+
 int   wdog_reset            (int pid, char *label);
 int   wdog_reset_timeout    (int pid, char *label, unsigned int timeout);
 int   wdog_reset_counter    (unsigned int *counter);

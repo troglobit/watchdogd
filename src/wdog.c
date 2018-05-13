@@ -259,6 +259,11 @@ int wdog_status(int *status)
 	return doit(WDOG_STATUS_CMD, 0, NULL, 0, (unsigned int *)status);
 }
 
+int wdog_failed(wdog_cause_t cause, int pid, char *label, unsigned int timeout)
+{
+	return doit(cause + WDOG_FAILED_BASE_CMD, pid, label, timeout, NULL);
+}
+
 int wdog_reset(pid_t pid, char *label)
 {
 	return doit(WDOG_RESET_CMD, pid, label, 0, NULL);
