@@ -87,6 +87,10 @@ static int supervisor_reset(uev_ctx_t *ctx, wdog_t *req)
 		return do_reset(ctx, p, req->timeout);
 	}
 
+	/* Only 'failed' command uses timeout < 0 */
+	if (req->timeout < 0)
+		return 1;	/* Cannot find failed PID */
+
 	return wdt_forced_reset(ctx, req->id, label, req->timeout);
 }
 
