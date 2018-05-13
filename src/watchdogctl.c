@@ -86,8 +86,9 @@ static int do_enable(char *arg)
 
 static int do_reset(char *arg)
 {
-	int msec = 0;
+	const char *errstr;
 	char *msg = NULL;
+	int msec = 0;
 
 	if (arg && isdigit(arg[0])) {
 		msg = strchr(arg, ' ');
@@ -96,9 +97,9 @@ static int do_reset(char *arg)
 			msg++;
 		}
 
-		msec = atonum(arg);
-		if (msec < 0)
-			msec = 0;
+		msec = strtonum(arg, 0, INT32_MAX, &errstr);
+		if (errstr)
+			err(1, "Error, timeout value %s is %s.", arg, errstr);
 	} else
 		msg = arg;
 
