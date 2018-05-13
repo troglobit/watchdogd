@@ -116,7 +116,8 @@ static void set_priority(void)
 	}
 
 	if (result && !wdt_testmode())
-		PERROR("Failed setting process %spriority", supervisor_enabled ? "realtime " : "");
+		PERROR("Failed setting process %spriority",
+		       supervisor_enabled ? "realtime " : "");
 }
 
 /*
@@ -193,7 +194,8 @@ static struct supervisor *get(int id, pid_t pid, int ack)
 	}
 
 	if (p->ack != ack) {
-		DEBUG("BAD next ack for %s[%d] was %d, expected %d", p->label, pid, ack, p->ack);
+		DEBUG("BAD next ack for %s[%d] was %d, expected %d",
+		      p->label, pid, ack, p->ack);
 		errno = EBADRQC;
 		return NULL;
 	}
@@ -215,7 +217,8 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 {
 	struct supervisor *p = (struct supervisor *)arg;
 
-	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
+	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...",
+	      p->label, p->pid);
 	do_reset(w->ctx, p, 0);
 }
 
@@ -240,10 +243,12 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 			req->error = errno;
 		} else {
 			next_ack(p, req);
-			DEBUG("%s[%d] next ack: %d", req->label, req->pid, req->next_ack);
+			DEBUG("%s[%d] next ack: %d", req->label, req->pid,
+			      req->next_ack);
 
 			/* Allow for some scheduling slack */
-			uev_timer_init(ctx, &p->watcher, timeout_cb, p, p->timeout + 500, p->timeout + 500);
+			uev_timer_init(ctx, &p->watcher, timeout_cb, p,
+				       p->timeout + 500, p->timeout + 500);
 		}
 		break;
 
@@ -251,7 +256,8 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		/* Unregister timer and free it. */
 		p = get(req->id, req->pid, req->ack);
 		if (!p) {
-			PERROR("%s[%d] tried to unsubscribe using invalid credentials", req->label, req->pid);
+			PERROR("%s[%d] tried to unsubscribe with invalid credentials",
+			       req->label, req->pid);
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		} else {
@@ -262,10 +268,14 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		break;
 
 	case WDOG_KICK_CMD:
-		/* Check next_ack from client, restart timer if OK, otherwise force reboot */
+		/*
+		 * Check next_ack from client, restart timer if OK,
+		 * otherwise force reboot
+		 */
 		p = get(req->id, req->pid, req->ack);
 		if (!p) {
-			PERROR("%s[%d] tried to kick using invalid credentials", req->label, req->pid);
+			PERROR("%s[%d] tried to kick with invalid credentials",
+			       req->label, req->pid);
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		} else {
@@ -278,7 +288,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 			if (req->timeout > 0)
 				timeout = req->timeout + 500;
 
-			DEBUG("How do you do %s[%d], id:%d -- ACK should be %d, is %d",
+			DEBUG("How do you do %s[%d], id:%d?  ACK should be %d, is %d",
 			      req->label, req->pid, req->id, p->ack, req->ack);
 			next_ack(p, req);
 			if (enabled)
@@ -385,11 +395,13 @@ int supervisor_enable(int enable)
 		struct supervisor *p = &process[i];
 
 		if (p->id != -1) {
-			DEBUG("%sabling %s, id:%d ...", enable ? "En" : "Dis", p->label, p->id);
+			DEBUG("%sabling %s, id:%d ...",
+			      enable ? "En" : "Dis", p->label, p->id);
 			if (!enable)
 				result += uev_timer_stop(&p->watcher);
 			else
-				result += uev_timer_set(&p->watcher, p->timeout, p->timeout);
+				result += uev_timer_set(&p->watcher,
+							p->timeout, p->timeout);
 		}
 	}
 
