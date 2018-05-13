@@ -277,6 +277,7 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 {
 	time_t now;
 
+	fprintf(fp, WDT_REASON_CNT ": %u\n", r->counter);
 	now = time(NULL);
 	if (now != (time_t)-1) {
 		char buf[25];
@@ -284,7 +285,6 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 		strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
 		fprintf(fp, WDT_REASON_TME ": %s\n", buf);
 	}
-	fprintf(fp, WDT_REASON_CNT ": %u\n", r->counter);
 	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
 	fprintf(fp, WDT_REASON_WID ": %d\n", r->wid);
 	fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
