@@ -47,6 +47,49 @@ static size_t num_supervised(void)
 	return num;
 }
 
+static struct supervisor *find_supervised(pid_t pid)
+{
+	size_t i;
+
+	for (i = 0; i < NELEMS(process); i++) {
+		if (process[i].id == -1)
+			continue;
+
+		if (process[i].pid == pid)
+			return &process[i];
+	}
+
+	return NULL;
+}
+
+static int do_reset(uev_ctx_t *ctx, struct supervisor *p, int timeout)
+{
+	wdog_reason_t reason;
+
+	memset(&reason, 0, sizeof(reason));
+	reason.wid = p->id;
+	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
+	strlcpy(reason.label, p->label, sizeof(reason.label));
+
+	return wdt_reset(ctx, p->pid, &reason, timeout);
+}
+
+static int supervisor_reset(uev_ctx_t *ctx, wdog_t *req)
+{
+	struct supervisor *p;
+	char *label = req->label;
+
+	p = find_supervised(req->id);
+	if (p) {
+		if (!string_compare(req->label, WDOG_RESET_STR_DEFAULT))
+			strlcpy(p->label, req->label, sizeof(p->label));
+
+		return do_reset(ctx, p, req->timeout);
+	}
+
+	return wdt_forced_reset(ctx, req->id, label, req->timeout);
+}
+
 /*
  * If any process is being supervised/subscribed, and watchdogd is
  * enabled, we raise the RT priority to 98 (just below the kernel WDT in
@@ -167,15 +210,9 @@ static void next_ack(struct supervisor *p, wdog_t *req)
 static void timeout_cb(uev_t *w, void *arg, int events)
 {
 	struct supervisor *p = (struct supervisor *)arg;
-	wdog_reason_t reason;
 
 	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
-
-	memset(&reason, 0, sizeof(reason));
-	reason.wid = p->id;
-	reason.cause = WDOG_FAILED_TO_MEET_DEADLINE;
-	strlcpy(reason.label, p->label, sizeof(reason.label));
-	wdt_reset(w->ctx, p->pid, &reason, 0);
+	do_reset(w->ctx, p, 0);
 }
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
@@ -247,6 +284,13 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 
 	case WDOG_RESET_COUNTER_CMD:
 		req->next_ack = wdt_reset_counter();
+		break;
+
+	case WDOG_RESET_CMD:
+		if (supervisor_reset(ctx, req)) {
+			req->cmd   = WDOG_CMD_ERROR;
+			req->error = errno;
+		}
 		break;
 
 	case WDOG_RESET_CAUSE_CMD:

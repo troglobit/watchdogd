@@ -25,6 +25,8 @@
 #define _PATH_PRESERVE              "/var/lib"
 #endif
 
+#define WDOG_RESET_STR_DEFAULT      "*RESET*"
+
 #define WDOG_SOCKNAME               "watchdogd.sock"
 #define WDOG_SUPERVISOR_PATH        _PATH_VARRUN   WDOG_SOCKNAME
 #define WDOG_SUPERVISOR_TEST        _PATH_TMP      WDOG_SOCKNAME

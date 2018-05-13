@@ -93,16 +93,10 @@ static void cmd(uev_t *w, void *arg, int events)
 			wdt_init(w->ctx, NULL);
 		break;
 
-	case WDOG_RESET_CMD:
-		if (wdt_forced_reset(w->ctx, req.id, req.label, req.timeout)) {
-			req.cmd   = WDOG_CMD_ERROR;
-			req.error = errno;
-		}
-		break;
-
 	case WDOG_SUBSCRIBE_CMD:
 	case WDOG_UNSUBSCRIBE_CMD:
 	case WDOG_KICK_CMD:
+	case WDOG_RESET_CMD:
 	case WDOG_RESET_COUNTER_CMD:
 	case WDOG_RESET_CAUSE_CMD:
 	case WDOG_RESET_CAUSE_RAW_CMD:

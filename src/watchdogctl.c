@@ -37,6 +37,7 @@ struct command {
 	char  *arg;
 };
 
+static pid_t pid = 0;
 extern char *__progname;
 static int verbose = 0;
 
@@ -104,9 +105,9 @@ static int do_reset(char *arg)
 		msg = arg;
 
 	if (!msg || !msg[0])
-		msg = "*RESET*";
+		msg = WDOG_RESET_STR_DEFAULT;
 
-	return wdog_reset_timeout(0, msg, msec);
+	return wdog_reset_timeout(pid, msg, msec);
 }
 
 static int do_reload(char *Arg)
@@ -290,6 +291,7 @@ static int usage(int code)
 	       "\n"
 	       "Options:\n"
 	       "  -h, --help           Display this help text and exit\n"
+	       "  -p, --pid=PID        PID to use for command\n"
 	       "  -v, --verbose        Verbose output, otherwise commands are silent\n"
 	       "  -V, --version        Show program version\n"
 	       "\n"
@@ -299,7 +301,8 @@ static int usage(int code)
 	       "  loglevel LVL         Adjust log level: none, err, warn, notice*, info, debug\n"
 //	       "  force-reset          Forced reset, alias to `reset 0`\n"
 	       "  reset [MSEC] [MSG]   Perform system reset, optional MSEC (milliseconds) delay\n"
-	       "                       The optional MSG is presented as 'label' on reboot\n"
+	       "                       The optional MSG is presented as 'label' on reboot.  Use\n"
+	       "                       `-p PID` option to perform reset as PID\n"
 	       "  reload               Reload daemon configuration file, like SIGHUP\n"
 	       "  status               Show watchdog and supervisor status, default command\n"
 	       "  version              Show program version\n"
@@ -321,7 +324,7 @@ static int usage(int code)
 	       "  failed-kick          Verify reset on missing kick (reset)\n"
 	       "  no-kick              Verify reset on missing first kick (reset)\n"
 	       "  premature-trigger    Verify no premature trigger before unsubscribe (reset)\n"
-#endif /* SUPERVISOR_TESTS_DISABLED */
+#endif
 	       "____\n"
 	       "*  default log level\n"
 #ifndef SUPERVISOR_TESTS_DISABLED
@@ -343,6 +346,7 @@ int main(int argc, char *argv[])
 	char *cmd, arg[120];
 	struct option long_options[] = {
 		{ "help",              0, 0, 'h' },
+		{ "pid",               1, 0, 'p' },
 		{ "verbose",           0, 0, 'v' },
 		{ "version",           0, 0, 'V' },
 		{ NULL, 0, 0, 0 }
@@ -367,10 +371,14 @@ int main(int argc, char *argv[])
 		{ NULL,                NULL,         NULL }
 	};
 
-	while ((c = getopt_long(argc, argv, "cdefl:hr:sVv?" OPT_T, long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "hp:Vv" OPT_T, long_options, NULL)) != EOF) {
 		switch (c) {
 		case 'h':
 			return usage(0);
+
+		case 'p':
+			pid = atoi(optarg);
+			break;
 
 		case 'v':
 			verbose = 1;
