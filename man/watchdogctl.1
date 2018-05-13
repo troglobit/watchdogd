@@ -22,12 +22,14 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl hvV
+.Op Fl p Ar PID
 .Op clear
 .Op disable | enable
 .Op debug
 .Op loglevel Ar LEVEL
 .Op reload
-.Op reset Op MSEC
+.Op reset Oo MSEC Oc Oo MSG Oc
+.Op failed Oo MSEC Oc Oo MSG Oc
 .Op status
 .Op test Op TEST
 .Sh DESCRIPTION
@@ -36,12 +38,14 @@ provides a safe way of querying status and controlling
 .Xr watchdogd 8 .
 .Sh OPTIONS
 .Bl -tag -width Ds
+.It Fl h, -help
+Show help message.
+.It Fl p, -pid Ar PID
+PID to use for command.
 .It Fl v, -verbose
 Enable verbose mode, otherwise commands are silent.
 .It Fl V, -version
 Show version information.
-.It Fl h, -help
-Show help message.
 .El
 .Sh COMMANDS
 Short forms of the below commands are allowed, as long as it is unique.
@@ -67,15 +71,30 @@ Reload daemon configuration file, like sending SIGHUP, but the command
 does not return until
 .Nm watchdogd
 has completed.
-.It Cm reboot Op MSEC
+.It Cm reboot Oo MSEC Oc Oo MSG Oc
 Alias to
 .Cm reset .
-.It Cm reset Op MSEC
-Perform system reset, with an optional millisecond delay.  On systems with
+.It Cm reset Oo MSEC Oc Oo MSG Oc
+Perform system reset, with an optional millisecond delay and an optional
+message to be stored as the reset cause label.  A zero
+.Ar MSEC
+argument is the same as omitting the argument, leading to an immediate
+reset.  On systems with
 .Xr finit 8 ,
 .Nm watchdogd
 will ask Finit to do an orderly shutdown (stop services, sync and
 unmount all file systems) before performing the WDT reset.
+.It Cm failed Oo MSEC Oc Oo MSG Oc
+Like the
+.Cm reset
+command, a PID failed to meet its deadline, records reset reason but
+does not reboot unless
+.Ar MSEC
+is given.  Omitting the
+.Ar MSEC
+argument does not have the same effect as in the
+.Cm reset
+command.
 .It Cm status
 Query status of daemon and show last reset cause, default command.
 .It Cm test Op TEST
