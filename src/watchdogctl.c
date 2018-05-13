@@ -130,7 +130,7 @@ static int parse_arg(char *arg, char **msg)
 
 		msec = strtonum(arg, 0, INT32_MAX, &errstr);
 		if (errstr)
-			err(1, "Error, timeout value %s is %s.", arg, errstr);
+			errx(1, "Error, timeout value %s is %s.", arg, errstr);
 	} else
 		*msg = arg;
 
@@ -219,7 +219,7 @@ static int testit(void)
 
 	log("Verifying watchdog connectivity");
 	if (wdog_ping())
-		err(1, "Failed connectivity check");
+		errx(1, "Failed connectivity check");
 
 	log("Subscribing to process supervisor");
 	id = wdog_subscribe(NULL, tmo, &ack);
@@ -256,7 +256,7 @@ static int testit(void)
 
 		log("Kicking watchdog: id %d, ack %d", id, ack);
 		if (wdog_kick2(id, &ack))
-			err(1, "Failed kicking");
+			errx(1, "Failed kicking");
 
 		if (count == 8)
 			wdog_enable(0);
@@ -271,7 +271,7 @@ static int testit(void)
 
 	log("Unsubscribing: id %d, ack %d", id, ack);
 	if (wdog_unsubscribe(id, ack))
-		err(1, "Failed unsubscribe");
+		errx(1, "Failed unsubscribe");
 
 	return 0;
 }
