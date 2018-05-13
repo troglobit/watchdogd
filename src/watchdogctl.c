@@ -85,27 +85,48 @@ static int do_enable(char *arg)
 	return result;
 }
 
-static int do_reset(char *arg)
+int parse_arg(char *arg, char **msg)
 {
 	const char *errstr;
-	char *msg = NULL;
-	int msec = 0;
+	int msec = -1;
 
 	if (arg && isdigit(arg[0])) {
-		msg = strchr(arg, ' ');
-		if (msg) {
-			*msg = 0;
-			msg++;
+		char *ptr;
+
+		ptr = strchr(arg, ' ');
+		if (ptr) {
+			*ptr = 0;
+			*msg = &ptr[1];
 		}
 
 		msec = strtonum(arg, 0, INT32_MAX, &errstr);
 		if (errstr)
 			err(1, "Error, timeout value %s is %s.", arg, errstr);
 	} else
-		msg = arg;
+		*msg = arg;
 
-	if (!msg || !msg[0])
-		msg = WDOG_RESET_STR_DEFAULT;
+	if (!*msg || !*msg[0])
+		*msg = WDOG_RESET_STR_DEFAULT;
+
+	return msec;
+}
+
+static int do_failed(char *arg)
+{
+	char *msg = NULL;
+	int msec = parse_arg(arg, &msg);
+
+	return wdog_reset_timeout(pid, msg, msec);
+}
+
+static int do_reset(char *arg)
+{
+	char *msg = NULL;
+	int msec;
+
+	msec = parse_arg(arg, &msg);
+	if (msec < 0)
+		msec = 0;
 
 	return wdog_reset_timeout(pid, msg, msec);
 }
@@ -299,6 +320,8 @@ static int usage(int code)
 	       "  help                 This help text\n"
 	       "  debug                Toggle watchdogd debug level (notice <--> debug)\n"
 	       "  loglevel LVL         Adjust log level: none, err, warn, notice*, info, debug\n"
+	       "  failed [MSEC] [MSG]  Like reset command, PID failed to meet deadline, records\n"
+	       "                       reset reason but does not reboot unless MSEC is given\n"
 //	       "  force-reset          Forced reset, alias to `reset 0`\n"
 	       "  reset [MSEC] [MSG]   Perform system reset, optional MSEC (milliseconds) delay\n"
 	       "                       The optional MSG is presented as 'label' on reboot.  Use\n"
@@ -359,6 +382,7 @@ int main(int argc, char *argv[])
 		{ "help",              show_usage,   NULL },
 		{ "debug",             do_debug,     NULL },
 		{ "loglevel",          set_loglevel, NULL },
+		{ "failed",            do_failed,    NULL },
 		{ "reboot",            do_reset,     NULL },
 		{ "reset",             do_reset,     NULL },
 		{ "force-reset",       do_reset,     NULL },

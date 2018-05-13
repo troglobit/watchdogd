@@ -548,9 +548,13 @@ int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 	else
 		DEBUG("Reboot requested by pid %d, label %s, timeout: %d ...", pid, reason->label, timeout);
 
-	/* Save reboot cause */
+	/* Save reset cause */
 	reason->counter = reset_counter + 1;
 	reset_cause_set(reason, pid);
+
+	/* Only save reset cause, no reboot ... */
+	if (timeout < 0)
+		return 0;
 
 #ifdef HAVE_FINIT_FINIT_H
 	if (!rebooting) {
