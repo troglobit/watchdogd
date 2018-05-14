@@ -47,6 +47,7 @@ script:
   - make clean
   - make V=1 -j5
   - make install-strip
+  - make release
   - tree /tmp
   - ldd /tmp/sbin/watchdogd
   - LD_LIBRARY_PATH=/tmp/lib /tmp/sbin/watchdogd -h
