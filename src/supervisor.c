@@ -74,6 +74,16 @@ static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_cause_t c, int time
 	return wdt_reset(ctx, p->pid, &reason, timeout);
 }
 
+static void fail(uev_ctx_t *ctx, wdog_t *req, wdog_cause_t c, const char *msg)
+{
+	struct supervisor *p;
+
+	PERROR("%s[%d] %s", req->label, req->pid, msg);
+	p = find_supervised(req->pid);
+	if (p)
+		action(ctx, p, c, 0);
+}
+
 static int supervisor_action(uev_ctx_t *ctx, wdog_t *req, int is_reset)
 {
 	struct supervisor *p;
@@ -275,8 +285,8 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		/* Unregister timer and free it. */
 		p = get(req->id, req->pid, req->ack);
 		if (!p) {
-			PERROR("%s[%d] tried to unsubscribe with invalid credentials",
-			       req->label, req->pid);
+			fail(ctx, req, WDOG_FAILED_UNSUBSCRIPTION,
+			     "tried to unsubscribe with invalid credentials");
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		} else {
@@ -293,8 +303,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		 */
 		p = get(req->id, req->pid, req->ack);
 		if (!p) {
-			PERROR("%s[%d] tried to kick with invalid credentials",
-			       req->label, req->pid);
+			fail(ctx, req, WDOG_FAILED_KICK, "tried to kick with invalid credentials");
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		} else {
