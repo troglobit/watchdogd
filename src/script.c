@@ -47,6 +47,12 @@ int script_init(uev_ctx_t *ctx, char *script)
 {
 	static int once = 1;
 
+	/* Only set up signal watcher once */
+	if (once) {
+		once = 0;
+		uev_signal_init(ctx, &watcher, cb, "init", SIGCHLD);
+	}
+
 	if (script && access(script, X_OK)) {
 		ERROR("%s is not executable.", script);
 		return -1;
@@ -60,16 +66,10 @@ int script_init(uev_ctx_t *ctx, char *script)
 	else
 		global_exec = NULL;
 
-	/* Only set up signal watcher once */
-	if (once) {
-		once = 0;
-		uev_signal_init(ctx, &watcher, cb, "init", SIGCHLD);
-	}
-
 	return 0;
 }
 
-int script_exec(char *exec, char *nm, int iscrit, double val, double warn, double crit)
+int checker_exec(char *exec, char *nm, int iscrit, double val, double warn, double crit)
 {
 	pid_t pid;
 	char warning[5], critical[5], value[5];

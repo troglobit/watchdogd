@@ -114,13 +114,13 @@ static void cb(uev_t *w, void *arg, int events)
 		if (level > warning) {
 			if (critical > 0.0 && level > critical) {
 				ERROR("Memory usage too high, %.2f > %0.2f, rebooting system ...", level, critical);
-				if (script_exec(exec, "meminfo", 1, level, warning, critical))
+				if (checker_exec(exec, "meminfo", 1, level, warning, critical))
 					wdt_forced_reset(w->ctx, getpid(), PACKAGE ":meminfo", 0);
 				return;
 			}
 
 			WARN("Memory use very high, %.2f > %0.2f, possible leak!", level, warning);
-			script_exec(exec, "meminfo", 0, level, warning, critical);
+			checker_exec(exec, "meminfo", 0, level, warning, critical);
 		}
 	}
 }
