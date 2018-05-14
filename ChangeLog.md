@@ -3,6 +3,36 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
+[3.1][UNRLEASED] - 2018-05-xx
+-----------------------------
+
+### Changes
+- Supervised processes can now also cause reset if the ACK sequence
+  is wrong when kicking or unsubscribing.
+- The process supervisor has been gifted with scripting capabilities:
+  `script = /path/to/script.sh` in the `supervisor {}` section
+  enables it.  When enabled all action is delegated to the script,
+  which is called as: `script.sh supervisor CAUSE PID LABEL`.
+  For more information, see the manual for `watchdogd.conf`
+- A new command 'fail' has been added to `watchdogctl`.  It can be
+  used with the supervisor script to record the reset cause and do
+  a WDT reset.  The reset `CAUSE` can be forwarded by the script
+  to record the correct (or another) reset cause.
+- Add `-p PID` to `watchdogctl`.  Works with reset and fail commands
+- Always warn at startup if driver/WDT does not support safe exit,
+  i.e. "magic close"
+- Add warning if `.conf` file cannot be found, issue #4
+- Add recorded time of reset to reset cause state file, issue #5
+
+### Fixes
+- Omitting criticial/reboot level from a checker plugin causes default
+  value of 95% to be set, causing reboot by loadavg plugin.  Fixed by
+  defaulting to 'off' for checker/monitor criticial/reboot level
+- Issue #6: mismatch in label length between supervised processes and
+  that in `wdog_reason_t` => increase from 16 to 48 chars
+- Issue #11: problem disabling the process supervisor at runtime, it
+  always caused a reboot
+
 
 [3.0][] - 2018-02-10
 --------------------
