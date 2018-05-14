@@ -28,7 +28,8 @@ package:
 MD5 = md5sum
 md5-dist:
 	@for file in $(DIST_ARCHIVES); do	\
-		$(MD5) $$file > $$file.md5;	\
+		$(MD5) $$file > ../$$file.md5;	\
+		mv $$file ../;			\
 	done
 
 ## Check if tagged in git
@@ -53,7 +54,6 @@ release-hook:
 release: distcheck release-hook md5-dist
 	@for file in $(DIST_ARCHIVES); do						\
 		printf "$$file    \tDistribution tarball\n";				\
-		printf "$$file.md5\t"; cat $$file.md5 | cut -f1 -d' ';			\
-		mv $$file* ../;								\
+		printf "$$file.md5\t"; cat ../$$file.md5 | cut -f1 -d' ';		\
 	done
 
