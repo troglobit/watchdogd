@@ -65,6 +65,35 @@ unsubscribes the daemon reverts back to
 Enable or disable supervisor, default: disabled
 .It Cm priority = Ar NUM
 The realtime priorty.  Default: 98
+.It Cm script = Ar "/path/to/script.sh"
+When a supervised process fails to meet its deadline the supervisor will
+perform an unconditional reset having saved the reset cause.  If a
+script is provided in this section it will be called instead, leaving
+matters of resetc cause and system reboot up to the script.  The script
+is called as:
+.Bd -unfilled -offset indent
+script.sh supervisor CAUSE PID LABEL
+.Ed
+.Pp
+The
+.Ar CAUSE
+value is documented in
+.Xr watchdogctl 1 .
+.Pp
+The
+.Ar LABEL
+can be any free form string the supervised process used when registering
+with the supervisor, hence it is given as the last argument to the
+script.  See
+.Xr watchdogctl 1
+for help on the
+.Ar reset
+and
+.Ar failed
+commands which can be useful in combination with the script.
+.Pp
+Note, the global script setting does not apply to this section.
+However, the same script can be used, due to the unique first argument.
 .El
 .It Cm reset-cause Ar {}
 This section controls the reset cause \& reset counter.  By default this

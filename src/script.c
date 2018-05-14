@@ -108,6 +108,37 @@ int checker_exec(char *exec, char *nm, int iscrit, double val, double warn, doub
 	return 0;
 }
 
+int supervisor_exec(char *exec, int c, int p, char *label)
+{
+	char cause[5], id[10];
+	char *argv[] = {
+		exec,
+		"supervisor",
+		NULL,
+		NULL,
+		label,
+		NULL,
+	};
+	pid_t pid;
+
+	snprintf(cause, sizeof(cause), "%d", c);
+	argv[2] = cause;
+
+	snprintf(id, sizeof(id), "%d", p);
+	argv[3] = id;
+
+	pid = fork();
+	if (!pid)
+		_exit(execv(argv[0], argv));
+	if (pid < 0) {
+		PERROR("Cannot start script %s", exec);
+		return -1;
+	}
+	LOG("Started script %s, PID %d", exec, pid);
+
+	return 0;
+}
+
 /**
  * Local Variables:
  *  indent-tabs-mode: t

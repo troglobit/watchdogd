@@ -20,6 +20,7 @@
 #include "private.h"
 #include "rc.h"
 #include "wdog.h"
+#include "script.h"
 #include "supervisor.h"
 
 static struct supervisor {
@@ -33,6 +34,7 @@ static struct supervisor {
 
 static int rtprio = 98;
 static int supervisor_enabled = 0;
+static char *exec = NULL;
 
 
 static size_t num_supervised(void)
@@ -66,6 +68,9 @@ static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_cause_t c, int time
 {
 	wdog_reason_t reason;
 
+	if (exec && !access(exec, X_OK) && !supervisor_exec(exec, c, p->pid, p->label))
+		return 0;
+
 	memset(&reason, 0, sizeof(reason));
 	reason.wid = p->id;
 	reason.cause = c;
@@ -96,7 +101,7 @@ static int supervisor_action(uev_ctx_t *ctx, wdog_t *req, int is_reset)
 		timeout = (int)req->timeout;
 	} else {
 		cause = req->cmd - WDOG_FAILED_BASE_CMD;
-		timeout = req->timeout > 0 ? req->timeout : -1;
+		timeout = req->timeout > 0 ? (int)req->timeout : -1;
 	}
 
 	p = find_supervised(req->id);
@@ -372,7 +377,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 	return 0;
 }
 
-int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime)
+int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime, char *script)
 {
 	size_t i;
 	static int already = 0;
@@ -388,6 +393,11 @@ int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime)
 	if (!enabled) {
 		INFO("Process supervisor disabled.");
 		return supervisor_enable(0);
+	}
+	if (script) {
+		if (exec)
+			free(exec);
+		exec = strdup(script);
 	}
 
 	INFO("Starting process supervisor, waiting for client subscribe ...");
