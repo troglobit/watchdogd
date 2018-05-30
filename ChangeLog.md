@@ -8,7 +8,7 @@ All notable changes to the project are documented in this file.
 
 ### Changes
 - Supervised processes can now also cause reset if the ACK sequence
-  is wrong when kicking or unsubscribing.
+  is wrong when kicking or unsubscribing
 - The process supervisor has been gifted with scripting capabilities:
   `script = /path/to/script.sh` in the `supervisor {}` section
   enables it.  When enabled all action is delegated to the script,
@@ -17,7 +17,7 @@ All notable changes to the project are documented in this file.
 - A new command 'fail' has been added to `watchdogctl`.  It can be
   used with the supervisor script to record the reset cause and do
   a WDT reset.  The reset `CAUSE` can be forwarded by the script
-  to record the correct (or another) reset cause.
+  to record the correct (or another) reset cause
 - Add `-p PID` to `watchdogctl`.  Works with reset and fail commands
 - Always warn at startup if driver/WDT does not support safe exit,
   i.e. "magic close"
