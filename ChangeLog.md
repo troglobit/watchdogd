@@ -3,13 +3,13 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
-[3.1][UNRLEASED] - 2018-05-xx
+[3.1][UNRLEASED] - 2018-07-01
 -----------------------------
 
 ### Changes
 - Supervised processes can now also cause reset if the ACK sequence
   is wrong when kicking or unsubscribing
-- The process supervisor has been gifted with scripting capabilities:
+- Issue #7: Add support for callback script to the process supervisor:
   `script = /path/to/script.sh` in the `supervisor {}` section
   enables it.  When enabled all action is delegated to the script,
   which is called as: `script.sh supervisor CAUSE PID LABEL`.
@@ -21,8 +21,8 @@ All notable changes to the project are documented in this file.
 - Add `-p PID` to `watchdogctl`.  Works with reset and fail commands
 - Always warn at startup if driver/WDT does not support safe exit,
   i.e. "magic close"
-- Add warning if `.conf` file cannot be found, issue #4
-- Add recorded time of reset to reset cause state file, issue #5
+- Issue #4: Add warning if `.conf` file cannot be found
+- Issue #5: Add recorded time of reset to reset cause state file
 
 ### Fixes
 - Omitting criticial/reboot level from a checker plugin causes default
