@@ -3,8 +3,8 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
-[3.1][UNRLEASED] - 2018-07-01
------------------------------
+[3.1][] - 2018-06-27
+--------------------
 
 ### Changes
 - Supervised processes can now also cause reset if the ACK sequence
@@ -25,9 +25,9 @@ All notable changes to the project are documented in this file.
 - Issue #5: Add recorded time of reset to reset cause state file
 
 ### Fixes
-- Omitting criticial/reboot level from a checker plugin causes default
+- Omitting critical/reboot level from a checker plugin causes default
   value of 95% to be set, causing reboot by loadavg plugin.  Fixed by
-  defaulting to 'off' for checker/monitor criticial/reboot level
+  defaulting to 'off' for checker/monitor critical/reboot level
 - Issue #6: mismatch in label length between supervised processes and
   that in `wdog_reason_t` => increase from 16 to 48 chars
 - Issue #11: problem disabling the process supervisor at runtime, it
@@ -159,7 +159,8 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.0...HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.1...HEAD
+[3.1]:        https://github.com/troglobit/watchdogd/compare/3.0...3.1
 [3.0]:        https://github.com/troglobit/watchdogd/compare/2.0.1...3.0
 [2.0.1]:      https://github.com/troglobit/watchdogd/compare/2.0...2.0.1
 [2.0]:        https://github.com/troglobit/watchdogd/compare/1.6...2.0
