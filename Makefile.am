@@ -20,10 +20,6 @@ endif
 install-dev:
 	@make -C src install-pkgincludeHEADERS
 
-## Generate .deb package
-package:
-	@dpkg-buildpackage -uc -us -B
-
 ## Generate MD5 checksum file
 MD5 = md5sum
 md5-dist:
@@ -50,10 +46,19 @@ release-hook:
 		echo;									\
 	fi
 
-## Target to run when building a release
-release: distcheck release-hook md5-dist
-	@for file in $(DIST_ARCHIVES); do						\
-		printf "$$file    \tDistribution tarball\n";				\
-		printf "$$file.md5\t"; cat ../$$file.md5 | cut -f1 -d' ';		\
-	done
+## Generate .deb package
+package:
+	@dpkg-buildpackage -uc -us -B
 
+## Target to run when building a release
+release: distcheck release-hook md5-dist package
+	@echo
+	@echo "Resulting release files:"
+	@echo "========================================================================="
+	@for file in $(DIST_ARCHIVES); do						\
+		printf "%-40s Distribution tarball\n" $$file;				\
+		printf "%-40s " $$file.md5; cat ../$$file.md5 | cut -f1 -d' ';		\
+	done
+	@for file in `cd ..; ls $(PACKAGE)_$(subst _,.,$(VERSION))*`; do		\
+		printf "%-40s Debian/Ubuntu package file\n" $$file;			\
+	done
