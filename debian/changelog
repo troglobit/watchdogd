@@ -1,3 +1,9 @@
+watchdogd (3.1) unstable; urgency=medium
+
+  * New upstream release.  Now with native versioning.
+
+ -- Joachim Nilsson <troglobit@gmail.com>  Thu, 28 Jun 2018 20:56:50 +0200
+
 watchdogd (3.0-1) unstable; urgency=low
 
   * Initial release, with upstream packaging.
