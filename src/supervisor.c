@@ -64,12 +64,31 @@ static struct supervisor *find_supervised(pid_t pid)
 	return NULL;
 }
 
+static void release(struct supervisor *p)
+{
+	uev_timer_stop(&p->watcher);
+	memset(p, 0, sizeof(*p));
+	p->id = -1;
+}
+
 static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_cause_t c, int timeout)
 {
 	wdog_reason_t reason;
 
-	if (exec && !access(exec, X_OK) && !supervisor_exec(exec, c, p->pid, p->label))
-		return 0;
+	if (exec && !access(exec, X_OK)) {
+		int rc;
+
+		/*
+		 * If script returns OK we expect it to have dealt with
+		 * the situation properly.  So we remove this process
+		 * from our supervision and go about our business.
+		 */
+		rc = supervisor_exec(exec, c, p->pid, p->label);
+		if (!rc) {
+			release(p);
+			return 0;
+		}
+	}
 
 	memset(&reason, 0, sizeof(reason));
 	reason.wid = p->id;
@@ -192,12 +211,6 @@ static struct supervisor *allocate(pid_t pid, char *label, unsigned int timeout)
 	return p;
 }
 
-static void release(struct supervisor *p)
-{
-	memset(p, 0, sizeof(*p));
-	p->id = -1;
-}
-
 /*
  * Validate user's kick/unsubscribe against our records
  *
@@ -295,7 +308,6 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		} else {
-			uev_timer_stop(&p->watcher);
 			release(p);
 			DEBUG("Goodbye %s[%d] id:%d.", req->label, req->pid, req->id);
 		}
