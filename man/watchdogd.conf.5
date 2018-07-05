@@ -64,12 +64,12 @@ unsubscribes the daemon reverts back to
 .It Cm enabled = Ar true | false
 Enable or disable supervisor, default: disabled
 .It Cm priority = Ar NUM
-The realtime priorty.  Default: 98
+The realtime priority.  Default: 98
 .It Cm script = Ar "/path/to/script.sh"
 When a supervised process fails to meet its deadline the supervisor will
 perform an unconditional reset having saved the reset cause.  If a
 script is provided in this section it will be called instead, leaving
-matters of resetc cause and system reboot up to the script.  The script
+matters of reset cause and system reboot up to the script.  The script
 is called as:
 .Bd -unfilled -offset indent
 script.sh supervisor CAUSE PID LABEL
@@ -90,7 +90,17 @@ for help on the
 .Ar reset
 and
 .Ar failed
-commands which can be useful in combination with the script.
+commands which an be useful in combination with the script.
+.Pp
+The return value of the script determines how the system continues to
+operate: POSIX OK (0) means the script has handled the situation in some
+manner and
+.Nm watchdogd
+stops supervising the offending process, a non-zero return value from
+script means the script has either failed to handle the situation or
+prefers to delegate to
+.Nm watchdogd
+to perform the actual system reset.
 .Pp
 Note, the global script setting does not apply to this section.
 However, the same script can be used, due to the unique first argument.
@@ -116,14 +126,14 @@ writable first.
 Script or command to run instead of reboot when a monitor plugin reaches
 any of its critical or warning level.  Setting this will disable the
 default reboot action on critical, it is therefore up to the script to
-peform reboot, if needed.  The script is called as:
+perform reboot, if needed.  The script is called as:
 .Bd -unfilled -offset indent
 script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
 .Ed
 .Pp
 Health monitor plugins also have their own local script setting.
 .It Cm filenr Ar {}
-Monitors file desriptor leaks based on
+Monitors file descriptor leaks based on
 .Ql /proc/sys/fs/file-nr .
 .Bl -tag -width TERM
 .It Cm interval = Ar SEC
@@ -212,13 +222,13 @@ reset-cause {
 # Script or command to run instead of reboot when a monitor plugin
 # reaches any of its critical or warning level.  Setting this will
 # disable the built-in reboot on critical, it is therefore up to the
-# script to peform reboot, if needed.  The script is called as:
+# script to perform reboot, if needed.  The script is called as:
 #
 #    script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
 #
 #script = "/path/to/script.sh"
 
-# Monitors file desriptor leaks based on /proc/sys/fs/file-nr
+# Monitors file descriptor leaks based on /proc/sys/fs/file-nr
 filenr {
     interval = 300
     logmark  = false
