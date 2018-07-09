@@ -83,11 +83,27 @@ err:
  */
 int wdt_handover(const char *devnode)
 {
+	int retries = 3;
+	int rc = -1;
+
 	DEBUG("Attempting WDT handover with Finit ...");
 	if (wdt_register())
 		return -1;
 
-	return open(devnode, O_WRONLY);
+	/*
+	 * Don't give up immediately, give the current
+	 * daemon time to exit and the kernel time to
+	 * close the WDT device.
+	 */
+	while (rc < 0 && retries--) {
+		rc = open(devnode, O_WRONLY);
+		if (rc >= 0)
+			break;
+
+		sleep(1);
+	}
+
+	return rc;
 }
 
 /**
