@@ -15,6 +15,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #ifndef WDOG_H_
 #define WDOG_H_
 
@@ -82,6 +87,10 @@ int   wdog_kick2            (int id, unsigned int *ack);
 #include "compat.h"
 
 #endif /* WDOG_H_ */
+
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * Local Variables:
