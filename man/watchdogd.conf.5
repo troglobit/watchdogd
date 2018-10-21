@@ -66,11 +66,10 @@ Enable or disable supervisor, default: disabled
 .It Cm priority = Ar NUM
 The realtime priority.  Default: 98
 .It Cm script = Ar "/path/to/script.sh"
-When a supervised process fails to meet its deadline the supervisor will
-perform an unconditional reset having saved the reset cause.  If a
-script is provided in this section it will be called instead, leaving
-matters of reset cause and system reboot up to the script.  The script
-is called as:
+When a supervised process fails to meet its deadline the supervisor by
+default performs an unconditional reset, saving the reset cause first.
+However, if a script is provided in this section it will be called
+instead:
 .Bd -unfilled -offset indent
 script.sh supervisor CAUSE PID LABEL
 .Ed
@@ -84,13 +83,7 @@ The
 .Ar LABEL
 can be any free form string the supervised process used when registering
 with the supervisor, hence it is given as the last argument to the
-script.  See
-.Xr watchdogctl 1
-for help on the
-.Ar reset
-and
-.Ar failed
-commands which an be useful in combination with the script.
+script.
 .Pp
 The return value of the script determines how the system continues to
 operate: POSIX OK (0) means the script has handled the situation in some
@@ -100,10 +93,18 @@ stops supervising the offending process, a non-zero return value from
 script means the script has either failed to handle the situation or
 prefers to delegate to
 .Nm watchdogd
-to perform the actual system reset.
+to save the reset cause and perform the actual system reset.
 .Pp
-Note, the global script setting does not apply to this section.
-However, the same script can be used, due to the unique first argument.
+The global script setting does not apply to this section.  However, the
+same script can be used, due to the unique first argument.
+.Pp
+.Cm IMPORTANT:
+Calling
+.Xr watchdogctl 1
+from the script with the
+.Ar fail
+command will cause an infinite loop.  It is strongly advised to return
+non-zero from the script instead.
 .El
 .It Cm reset-cause Ar {}
 This section controls the reset cause \& reset counter.  By default this
