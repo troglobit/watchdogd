@@ -22,9 +22,9 @@
 #include "wdt.h"
 #include "script.h"
 
-static uev_t watcher;
-
-typedef struct generic_script {  
+typedef struct generic_script {
+    uev_t watcher;
+    int is_init;
     int is_running;
     pid_t pid;
     int warning;
@@ -33,14 +33,14 @@ typedef struct generic_script {
     char *exec;
 } generic_script_t;
 
+static generic_script_t* single_monitor_script = NULL;
 
 static void wait_for_generic_script(uev_t *w, void *arg, int events)
 {
 	int status;
     pid_t pid = 1;
     generic_script_t* script_args;
-    script_args = (generic_script_t*) arg;
-
+    script_args = (generic_script_t*)arg;
     INFO("Monitor Script (PID %d): Got SIGCHLD so checking exit code, events: %d", script_args->pid, events);
 	while ((pid = waitpid(script_args->pid, &status, WNOHANG)) > 0) {
 
@@ -63,6 +63,7 @@ static void wait_for_generic_script(uev_t *w, void *arg, int events)
         break;
 	}
     INFO("Sigchild callback done");
+    //uev_signal_stop(&script_args->watcher);
 }
 
 static int run_generic_script(uev_t *w, generic_script_t* script_args) 
@@ -73,13 +74,13 @@ static int run_generic_script(uev_t *w, generic_script_t* script_args)
         char value[5];
         char *argv[] = {
             script_args->monitor_script,
-            NULL,
-            NULL,
+//            NULL,
+//            NULL,
         };
-        snprintf(value, sizeof(value), "%d", script_args->warning);
-        argv[1] = value;
-        snprintf(value, sizeof(value), "%d", script_args->critical);
-        argv[2] = value;
+//        snprintf(value, sizeof(value), "%d", script_args->warning);
+//        argv[1] = value;
+//        snprintf(value, sizeof(value), "%d", script_args->critical);
+//        argv[2] = value;
         _exit(execv(argv[0], argv));
     }
     if (pid < 0) {
@@ -87,14 +88,21 @@ static int run_generic_script(uev_t *w, generic_script_t* script_args)
         return -1;
     }
     INFO("Started generic monitor script %s with PID %d", script_args->monitor_script, pid);
-    uev_signal_init(w->ctx, &watcher, wait_for_generic_script, script_args, SIGCHLD);
+    if(script_args->is_init) {
+        //uev_signal_start(&script_args->watcher);
+    }
+    else
+    {
+        uev_signal_init(w->ctx, &single_monitor_script->watcher, wait_for_generic_script, single_monitor_script, SIGCHLD);
+        script_args->is_init = 1;
+    }
     return pid;
 }
 
 static void cb(uev_t *w, void *arg, int events)
 {
     generic_script_t* script_args;
-    script_args = (generic_script_t*) arg;
+    script_args = (generic_script_t*)arg;    
     if (!script_args) {
         ERROR("Oops, no args?");
 		return;
@@ -107,6 +115,20 @@ static void cb(uev_t *w, void *arg, int events)
         if(script_args->pid > 0) {
             script_args->is_running = 1;
         }
+        else
+        {
+            if (script_args->critical > 0) 
+            {
+                ERROR("Could not start the monitor script %s, rebooting system ...", script_args->monitor_script);
+                if (checker_exec(script_args->exec, "generic", 1, 100, script_args->warning, script_args->critical))
+                    wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
+            }
+            else 
+            {
+                WARN("Could not start the monitor script %s, but is not critical", script_args->monitor_script);
+            }
+            return;
+        }
     }
     else 
     {
@@ -114,6 +136,20 @@ static void cb(uev_t *w, void *arg, int events)
         if (checker_exec(script_args->exec, "generic", 1, 100, script_args->warning, script_args->critical))
             wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
         return;
+    }
+}
+
+static void stop_and_cleanup(generic_script_t* script) 
+{
+    if(script) {
+        uev_timer_stop(&script->watcher);
+        if(script->exec) {
+            free(script->exec);
+        }
+        if(script->monitor_script) {
+            free(script->monitor_script);
+        }
+        free(script);
     }
 }
 
@@ -125,40 +161,40 @@ int generic_init(uev_ctx_t *ctx, int T, int timeout, char *monitor, int mark, in
 {
 	if (!T) {
 		INFO("Generic script monitor disabled.");
-		return uev_timer_stop(&watcher);
+        stop_and_cleanup(single_monitor_script);
+        single_monitor_script = NULL;
+        return 0;
 	}
 
     if (!monitor) {
 		ERROR("Generic script monitor not started, please provide script-monitor.");
-		return uev_timer_stop(&watcher);
+        stop_and_cleanup(single_monitor_script);
+        single_monitor_script = NULL;
+        return 0;
 	}
     
 	INFO("Generic script monitor, period %d sec, max timeout: %d, monitor script: %s, warning level: %d, critical level: %d", T, timeout, monitor, warn, crit);
 
-	uev_timer_stop(&watcher);
-    //todo: get any old args and free them + free their monitor_script and exec fields
-    
-    generic_script_t* script_args;
-    script_args = (generic_script_t*) malloc(sizeof (generic_script_t));
-    INFO("OK 1");
-    if(script_args) {
-        script_args->is_running = 0;
-        script_args->pid = -1;
-        script_args->warning = warn;
-        script_args->critical = crit;    
-        INFO("OK 2");
-        script_args->monitor_script = strdup(monitor);
-        INFO("OK 3");
-        script_args->exec = NULL;
+    stop_and_cleanup(single_monitor_script);
+        
+    single_monitor_script = (generic_script_t*) malloc(sizeof (generic_script_t));
+    if(single_monitor_script) {
+        single_monitor_script->is_running = 0;
+        single_monitor_script->is_init = 0;
+        single_monitor_script->pid = -1;
+        single_monitor_script->warning = warn;
+        single_monitor_script->critical = crit;    
+        single_monitor_script->monitor_script = strdup(monitor);
+        single_monitor_script->exec = NULL;
         if (script) 
         {
-            script_args->exec = strdup(script);            
+            single_monitor_script->exec = strdup(script);            
         }
+        INFO("Start monitor timer");
         
-        INFO("OK 4");
+        return uev_timer_init(ctx, &single_monitor_script->watcher, cb, single_monitor_script, timeout * 1000, T * 1000);
     }
-    INFO("OK 5");
-	return uev_timer_init(ctx, &watcher, cb, script_args, timeout * 1000, T * 1000);
+    return 0;
 }
 
 /**

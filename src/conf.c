@@ -278,8 +278,6 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 #endif
 #ifdef GENERIC_PLUGIN
     generic_plugin_checker(ctx, cfg);
-#else
-#error MUDTHAVE
 #endif
 
 	return cfg_free(cfg);
