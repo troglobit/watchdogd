@@ -18,6 +18,7 @@
 
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "wdt.h"
 #include "script.h"
@@ -29,6 +30,7 @@ typedef struct generic_script {
     pid_t pid;
     int warning;
     int critical;
+    uev_t monitor_script_watcher;
     char *monitor_script;
     char *exec;
 } generic_script_t;
@@ -41,29 +43,40 @@ static void wait_for_generic_script(uev_t *w, void *arg, int events)
     pid_t pid = 1;
     generic_script_t* script_args;
     script_args = (generic_script_t*)arg;
-    INFO("Monitor Script (PID %d): Got SIGCHLD so checking exit code, events: %d", script_args->pid, events);
-	while ((pid = waitpid(script_args->pid, &status, WNOHANG)) > 0) {
+    INFO("Monitor Script (PID %d): verifying if still running, events: %d", script_args->pid, events);
+	if ((pid = waitpid(script_args->pid, &status, WNOHANG)) > 0) {
 
-		status = WEXITSTATUS(status);
-        if (status >= script_args->critical) 
-        {
-            ERROR("Monitor Script (PID %d) returned exit status above critical treshold: %d, rebooting system ...", pid, status);
-            if (checker_exec(script_args->exec, "generic", 1, status, script_args->warning, script_args->critical))
-                wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
-        } 
-        else if(status >= script_args->warning)
-        {
-			WARN("Monitor Script (PID %d) returned exit status above warning treshold: %d", pid, status);
-            checker_exec(script_args->exec, "generic", 0, status, script_args->warning, script_args->critical);
+        if(pid == script_args->pid) {
+            uev_timer_stop(&script_args->monitor_script_watcher);
+            script_args->is_running = 0;
+            
+            status = WEXITSTATUS(status);
+            if (status >= script_args->critical) 
+            {
+                ERROR("Monitor Script (PID %d) returned exit status above critical treshold: %d, rebooting system ...", pid, status);
+                if (checker_exec(script_args->exec, "generic", 1, status, script_args->warning, script_args->critical))
+                    wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
+            } 
+            else if(status >= script_args->warning)
+            {
+                WARN("Monitor Script (PID %d) returned exit status above warning treshold: %d", pid, status);
+                checker_exec(script_args->exec, "generic", 0, status, script_args->warning, script_args->critical);
+            }
+            else 
+            {
+                INFO("Monitor script ran OK");            
+            }
+            
         }
-        else 
+        else
         {
-            INFO("Monitor script ran OK");
+            INFO("Monitor script waitpid %d and script is %d", pid, script_args->pid);    
         }
-        break;
 	}
-    INFO("Sigchild callback done");
-    //uev_signal_stop(&script_args->watcher);
+    else
+    {        
+        INFO("Monitor script still running: waitpid: %d  errno: %d", pid, errno);
+    }
 }
 
 static int run_generic_script(uev_t *w, generic_script_t* script_args) 
@@ -74,13 +87,17 @@ static int run_generic_script(uev_t *w, generic_script_t* script_args)
         char value[5];
         char *argv[] = {
             script_args->monitor_script,
-//            NULL,
-//            NULL,
+            NULL,
+            NULL,
+            0
         };
-//        snprintf(value, sizeof(value), "%d", script_args->warning);
-//        argv[1] = value;
-//        snprintf(value, sizeof(value), "%d", script_args->critical);
-//        argv[2] = value;
+        snprintf(value, sizeof(value), "%d", script_args->warning);
+        argv[1] = value;
+        snprintf(value, sizeof(value), "%d", script_args->critical);
+        argv[2] = value;
+        sigset_t sigs;
+        sigfillset(&sigs);
+        sigprocmask(SIG_UNBLOCK, &sigs, 0);
         _exit(execv(argv[0], argv));
     }
     if (pid < 0) {
@@ -88,14 +105,12 @@ static int run_generic_script(uev_t *w, generic_script_t* script_args)
         return -1;
     }
     INFO("Started generic monitor script %s with PID %d", script_args->monitor_script, pid);
-    if(script_args->is_init) {
-        //uev_signal_start(&script_args->watcher);
-    }
-    else
-    {
-        uev_signal_init(w->ctx, &single_monitor_script->watcher, wait_for_generic_script, single_monitor_script, SIGCHLD);
-        script_args->is_init = 1;
-    }
+    script_args->pid = pid;
+    script_args->is_running = 1;
+    
+    uev_timer_stop(&script_args->monitor_script_watcher);
+    uev_timer_init(w->ctx, &script_args->monitor_script_watcher, wait_for_generic_script, script_args, 1000, 1000);    
+        
     return pid;
 }
 
@@ -111,11 +126,7 @@ static void cb(uev_t *w, void *arg, int events)
     if(!script_args->is_running) {
         INFO("Starting the generic monitor script");
         
-        script_args->pid = run_generic_script(w, script_args);
-        if(script_args->pid > 0) {
-            script_args->is_running = 1;
-        }
-        else
+        if(run_generic_script(w, script_args) <= 0)
         {
             if (script_args->critical > 0) 
             {
@@ -142,6 +153,7 @@ static void cb(uev_t *w, void *arg, int events)
 static void stop_and_cleanup(generic_script_t* script) 
 {
     if(script) {
+        uev_timer_stop(&script->monitor_script_watcher);
         uev_timer_stop(&script->watcher);
         if(script->exec) {
             free(script->exec);
@@ -192,7 +204,7 @@ int generic_init(uev_ctx_t *ctx, int T, int timeout, char *monitor, int mark, in
         }
         INFO("Start monitor timer");
         
-        return uev_timer_init(ctx, &single_monitor_script->watcher, cb, single_monitor_script, timeout * 1000, T * 1000);
+        return uev_timer_init(ctx, &single_monitor_script->watcher, cb, single_monitor_script, T * 1000, T * 1000);
     }
     return 0;
 }
