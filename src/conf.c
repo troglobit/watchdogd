@@ -63,19 +63,19 @@ static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 	sec = cfg_getnsec(cfg, "generic", 0);
 	if (sec) {
 		int period, timeout, logmark;
-        int warn_level, crit_level;
+		int warn_level, crit_level;
 		char *script, *monitor;
-        
+
 		period  = cfg_getint(sec, "interval");
-        timeout  = cfg_getint(sec, "timeout");
+		timeout  = cfg_getint(sec, "timeout");
 		logmark = cfg_getbool(sec, "logmark");
 		warn_level = cfg_getint(sec, "warning");
 		crit_level = cfg_getint(sec, "critical");
-        monitor  = cfg_getstr(sec, "monitor-script");
+		monitor  = cfg_getstr(sec, "monitor-script");
 		script  = cfg_getstr(sec, "script");
 		return generic_init(ctx, period, timeout, monitor, logmark, warn_level, crit_level, script);
 	}
-    INFO("Generic plugin config not found, not loaded");
+	INFO("Generic plugin config section not found, not loaded");
 	return 0;
 }
 #endif
