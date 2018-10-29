@@ -20,11 +20,36 @@
 #include <sys/wait.h>		/* waitpid() */
 #include <unistd.h>		/* execv(), _exit() */
 
+#include <uev/queue.h>
+
 #include "wdt.h"
 #include "script.h"
 
+#define MAX_EXEC_INFO_LIST_SIZE 5
+
 static char *global_exec = NULL;
 static uev_t watcher;
+typedef struct exec_info {
+    pid_t pid;
+    int exit_status;
+    LIST_ENTRY(exec_info) entry;
+} exec_info_t;
+static LIST_HEAD(exec_info_list, exec_info) exec_info_head;
+
+static void cleanup_exec_info(int max_size)
+{
+    int size = 0;
+    exec_info_t* info;
+    LIST_FOREACH(info, &exec_info_head, entry) 
+    {
+        ++size;
+        if (size >= max_size) 
+        {
+            LIST_REMOVE(info, entry);
+            free(info);
+        }
+    }
+}
 
 static void cb(uev_t *w, void *arg, int events)
 {
@@ -33,13 +58,29 @@ static void cb(uev_t *w, void *arg, int events)
 
 	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
 		/* Script exit OK. */
-		if (WIFEXITED(status))
-			continue;
+        if (WIFEXITED(status)) {
+            status = WEXITSTATUS(status);
+            if (status) 
+            {
+                WARN("Script (PID %d) returned error: %d", pid, status);
+            }
+            else 
+            {
+                INFO("Script (PID %d) exited with error code %d", pid, status);
+            }
+            
+            cleanup_exec_info(MAX_EXEC_INFO_LIST_SIZE - 1);
+            
+            exec_info_t* info = malloc(sizeof(exec_info_t));
+            info->pid = pid;
+            info->exit_status = status;
+            LIST_INSERT_HEAD(&exec_info_head, info, entry);
+        }
+        else 
+        {
+            INFO("Script (PID %d) is not yet exited?", pid);
+        }
 
-		/* Script exit status ... */
-		status = WEXITSTATUS(status);
-		if (status)
-			WARN("Script (PID %d) returned error: %d", pid, status);
 	}
 }
 
@@ -50,6 +91,7 @@ int script_init(uev_ctx_t *ctx, char *script)
 	/* Only set up signal watcher once */
 	if (once) {
 		once = 0;
+        LIST_INIT(&exec_info_head);
 		uev_signal_init(ctx, &watcher, cb, "init", SIGCHLD);
 	}
 
@@ -139,10 +181,51 @@ int supervisor_exec(char *exec, int c, int p, char *label)
 	return 0;
 }
 
+int generic_exec(char *exec, int warn, int crit)
+{
+    char value[5];
+    char *argv[] = {
+        exec,
+        NULL,
+        NULL,
+        0
+    };
+    snprintf(value, sizeof(value), "%d", warn);
+    argv[1] = value;
+    snprintf(value, sizeof(value), "%d", crit);
+    argv[2] = value;
+    
+    pid_t pid;   
+    pid = fork();
+    if (!pid)
+        _exit(execv(argv[0], argv));
+    
+    if (pid < 0) {
+        PERROR("Cannot start script %s", exec);
+        return -1;
+    }
+    INFO("Started generic script %s, PID %d", exec, pid);
+    return pid;    
+}
+
+int get_exit_code_for_pid(pid_t pid)
+{
+    exec_info_t* info;
+    LIST_FOREACH(info, &exec_info_head, entry) 
+    {
+        if (info->pid == pid) {
+            int exit_status = info->exit_status;
+            LIST_REMOVE(info, entry);
+            free(info);
+            return exit_status;
+        }
+    }
+    return -1;
+}
+
 /**
  * Local Variables:
  *  indent-tabs-mode: t
  *  c-file-style: "linux"
  * End:
  */
-
