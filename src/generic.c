@@ -18,7 +18,6 @@
 
 #include <sys/wait.h>
 #include <unistd.h>
-#include <signal.h>
 
 #include "wdt.h"
 #include "script.h"
@@ -46,7 +45,7 @@ static void wait_for_generic_script(uev_t *w, void *arg, int events)
 	DEBUG("Monitor Script (PID %d) verifying if still running, events: %d", script_args->pid, events);
 	status = get_exit_code_for_pid(script_args->pid);
 	if (status >= 0) {
-		uev_signal_stop(&script_args->monitor_script_watcher);
+		uev_timer_stop(&script_args->monitor_script_watcher);
 		script_args->is_running = 0;
 		
 		if (status >= script_args->critical) {
