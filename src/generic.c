@@ -166,6 +166,7 @@ int generic_init(uev_ctx_t *ctx, int T, int timeout, char *monitor, int mark, in
 	
 	single_monitor_script = (generic_script_t*) malloc(sizeof (generic_script_t));
 	if(single_monitor_script) {
+        memset(single_monitor_script, 0, sizeof(generic_script_t));
 		single_monitor_script->is_running = 0;
 		single_monitor_script->pid = -1;
 		single_monitor_script->warning = warn;
