@@ -19,6 +19,9 @@ endif
 if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c		meminfo.h
 endif
+if GENERIC_PLUGIN
+watchdogd_SOURCES  += generic.c		generic.h
+endif
 if RCFILE
 watchdogd_SOURCES  += rcfile.c		rc.h
 endif
