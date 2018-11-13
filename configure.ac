@@ -46,6 +46,9 @@ AC_ARG_ENABLE([filenr],
 AC_ARG_ENABLE([meminfo],
 	[AS_HELP_STRING([--enable-meminfo], [Enable memory leak monitor])],
 	[enable_meminfo=$enableval], [enable_meminfo=no])
+AC_ARG_ENABLE([generic],
+	[AS_HELP_STRING([--enable-generic], [Enable generic script monitor])],
+	[enable_generic=$enableval], [enable_generic=no])
 AC_ARG_ENABLE([syslog-mark],
 	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
 	[enable_syslog_mark=yes], [])
@@ -76,6 +79,10 @@ AS_IF([test "x$enable_meminfo" != "xno"], [
 	AS_IF([test "x$enable_meminfo" = "xyes"], [enable_meminfo=300])
 	AC_DEFINE_UNQUOTED(MEMINFO_PLUGIN, $enable_meminfo, [Enable memory leak monitor])])
 
+AS_IF([test "x$enable_generic" != "xno"], [
+	AS_IF([test "x$enable_generic" = "xyes"], [enable_generic=300])
+	AC_DEFINE_UNQUOTED(GENERIC_PLUGIN, $enable_generic, [Enable generic script monitor])])
+
 AS_IF([test "x$enable_syslog_mark" = "xyes"], [
 	AC_DEFINE(SYSLOG_MARK, 1, [Enable periodic syslog MARK by monitor plugins])])
 
@@ -103,6 +110,7 @@ AM_CONDITIONAL([HAVE_SYSTEMD], [test "x$with_systemd" != "xno"])
 AM_CONDITIONAL(LOADAVG_PLUGIN, [test "x$enable_loadavg" != "xno"])
 AM_CONDITIONAL(FILENR_PLUGIN, [test "x$enable_filenr" != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$enable_meminfo" != "xno"])
+AM_CONDITIONAL(GENERIC_PLUGIN, [test "x$enable_generic" != "xno"])
 AM_CONDITIONAL(FINIT, [test "x$finit" = "xyes"])
 AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
