@@ -20,7 +20,7 @@
 #include <sys/wait.h>		/* waitpid() */
 #include <unistd.h>		/* execv(), _exit() */
 
-#include <uev/queue.h>
+#include <lite/queue.h>
 
 #include "wdt.h"
 #include "script.h"
