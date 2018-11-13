@@ -59,24 +59,26 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 {
 	cfg_t *sec;
+	char *script, *monitor;
+	int period, timeout, logmark;
+	int warn_level, crit_level;
 
 	sec = cfg_getnsec(cfg, "generic", 0);
-	if (sec) {
-		int period, timeout, logmark;
-		int warn_level, crit_level;
-		char *script, *monitor;
+	if (!sec) {
+		INFO("Generic plugin config section not found, not loaded");
+		return 0;
 
-		period  = cfg_getint(sec, "interval");
-		timeout  = cfg_getint(sec, "timeout");
-		logmark = cfg_getbool(sec, "logmark");
-		warn_level = cfg_getint(sec, "warning");
-		crit_level = cfg_getint(sec, "critical");
-		monitor  = cfg_getstr(sec, "monitor-script");
-		script  = cfg_getstr(sec, "script");
-		return generic_init(ctx, period, timeout, monitor, logmark, warn_level, crit_level, script);
 	}
-	INFO("Generic plugin config section not found, not loaded");
-	return 0;
+
+	period     = cfg_getint(sec, "interval");
+	timeout    = cfg_getint(sec, "timeout");
+	logmark    = cfg_getbool(sec, "logmark");
+	warn_level = cfg_getint(sec, "warning");
+	crit_level = cfg_getint(sec, "critical");
+	monitor    = cfg_getstr(sec, "monitor-script");
+	script     = cfg_getstr(sec, "script");
+
+	return generic_init(ctx, period, timeout, monitor, logmark, warn_level, crit_level, script);
 }
 #endif
 
@@ -179,7 +181,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	};
 	cfg_opt_t reset_cause_opts[] =  {
 		CFG_BOOL("enabled",  cfg_false, CFGF_NONE),
-		CFG_STR ("file", NULL, CFGF_NONE),
+		CFG_STR ("file",     NULL, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_opt_t checker_opts[] = {
@@ -190,17 +192,16 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_STR  ("script",   NULL, CFGF_NONE),
 		CFG_END()
 	};
-    cfg_opt_t generic_plugin_opts[] = {
-		CFG_INT  ("interval", 300, CFGF_NONE),
-        CFG_INT  ("timeout", 300, CFGF_NONE),
-		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
-		CFG_INT  ("warning",  1, CFGF_NONE),
-		CFG_INT  ("critical",  2, CFGF_NONE),
-        CFG_STR  ("monitor-script",   NULL, CFGF_NONE),
-		CFG_STR  ("script",   NULL, CFGF_NONE),
+	cfg_opt_t generic_plugin_opts[] = {
+		CFG_INT  ("interval",       300, CFGF_NONE),
+		CFG_INT  ("timeout",        300, CFGF_NONE),
+		CFG_BOOL ("logmark",        cfg_false, CFGF_NONE),
+		CFG_INT  ("warning",        1, CFGF_NONE),
+		CFG_INT  ("critical",       2, CFGF_NONE),
+		CFG_STR  ("monitor-script", NULL, CFGF_NONE),
+		CFG_STR  ("script",         NULL, CFGF_NONE),
 		CFG_END()
 	};
-    
 	cfg_opt_t opts[] = {
 		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
@@ -211,7 +212,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("filenr",      checker_opts, CFGF_NONE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
-        CFG_SEC ("generic",     generic_plugin_opts, CFGF_NONE),
+		CFG_SEC ("generic",     generic_plugin_opts, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_t *cfg;
@@ -277,7 +278,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	checker(ctx, cfg, "meminfo", meminfo_init);
 #endif
 #ifdef GENERIC_PLUGIN
-    generic_plugin_checker(ctx, cfg);
+	generic_plugin_checker(ctx, cfg);
 #endif
 
 	return cfg_free(cfg);
