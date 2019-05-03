@@ -32,22 +32,9 @@ static struct supervisor {
 	int   ack;		/* Next expected ACK from process */
 } process[256];                 /* Max ID 0-255 */
 
-static int rtprio = 98;
 static int supervisor_enabled = 0;
 static char *exec = NULL;
 
-
-static size_t num_supervised(void)
-{
-	size_t i, num = 0;
-
-	for (i = 0; i < NELEMS(process); i++) {
-		if (process[i].id != -1)
-			num++;
-	}
-
-	return num;
-}
 
 static struct supervisor *find_supervised(pid_t pid)
 {
@@ -153,12 +140,12 @@ static int supervisor_reset(uev_ctx_t *ctx, wdog_t *req)
  * prio).  This to ensure that system monitoring goes before anything
  * else in the system.
  */
-static void set_priority(void)
+static void set_priority(int enabled, int rtprio)
 {
 	int result = 0;
 	struct sched_param prio;
 
-	if (num_supervised() && supervisor_enabled) {
+	if (enabled) {
 		DEBUG("Setting SCHED_RR rtprio %d", rtprio);
 		prio.sched_priority = rtprio;
 		result = sched_setscheduler(getpid(), SCHED_RR, &prio);
@@ -170,7 +157,7 @@ static void set_priority(void)
 
 	if (result && !wdt_testmode())
 		PERROR("Failed setting process %spriority",
-		       supervisor_enabled ? "realtime " : "");
+		       enabled ? "realtime " : "");
 }
 
 /*
@@ -271,14 +258,11 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 {
-	size_t num;
 	struct supervisor *p;
 	wdog_reason_t *reason;
 
 	if (!supervisor_enabled)
 		return 1;
-
-	num = num_supervised();
 
 	switch (req->cmd) {
 	case WDOG_SUBSCRIBE_CMD:
@@ -383,9 +367,6 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		return 1;
 	}
 
-	if (num != num_supervised())
-		set_priority();
-
 	return 0;
 }
 
@@ -413,8 +394,7 @@ int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime, char *script)
 	}
 
 	INFO("Starting process supervisor, waiting for client subscribe ...");
-	rtprio = realtime;
-	set_priority();
+	set_priority(1, realtime);
 
 	return 0;
 }
@@ -435,7 +415,7 @@ int supervisor_exit(uev_ctx_t *ctx)
 		}
 	}
 
-	set_priority();
+	set_priority(0, 0);
 
 	return 0;
 }
@@ -462,7 +442,7 @@ int supervisor_enable(int enable)
 		}
 	}
 
-	set_priority();
+	set_priority(0, 0);
 
 	return result;
 }

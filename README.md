@@ -180,10 +180,9 @@ file descriptor usage, see [this article][filenr].  For more info on the
 details of memory usage, see [this article][meminfo].
 
 `watchdogd` v2.0 and later comes with a process supervisor (previously
-called pmon).  It must be enabled and a monitored client must connect to
-it using the libwdog API for the supervisor to start.  As soon as it
-starts it raises the real-time priority of `watchdogd` to 98 to be able
-to ensure proper superivison of its clients.
+called pmon).  When the supervisor is enabled the daemon runs as a
+real-time task with the configured priority, default 98.  Monitored
+clients connect to the supervisor using the libwdog API.
 
 ```
 supervisor {

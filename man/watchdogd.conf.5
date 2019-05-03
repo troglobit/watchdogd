@@ -52,13 +52,13 @@ support this.  Default: disabled
 .It Cm supervisor Ar {}
 Instrumented processes can have their main loop supervised.  Processes
 subscribe to this service using the libwdog API, see the docs for more
-on this, at which point
+on this.  When enabled
 .Nm watchdogd
 switches to
 .Ql SCHED_RR
-with the below elevated realtime priority.  When the last process
-unsubscribes the daemon reverts back to
-.Ql SCHED_OTHER .
+with elevated realtime priority.  When disabled it runs as a regular
+.Ql SCHED_OTHER
+process.
 .Pp
 .Bl -tag -width TERM
 .It Cm enabled = Ar true | false
