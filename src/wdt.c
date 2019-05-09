@@ -507,8 +507,12 @@ int wdt_exit(uev_ctx_t *ctx)
 		fd = -1;
 	}
 
-	/* Tell main() to loop until reboot ... */
-	wait_reboot = 1;
+	/*
+	 * Tell main() to loop until the HW WDT reboots us ... but only
+	 * if we're still enabled.  If we've been disabled prior to our
+	 * being called to exit, we should just exit immediately.
+	 */
+	wait_reboot = enabled;
 
 	/* Leave main loop. */
 	return uev_exit(ctx);
