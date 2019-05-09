@@ -355,8 +355,14 @@ int main(int argc, char *argv[])
 			reboot_in -= timeout;
 		}
 
-		LOG("HW WDT did not reboot, forcing reboot now ...");
-		reboot(RB_AUTOBOOT);
+		if (enabled){
+			LOG("HW WDT did not reboot, forcing reboot now ...");
+			reboot(RB_AUTOBOOT);
+		}
+		else{
+			LOG("HW WDT did not reboot, not forcing reboot as watchdogd is disabled");
+			return status;
+		}
 	}
 
 	return status;
