@@ -81,6 +81,10 @@ aspects of the system, such as:
 - Process live locks
 - Reset counter, for snmpEngineBoots (RFC 2574)
 
+To top things off there is support for periodically calling a generic
+script where operators can do housekeeping checks.  For details on how
+to configure this, see the watchdogd.conf(5) man page.
+
 
 Usage
 -----

@@ -226,6 +226,42 @@ setting is not enough, this is a per-monitor script setting.  It is
 called in the same way as the global script, same arguments.
 .El
 .El
+.Ss Generic Script Monitor
+.Bl -tag -width TERM
+.It Cm generic Ar {}
+Monitor a generic script.  Trigger warning and critical actions based on
+the exit code of the script.
+.Bl -tag -width TERM
+.It Cm interval = Ar SEC
+How often to run the
+.Cm monitor-script ,
+default: 300 sec
+.It Cm timeout = Ar SEC
+Maximum amount of seconds
+.Cm monitor-script
+is allowed to run, default: 300 sec
+.It Cm warning = Ar VAL
+High watermark level, alert sent to log if exit status from
+.Cm monitor-script
+is greater or equal to this value.
+.It Cm critical = Ar VAL
+Critical watermark level, alert sent to log, followed by reboot or
+.Cm script
+action if
+.Cm monitor-script
+exit status is greater or equal to this value.
+.It Cm monitor-script = Ar "/path/to/generic-script.sh"
+Monitor script to run every
+.Cm interval
+seconds.
+.It Cm script = Ar "/path/to/reboot-action.sh"
+Optional script to run instead of reboot if critical watermark level is
+reached.  If omitted the global
+.Ql script
+action is used.  The scripts are called in the same way as the global
+script, same arguments.
+.El
+.El
 .Sh EXAMPLE
 .Bd -unfilled -offset indent
 ### /etc/watchdogd.conf
@@ -280,6 +316,16 @@ meminfo {
     warning  = 0.9
     critical = 0.95
 #    script = "/path/to/meminfo-script.sh"
+}
+
+# Generic site-specific script
+generic {
+    interval = 60
+    timeout = 10
+    warning = 10
+    critical = 100
+    monitor-script = "/path/to/monitor-script.sh"
+#    script = "/path/to/alt-reboot-action.sh"
 }
 .Ed
 .Sh SEE ALSO
