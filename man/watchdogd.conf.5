@@ -26,17 +26,30 @@ use-case does not require a configuration file.  However, enabling a
 health monitor plugin or the process supervisor is done using
 .Pa /etc/watchdogd.conf .
 .Pp
+Available monitor plugins are:
+.Bl -tag -width TERM
+.It Cm supervisor
+Process supervisor, monitor the heartbeat of processes
+.It Cm filenr
+File descriptor monitor, also covers sockets, and other descriptor based
+resources
+.It Cm loadavg
+CPU load average monitor
+.It Cm meminfo
+Memory usage monitor
+.El
+.Sh SYNTAX
+This file is a standard UNIX .conf file with sub-sections and '=' for
+assignment.  The '#' character marks start of a comment to end of line,
+and the '\\' character can be used as an escape character.  Whitesapce
+is ignored, unless inside a string.
+.Pp
 .Sy Warning:
 do not set the below WDT timeout and kick interval too low.  The daemon
 (usually) runs as a regular
 .Ql SCHED_OTHER
 background task and the monitor plugins (as well as your other services)
 need CPU time as well.
-.Sh SYNTAX
-This file is a standard UNIX .conf file with sub-sections and '=' for
-assignment.  The '#' character marks start of a comment to end of line,
-and the '\\' character can be used as an escape character.  Whitesapce
-is ignored, unless inside a string.
 .Pp
 .Bl -tag -width TERM
 .It Cm timeout = Ar SEC
@@ -49,6 +62,36 @@ should reset the WDT timer.  Default: 10 sec
 With safe-exit enabled (true) the daemon will ask the driver disable the
 WDT before exiting (SIGINT).  However, some WDT drivers (or HW) may not
 support this.  Default: disabled
+.It Cm script = Ar "/path/to/script.sh"
+Script or command to run instead of reboot when a monitor plugin reaches
+any of its critical or warning level.  Setting this will disable the
+default reboot action on critical, it is therefore up to the script to
+perform reboot, if needed.  The script is called as:
+.Bd -unfilled -offset indent
+script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
+.Ed
+.Pp
+Health monitor plugins also have their own local script setting.
+.It Cm reset-cause Ar {}
+This section controls the reset cause \& reset counter.  By default this
+is disabled, since not all systems allow writing to disk, e.g. embedded
+systems using MTD devices with limited number of write cycles.
+.Pp
+Another backend can be implemented and linked to the daemon, but make
+sure to
+.Ql --disable-rcfile
+with the configure script first.
+.Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable storing reset cause, default: disabled
+.It Cm file = Ar "/var/lib/watchdogd.state"
+The default file setting is a non-volatile path, according to the FHS.
+It can be changed to another location, but make sure that location is
+writable first.
+.El
+.El
+.Ss Process Supervisor
+.Bl -tag -width TERM
 .It Cm supervisor Ar {}
 Instrumented processes can have their main loop supervised.  Processes
 subscribe to this service using the libwdog API, see the docs for more
@@ -106,33 +149,9 @@ from the script with the
 command will cause an infinite loop.  It is strongly advised to return
 non-zero from the script instead.
 .El
-.It Cm reset-cause Ar {}
-This section controls the reset cause \& reset counter.  By default this
-is disabled, since not all systems allow writing to disk, e.g. embedded
-systems using MTD devices with limited number of write cycles.
-.Pp
-Another backend can be implemented and linked to the daemon, but make
-sure to
-.Ql --disable-rcfile
-with the configure script first.
-.Bl -tag -width TERM
-.It Cm enabled = Ar true | false
-Enable or disable storing reset cause, default: disabled
-.It Cm file = Ar "/var/lib/watchdogd.state"
-The default file setting is a non-volatile path, according to the FHS.
-It can be changed to another location, but make sure that location is
-writable first.
 .El
-.It Cm script = Ar "/path/to/script.sh"
-Script or command to run instead of reboot when a monitor plugin reaches
-any of its critical or warning level.  Setting this will disable the
-default reboot action on critical, it is therefore up to the script to
-perform reboot, if needed.  The script is called as:
-.Bd -unfilled -offset indent
-script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
-.Ed
-.Pp
-Health monitor plugins also have their own local script setting.
+.Ss File Descriptor Monitor
+.Bl -tag -width TERM
 .It Cm filenr Ar {}
 Monitors file descriptor leaks based on
 .Ql /proc/sys/fs/file-nr .
@@ -152,6 +171,9 @@ If the global
 setting is not enough, this is a per-monitor script setting.  It is
 called in the same way as the global script, same arguments.
 .El
+.El
+.Ss CPU Load Average Monitor
+.Bl -tag -width TERM
 .It Cm loadavg Ar {}
 Monitors load average based on
 .Xr sysinfo 2
@@ -181,6 +203,9 @@ If the global
 setting is not enough, this is a per-monitor script setting.  It is
 called in the same way as the global script, same arguments.
 .El
+.El
+.Ss Memory Usage Monitor
+.Bl -tag -width TERM
 .It Cm meminfo Ar {}
 Monitors free RAM based on data from
 .Ql /proc/meminfo .
