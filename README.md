@@ -191,7 +191,7 @@ supervisor {
 }
 ```
 
-[See below][#libwdog-api] for details on how to have your process
+[See below](#libwdog-api) for details on how to have your process
 internal deadlines be supervised.
 
 When a process fails to meet its deadlines, or a monitor plugin reaches
