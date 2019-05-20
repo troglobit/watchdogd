@@ -60,7 +60,7 @@ static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 {
 	cfg_t *sec;
 	char *script, *monitor;
-	int period, timeout, logmark;
+	int period, timeout;
 	int warn_level, crit_level;
 
 	sec = cfg_getnsec(cfg, "generic", 0);
@@ -72,13 +72,12 @@ static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 
 	period     = cfg_getint(sec, "interval");
 	timeout    = cfg_getint(sec, "timeout");
-	logmark    = cfg_getbool(sec, "logmark");
 	warn_level = cfg_getint(sec, "warning");
 	crit_level = cfg_getint(sec, "critical");
 	monitor    = cfg_getstr(sec, "monitor-script");
 	script     = cfg_getstr(sec, "script");
 
-	return generic_init(ctx, period, timeout, monitor, logmark, warn_level, crit_level, script);
+	return generic_init(ctx, period, timeout, monitor, warn_level, crit_level, script);
 }
 #endif
 

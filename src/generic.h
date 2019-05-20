@@ -18,7 +18,7 @@
 #ifndef WDOG_GENERIC_H_
 #define WDOG_GENERIC_H_
 
-int generic_init(uev_ctx_t* ctx, int T, int timeout, char* monitor, int mark, int warn, int crit, char* script);
+int generic_init(uev_ctx_t* ctx, int T, int timeout, char* monitor, int warn, int crit, char* script);
 
 #endif /* WDOG_GENERIC_H_ */
 
