@@ -206,7 +206,7 @@ int generic_exec(char *exec, int warn, int crit)
 	return pid;
 }
 
-int get_exit_code_for_pid(pid_t pid)
+int exit_code(pid_t pid)
 {
 	exec_info_t *info;
 	int rc = -1;

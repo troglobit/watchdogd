@@ -43,7 +43,7 @@ static void wait_for_generic_script(uev_t *w, void *arg, int events)
 	int status;
 
 	DEBUG("Monitor Script (PID %d) verifying if still running, events: %d", script->pid, events);
-	status = get_exit_code_for_pid(script->pid);
+	status = exit_code(script->pid);
 	if (status >= 0) {
 		uev_timer_stop(&script->monitor_script_watcher);
 		script->is_running = 0;
