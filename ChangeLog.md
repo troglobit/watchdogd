@@ -3,6 +3,26 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
+[3.2][UNRELEASED]
+-----------------
+
+### Changes
+- When the process supervisor is enabled `watchdogd` now always runs
+  with elevated RT priority.  Previous releases changed to `SCHED_RR`
+  only when the first supervised process connected, and conversely
+  disbled RT prio when the last supervised process disconnected.  The
+  change gives a more predictable behavior and also means `watchdogd`
+  can be relied upon until the system has been properly diagnosed
+- If the (optional) supervisor script returns OK (0) the timer for the
+  offending process is now disarmed and the system is not rebooted.
+- Retry handover from Finit buit-in watchdog if first attempt fails
+- New generic script monitor, thanks to Tom Deblauwe.  Can periodically
+  call a site specific script, with timeout in case the script hangs
+
+### Fixes
+- Fix #16: Only force reboot on exit if `watchdogd` is enabled
+
+
 [3.1][] - 2018-06-27
 --------------------
 
@@ -160,6 +180,7 @@ support for process monitoring with an instrumentation API.
 
 
 [UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.1...HEAD
+[3.2]:        https://github.com/troglobit/watchdogd/compare/3.1...3.2
 [3.1]:        https://github.com/troglobit/watchdogd/compare/3.0...3.1
 [3.0]:        https://github.com/troglobit/watchdogd/compare/2.0.1...3.0
 [2.0.1]:      https://github.com/troglobit/watchdogd/compare/2.0...2.0.1
