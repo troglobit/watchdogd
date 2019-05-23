@@ -394,9 +394,3 @@ more details, see the file [CONTRIBUTING][contrib].
 [Joachim Nilsson]: http://troglobit.com
 [logo]:            https://www.clipartof.com/435776
 [Ron Leishman]:    http://toonclips.com/design/788
-
-<!--
-  -- Local Variables:
-  -- mode: markdown
-  -- End:
-  -->
