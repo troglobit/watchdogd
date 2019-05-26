@@ -27,15 +27,21 @@
 
 int wdt_register(void)
 {
-	int sd, rc = -1, retry = 3;
-	size_t len;
-	struct pollfd pfd;
-	struct sockaddr_un sun;
+	static int already = 0;
 	struct init_request rq = {
 		.magic    = INIT_MAGIC,
 		.cmd      = INIT_CMD_WDOG_HELLO,
 		.runlevel = getpid(),
 	};
+	struct sockaddr_un sun;
+	struct pollfd pfd;
+	size_t len;
+	int sd, rc = -1, retry = 3;
+
+	if (already) {
+		DEBUG("No need to handover to Finit again.");
+		return 0;
+	}
 
 	sd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (-1 == sd)
@@ -72,6 +78,9 @@ int wdt_register(void)
 
 	if (rq.cmd == INIT_CMD_ACK)
 		rc = 0;
+
+	if (!rc)
+		already = 1;
 err:
 	close(sd);
 
