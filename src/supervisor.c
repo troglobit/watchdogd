@@ -33,6 +33,7 @@ static struct supervisor {
 } process[256];                 /* Max ID 0-255 */
 
 static int supervisor_enabled = 0;
+static int supervisor_realtime = 0;
 static char *exec = NULL;
 
 
@@ -372,8 +373,8 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 
 int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime, char *script)
 {
-	size_t i;
 	static int already = 0;
+	size_t i;
 
 	/* XXX: Maybe store these in shm instead, in case we are restarted? */
 	for (i = 0; !already && i < NELEMS(process); i++) {
@@ -394,6 +395,7 @@ int supervisor_init(uev_ctx_t *ctx, int enabled, int realtime, char *script)
 	}
 
 	INFO("Starting process supervisor, waiting for client subscribe ...");
+	supervisor_realtime = realtime;
 	set_priority(1, realtime);
 
 	return 0;
@@ -432,7 +434,7 @@ int supervisor_enable(int enable)
 		struct supervisor *p = &process[i];
 
 		if (p->id != -1) {
-			DEBUG("%sabling %s, id:%d ...",
+			DEBUG("%sabling supervisor for %s, id:%d ...",
 			      enable ? "En" : "Dis", p->label, p->id);
 			if (!enable)
 				result += uev_timer_stop(&p->watcher);
@@ -442,7 +444,7 @@ int supervisor_enable(int enable)
 		}
 	}
 
-	set_priority(0, 0);
+	set_priority(enable, supervisor_realtime);
 
 	return result;
 }
