@@ -299,29 +299,54 @@ static int run_test(char *arg)
 
 	switch (op) {
 		case 200:
+			/*
+			 * Simple subscribe, kick, and unsubscribe cycle
+			 */
 			return testit();
 
 		case 201:
+			/*
+			 * Longer test, temporarily disables watchdogd
+			 * then re-enables it, and finally unsubscribes
+			 */
 			disable_enable = 1;
 			return testit();
 
 		case 202:
+			/*
+			 * Verifies bad ACK sequence in first kick
+			 */
 			false_ack = 1;
 			return testit();
 
 		case 203:
+			/*
+			 * Verifies bad ACK sequence in unsubscribe
+			 */
 			false_unsubscribe = 1;
 			return testit();
 
 		case 204:
+			/*
+			 * Verifies bad ACK sequence in second kick
+			 */
 			failed_kick = 1;
 			return testit();
 
 		case 205:
+			/*
+			 * Verifies missing kick
+			 */
 			no_kick = 1;
 			return testit();
 
 		case 206:
+			/*
+			 * With a timeout of 2 sec we normally respond
+			 * once every sec.  With this we do a slightly
+			 * longer response, 1.5 sec, to verify watchdogd
+			 * does not trigger prematurely.
+			 */
 			premature = 1;
 			return testit();
 	}
