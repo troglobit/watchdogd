@@ -7,10 +7,10 @@ All notable changes to the project are documented in this file.
 -----------------
 
 ### Changes
-- When the process supervisor is enabled `watchdogd` now always runs
-  with elevated RT priority.  Previous releases changed to `SCHED_RR`
-  only when the first supervised process connected, and conversely
-  disbled RT prio when the last supervised process disconnected.  The
+- Issue #17: When the process supervisor is enabled `watchdogd` now
+  always runs with elevated RT priority.  Previous releases changed to
+  `SCHED_RR` only when the first supervised process connected, and
+  conversely disbled RT prio when the last process disconnected.  This
   change gives a more predictable behavior and also means `watchdogd`
   can be relied upon until the system has been properly diagnosed
 - If the (optional) supervisor script returns OK (0) the timer for the
@@ -21,6 +21,13 @@ All notable changes to the project are documented in this file.
 
 ### Fixes
 - Fix #16: Only force reboot on exit if `watchdogd` is enabled
+- When disabling and the re-enabling `watchdogd` using the API the
+  daemon was sometimes stopped by Finit.  This happened because the
+  daemon re-issued a watchdog handover signal to Finit.  The fix is
+  to only do the handover once.
+- When re-enabling `watchdogd` the supervisor was not properly elevating
+  the RT priority, instead it remained as a `SCHED_OTHER` process.  This
+  fix makes sure to save and re-use the configured RT priority.
 
 
 [3.1][] - 2018-06-27
