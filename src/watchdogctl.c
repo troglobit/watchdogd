@@ -394,11 +394,11 @@ static int usage(int code)
 	       "Tests:\n"
 	       "  complete-cycle**     Verify subscribe, kick, and unsubscribe (no reset)\n"
 	       "  disable-enable       Verify WDT disable, and re-enable (no reset)\n"
+	       "  premature-trigger    Verify no premature trigger before unsubscribe (no reset)\n"
 	       "  false-ack            Verify kick with invalid ACK (reset)\n"
 	       "  false-unsubscribe    Verify unsubscribe with invalid ACK (reset)\n"
 	       "  failed-kick          Verify reset on missing kick (reset)\n"
 	       "  no-kick              Verify reset on missing first kick (reset)\n"
-	       "  premature-trigger    Verify no premature trigger before unsubscribe (reset)\n"
 #endif
 	       "____\n"
 	       "*  default log level\n"
