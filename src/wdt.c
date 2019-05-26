@@ -440,6 +440,13 @@ int wdt_enable(int enable)
 	if (enabled == enable)
 		return 0;	/* Hello?  Yes, this is dog */
 
+	/* Stop/Start process supervisor */
+	DEBUG("%sabling supervisor ...", enable ? "En" : "Dis");
+	result += supervisor_enable(enable);
+	if (!result)
+		enabled = enable;
+
+	DEBUG("%sabling watchdogd ...", enable ? "En" : "Dis");
 	if (!enable) {
 		/* Attempt to disable HW watchdog */
 		while (fd != -1) {
@@ -458,12 +465,6 @@ int wdt_enable(int enable)
 	} else {
 		result += wdt_init(NULL, NULL);
 	}
-
-	/* Stop/Start process supervisor */
-	DEBUG("%sabling supervisor ...", enable ? "En" : "Dis");
-	result += supervisor_enable(enable);
-	if (!result)
-		enabled = enable;
 
 	return result;
 }
