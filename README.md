@@ -322,6 +322,9 @@ debug log level, without having to restart a running daemon.
 Build & Install
 ---------------
 
+> **Note:** To enable any of the extra monitors and the process supervisor,
+> see `./configure --help`
+
 `watchdogd` is tailored for Linux systems and builds against most modern
 C libries.  However, three external libraries are required: [libite][],
 [libuEv][], and [libConfuse][].  Neither should present any surprises,
@@ -337,9 +340,6 @@ you may need to provide their paths:
 PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
 make
 ```
-
-> **Note:** To enable any of the extra monitors and the process supervisor,
-> see `./configure --help`
 
 If you're not building from a released tarball but instead use the GIT
 sources, see the [Contributing](#contributing) section below.
