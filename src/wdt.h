@@ -53,7 +53,7 @@
 #define WDT_REASON_LBL "Label               "
 #define WDT_REASON_TME "Reset date          "
 #define WDT_REASON_CSE "Reset cause         "
-#define WDT_REASON_STR "Reset cause reason  "
+#define WDT_REASON_STR "Reset reason        "
 #define WDT_REASON_CNT "Reset counter       "
 #define WDT_REASON_WDT "Boot status (WDIOF) "
 #define WDT_REASON_TMO "Timeout (sec)       "
