@@ -322,12 +322,12 @@ debug log level, without having to restart a running daemon.
 Build & Install
 ---------------
 
-`watchdogd` is tailored for Linux systems and should build against any
-(old) C libray.  However, `watchdogd` require threee external libraries:
-[libite][], [libuEv][], and [libConfuse][].  Neither should present any
-surprises, all of them use de facto standard `configure` scripts and
-support `pkg-config`, which the `watchdogd` `configure` script use to
-locate requried libraries and header files.
+`watchdogd` is tailored for Linux systems and builds against most modern
+C libries.  However, three external libraries are required: [libite][],
+[libuEv][], and [libConfuse][].  Neither should present any surprises,
+all of them use de facto standard `configure` scripts and support
+`pkg-config`.  The latter is used by the `watchdogd` `configure` script
+use to locate requried libraries and header files.
 
 Hence, the regular `./configure && make` is usually sufficient to build
 `watchdogd`.  But, if libraries are installed in non-standard locations
@@ -338,7 +338,11 @@ PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
 make
 ```
 
-To build the source from GIT, see below.
+> **Note:** To enable any of the extra monitors and the process supervisor,
+> see `./configure --help`
+
+If you're not building from a released tarball but instead use the GIT
+sources, see the [Contributing](#contributing) section below.
 
 
 Origin & References
