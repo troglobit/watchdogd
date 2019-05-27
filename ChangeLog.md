@@ -3,8 +3,8 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
-[3.2][UNRELEASED]
------------------
+[3.2][] - 2019-05-27
+--------------------
 
 ### Changes
 - Issue #17: When the process supervisor is enabled `watchdogd` now
@@ -186,7 +186,7 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.1...HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.2...HEAD
 [3.2]:        https://github.com/troglobit/watchdogd/compare/3.1...3.2
 [3.1]:        https://github.com/troglobit/watchdogd/compare/3.0...3.1
 [3.0]:        https://github.com/troglobit/watchdogd/compare/2.0.1...3.0
