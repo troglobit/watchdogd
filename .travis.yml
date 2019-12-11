@@ -42,7 +42,7 @@ install:
 
 script:
   - ./autogen.sh
-  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix=/tmp --enable-examples
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix=/tmp --enable-examples  --with-systemd=/tmp/lib/systemd/system
   - PKG_CONFIG_PATH=/tmp/lib/pkgconfig make distcheck
   - make clean
   - make V=1 -j5
