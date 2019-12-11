@@ -49,7 +49,7 @@ static void generic_cb(uev_t *w, void *arg, int events)
 		gs->is_running = 0;
 
 		if (status >= gs->critical) {
-			ERROR("Monitor script returned critical: %d, rebooting system ...", status);
+			EMERG("Monitor script returned critical: %d, rebooting system ...", status);
 			if (checker_exec(gs->exec, "generic", 1, status, gs->warning, gs->critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
 
@@ -101,7 +101,7 @@ static void cb(uev_t *w, void *arg, int events)
 		return;
 
 	if (gs->is_running) {
-		ERROR("Timeout reached, script %s is still running, rebooting system ...", gs->script);
+		EMERG("Timeout reached, script %s is still running, rebooting system ...", gs->script);
 		if (checker_exec(gs->exec, "generic", 1, 100, gs->warning, gs->critical))
 			wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
 		return;
@@ -109,7 +109,7 @@ static void cb(uev_t *w, void *arg, int events)
 
 	if (runit(w, gs) <= 0) {
 		if (gs->critical > 0) {
-			ERROR("Could not start monitor script %s, rebooting system ...", gs->script);
+			EMERG("Could not start monitor script %s, rebooting system ...", gs->script);
 			if (checker_exec(gs->exec, "generic", 1, 100, gs->warning, gs->critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
 		} else {

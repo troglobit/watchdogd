@@ -91,7 +91,7 @@ static void cb(uev_t *w, void *arg, int events)
 
 	if (avg > warning) {
 		if (above_watermark(avg, &si)) {
-			ERROR("System load too high, %.2f > %0.2f, rebooting system ...", avg, critical);
+			EMERG("System load too high, %.2f > %0.2f, rebooting system ...", avg, critical);
 			if (checker_exec(exec, "loadavg", 1, avg, warning, critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":loadavg", 0);
 			return;

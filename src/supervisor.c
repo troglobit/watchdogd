@@ -252,7 +252,7 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 {
 	struct supervisor *p = (struct supervisor *)arg;
 
-	ERROR("Process %s[%d] failed to meet its deadline, rebooting ...",
+	EMERG("Process %s[%d] failed to meet its deadline, rebooting ...",
 	      p->label, p->pid);
 	action(w->ctx, p, WDOG_FAILED_TO_MEET_DEADLINE, 0);
 }

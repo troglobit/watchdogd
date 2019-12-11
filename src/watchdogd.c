@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
 			reboot_in -= timeout;
 		}
 
-		LOG("HW WDT did not reboot, forcing reboot now ...");
+		EMERG("HW WDT did not reboot, forcing reboot now ...");
 		reboot(RB_AUTOBOOT);
 	}
 

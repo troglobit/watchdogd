@@ -59,6 +59,7 @@
 #define WDT_REASON_TMO "Timeout (sec)       "
 #define WDT_REASON_INT "Kick interval       "
 
+#define EMERG(fmt, args...)  syslog(LOG_EMERG,   fmt, ##args)
 #define ERROR(fmt, args...)  syslog(LOG_ERR,     fmt, ##args)
 #define PERROR(fmt, args...) syslog(LOG_ERR,     fmt ": %s", ##args, strerror(errno))
 #define DEBUG(fmt, args...)  syslog(LOG_DEBUG,   fmt, ##args)
