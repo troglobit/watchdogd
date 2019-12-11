@@ -65,14 +65,19 @@ error:
 static int api_poll(int sd, int ev)
 {
 	struct pollfd pfd;
+	int rc;
 
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.fd     = sd;
 	pfd.events = ev;
-	if (poll(&pfd, 1, 1000) == 1)
-		return 1;
+	rc = poll(&pfd, 1, 1000);
+	if (rc <= 0) {
+		if (rc == 0)
+			errno = ETIMEDOUT;
+		return 0;
+	}
 
-	return 0;
+	return 1;
 }
 
 /* Used by client to check if server is up */
@@ -87,14 +92,16 @@ int wdog_ping(void)
 		return 1;
 
 	if (api_poll(sd, POLLIN | POLLOUT)) {
-		if (getsockopt(sd, SOL_SOCKET, SO_ERROR, &so_error, &len) == -1) {
-			close(sd);
-			return 1;
-		}
-	}
-	close(sd);
+		if (getsockopt(sd, SOL_SOCKET, SO_ERROR, &so_error, &len) == -1)
+			goto error;
+	} else
+		goto error;
 
+	close(sd);
 	return so_error != 0;
+error:
+	close(sd);
+	return 1;
 }
 
 static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int *ack)
@@ -139,12 +146,14 @@ static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int
 	if (api_poll(sd, POLLOUT)) {
 		if (write(sd, &req, sizeof(req)) != sizeof(req))
 			goto error;
-	}
+	} else
+		goto error;
 
 	if (api_poll(sd, POLLIN)) {
 		if (read(sd, &req, sizeof(req)) != sizeof(req))
 			goto error;
-	}
+	} else
+		goto error;
 
 	if (req.cmd == WDOG_CMD_ERROR) {
 		errno = req.error;
