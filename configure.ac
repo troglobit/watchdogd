@@ -129,3 +129,43 @@ AC_SUBST(SBINDIR)
 
 # Generate all files
 AC_OUTPUT
+
+# Expand directories for configuration summary, unexpanded defaults:
+# sysconfdir  => ${prefix}/etc
+# runstatedir => ${localstatedir}/run
+SYSCONFDIR=`eval echo $sysconfdir`
+RUNSTATEDIR=`eval echo $runstatedir`
+RUNSTATEDIR=`eval echo $RUNSTATEDIR`
+
+cat <<EOF
+
+------------------ Summary ------------------
+ $PACKAGE_NAME version $PACKAGE_VERSION
+  Prefix..........: $prefix
+  Sysconfdir......: $SYSCONFDIR
+  Runstatedir.....: $RUNSTATEDIR
+  C Compiler......: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS
+
+ Optional features:
+  compat mode.....: $enable_compat
+  client examples.: $enable_examples
+  test mode.......: $enable_test_mode
+  built-in tests..: $enable_builtin_tests
+  reset cause file: $enable_rcfile
+  systemd.........: $with_systemd
+
+ Plugins:
+  loadavg.........: $enable_loadavg
+  filenr..........: $enable_filenr
+  meminfo.........: $enable_meminfo
+  generic script..: $enable_generic
+  syslog mark.....: $enable_syslog_mark
+
+------------- Compiler version --------------
+$($CC --version || true)
+---------------------------------------------
+
+Check the above options and compile with:
+ ${MAKE-make}
+
+EOF
