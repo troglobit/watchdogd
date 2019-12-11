@@ -65,15 +65,22 @@ error:
 static int api_poll(int sd, int ev)
 {
 	struct pollfd pfd;
+	int retries = 3;
 	int rc;
 
 	memset(&pfd, 0, sizeof(pfd));
 	pfd.fd     = sd;
 	pfd.events = ev;
-	rc = poll(&pfd, 1, 1000);
-	if (rc <= 0) {
+
+	while ((rc = poll(&pfd, 1, 1000)) <= 0) {
+		if (-1 == rc && EINTR == errno) {
+			if (--retries)
+				continue;
+		}
+
 		if (rc == 0)
 			errno = ETIMEDOUT;
+
 		return 0;
 	}
 
