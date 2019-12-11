@@ -33,10 +33,10 @@ PKG_CHECK_MODULES([confuse], [libconfuse >= 3.0])
 # Check for configure switches
 AC_ARG_ENABLE([compat],
 	[AS_HELP_STRING([--enable-compat], [Enable compat supervisor.status and signals])],,
-	[enable_compat=no], [])
+	[enable_compat=no])
 AC_ARG_ENABLE([examples],
-	[AS_HELP_STRING([--enable-examples], [Build process supervisor client examples])],
-	[enable_examples=yes], [])
+	[AS_HELP_STRING([--enable-examples], [Build process supervisor client examples])],,
+	[enable_examples=no])
 AC_ARG_ENABLE([loadavg],
 	[AS_HELP_STRING([--enable-loadavg], [Enable CPU load average monitor])],
 	[enable_loadavg=$enableval], [enable_loadavg=no])
@@ -51,7 +51,7 @@ AC_ARG_ENABLE([generic],
 	[enable_generic=$enableval], [enable_generic=no])
 AC_ARG_ENABLE([syslog-mark],
 	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
-	[enable_syslog_mark=yes], [])
+	[enable_syslog_mark=yes], [enable_syslog_mark=no])
 
 AC_ARG_ENABLE(test-mode,
         AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
