@@ -3,6 +3,24 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
+[3.3][UNRLEASED]
+----------------
+
+### Changes
+- Increased severity of syslog messages preceding reboot, instead of
+  `LOG_ERROR` all messages that result in a reboot use `LOG_EMERG`
+  because many `syslogd` services default to log emerg to console
+- Add handy summary of options to `configure` script
+
+### Fixes
+- Fix possible garbled `next_ack` for users of `libwdog` due to badly
+  handled timeout in `poll()` when connecting to `watchdogd`
+- Fix `configure` script defaults for the following settings:
+  - `--enable-compat`, was always enabled
+  - `--enable-exampels`, were always enabled
+  - `--enable-syslog-mark`, was always enabled
+
+
 [3.2][] - 2019-05-27
 --------------------
 
@@ -187,6 +205,7 @@ support for process monitoring with an instrumentation API.
 
 
 [UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.2...HEAD
+[3.3]:        https://github.com/troglobit/watchdogd/compare/3.2...3.3
 [3.2]:        https://github.com/troglobit/watchdogd/compare/3.1...3.2
 [3.1]:        https://github.com/troglobit/watchdogd/compare/3.0...3.1
 [3.0]:        https://github.com/troglobit/watchdogd/compare/2.0.1...3.0
