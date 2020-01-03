@@ -19,6 +19,7 @@ All notable changes to the project are documented in this file.
   - `--enable-compat`, was always enabled
   - `--enable-exampels`, were always enabled
   - `--enable-syslog-mark`, was always enabled
+- Fix use-after-free bug in new script monitor, introduced in v3.2
 
 
 [3.2][] - 2019-05-27
