@@ -38,10 +38,10 @@ static LIST_HEAD(exec_info_list, exec_info) exec_info_head;
 
 static void cleanup_exec_info(int max_size)
 {
-	exec_info_t *info;
+	exec_info_t *info, *next;
 	int size = 0;
 
-	LIST_FOREACH(info, &exec_info_head, entry) {
+	LIST_FOREACH_SAFE(info, &exec_info_head, entry, next) {
 		++size;
 		if (size >= max_size) {
 			LIST_REMOVE(info, entry);
