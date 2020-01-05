@@ -3,8 +3,8 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
-[3.3][UNRLEASED]
-----------------
+[3.3][] - 2020-01-05
+--------------------
 
 ### Changes
 - Increased severity of syslog messages preceding reboot, instead of
@@ -205,7 +205,7 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.2...HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.3...HEAD
 [3.3]:        https://github.com/troglobit/watchdogd/compare/3.2...3.3
 [3.2]:        https://github.com/troglobit/watchdogd/compare/3.1...3.2
 [3.1]:        https://github.com/troglobit/watchdogd/compare/3.0...3.1

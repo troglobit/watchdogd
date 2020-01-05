@@ -1,3 +1,12 @@
+watchdogd (3.3) unstable; urgency=medium
+
+  * Increased severity of syslog messages preceding reboot, raised from
+    error to emergency severity
+  * Fix garbled next_ack for users of libwdog when connecting to daemon
+  * Fix use-after-free bug in new script monitor, introduced in v3.2
+
+ -- Joachim Nilsson <troglobit@gmail.com>  Sun, 05 Jan 2020 10:58:27 +0100
+
 watchdogd (3.2) unstable; urgency=medium
 
   * New upstream release.
