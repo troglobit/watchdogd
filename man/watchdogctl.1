@@ -13,16 +13,16 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd Jan 3, 2018
-.Dt WATCHDOGCTL 1
-.Os "watchdogd (3.0)"
+.Dd Jan 10, 2020
+.Dt WATCHDOGCTL 1 SMM
+.Os
 .Sh NAME
 .Nm watchdogctl
 .Nd Status and control tool for watchdogd
 .Sh SYNOPSIS
 .Nm
 .Op Fl hvV
-.Op Fl c Ar CAUSE
+.Op Fl c Ar CODE
 .Op Fl p Ar PID
 .Op clear
 .Op disable | enable
@@ -39,8 +39,8 @@ provides a safe way of querying status and controlling
 .Xr watchdogd 8 .
 .Sh OPTIONS
 .Bl -tag -width Ds
-.It Fl c, -cause Ar CAUSE
-Reset cause for fail command.  Possible values:
+.It Fl c, -code Ar CODE
+Reset reason codes for fail command:
 .Pp
 .Bl -tag -width false-unsubscribe -compact -offset indent
 .It Cm 1
@@ -65,7 +65,7 @@ Memory leak
 CPU overload
 .El
 .Pp
-Causes can also be listed at runtime with:
+Codes can also be listed at runtime with:
 .Fl c Ar help
 .It Fl h, -help
 Show help message.
@@ -80,7 +80,7 @@ Show version information.
 Short forms of the below commands are allowed, as long as it is unique.
 .Bl -tag -width Ds
 .It Cm clear
-Clear reset cause.
+Clear reset reason.
 .It Cm counter
 Show reset counter, number of reboots since power-on.
 .It Cm debug
@@ -105,7 +105,8 @@ Alias to
 .Cm reset .
 .It Cm reset Oo MSEC Oc Oo MSG Oc
 Perform system reset, with an optional millisecond delay and an optional
-message to be stored as the reset cause label.  A zero
+message to be stored as the reset reason label (usually process name).
+A zero
 .Ar MSEC
 argument is the same as omitting the argument, leading to an immediate
 reset.  On systems with
@@ -116,8 +117,8 @@ unmount all file systems) before performing the WDT reset.
 .It Cm fail Oo MSEC Oc Oo MSG Oc
 Like the
 .Cm reset
-command, records reset cause (see above
-.Fl c CAUSE )
+command, records reset reason (see above
+.Fl c CODE )
 but does not reboot unless
 .Ar MSEC
 is given.  I.e., omitting the
@@ -126,7 +127,7 @@ argument does not have the same effect as in the
 .Cm reset
 command.
 .It Cm status
-Query status of daemon and show last reset cause, default command.
+Query status of daemon and show last reset reason, default command.
 .It Cm test Op TEST
 Run built-in tests of process supervisor functionality in daemon.  These
 tests can be disabled at build time, so they may not be available in the
@@ -163,7 +164,7 @@ Daemon configuration file. Read once when starting up and on SIGHUP or
 .Cm reload
 command.
 .It Pa /run/watchdogd.status
-Read to present WDT status and reset cause
+Read to present WDT status and reset reason
 .It Pa /run/watchdogd.sock
 Used to connect to
 .Nm watchdogd

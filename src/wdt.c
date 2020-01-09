@@ -29,10 +29,8 @@ static struct watchdog_info info;
 
 /* Actual reset reason as read at boot, reported by supervisor API */
 wdog_reason_t reset_reason;
-
-/* Reset cause */
-wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
-unsigned int reset_counter = 0;
+wdog_code_t   reset_code    = WDOG_SYSTEM_OK;
+unsigned int  reset_counter = 0;
 
 /*
  * Connect to kernel wdt driver
@@ -254,7 +252,7 @@ int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 			continue;
 		if (sscanf(buf, WDT_REASON_WID ": %d\n", &r->wid) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&r->cause) == 1)
+		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&r->code) == 1)
 			continue;
 
 		if (string_match(buf, WDT_REASON_LBL ": ")) {
@@ -288,7 +286,7 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
 	fprintf(fp, WDT_REASON_WID ": %d\n", r->wid);
 	fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
-	fprintf(fp, WDT_REASON_CSE ": %d\n", r->cause);
+	fprintf(fp, WDT_REASON_CSE ": %d\n", r->code);
 	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reset_reason_str(r));
 
 	return fclose(fp);
@@ -319,7 +317,7 @@ static int compat_supervisor(wdog_reason_t *r)
 
 	fprintf(fp, "Watchdog ID  : %d\n", r->wid);
 	fprintf(fp, "Label        : %s\n", r->label);
-	fprintf(fp, "Reset cause  : %d (%s)\n", r->cause, wdog_get_reason_str(r));
+	fprintf(fp, "Reset cause  : %d (%s)\n", r->code, wdog_get_reason_str(r));
 	fprintf(fp, "Counter      : %u\n", r->counter);
 
 	return fclose(fp);
@@ -362,15 +360,15 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 	 */
 	if (fexist(status)) {
 		load_bootstatus(status, &reset_reason, &pid);
-		reset_cause   = reset_reason.cause;
+		reset_code   = reset_reason.code;
 		reset_counter = reset_reason.counter;
 
 		return create_bootstatus(status, &reset_reason, cause, timeout, interval, pid);
 	}
 
 	memset(&reason, 0, sizeof(reason));
-	if (!reset_cause_get(&reason, &pid)) {
-		reset_cause   = reason.cause;
+	if (!reset_reason_get(&reason, &pid)) {
+		reset_code   = reason.code;
 		reset_counter = reason.counter;
 	}
 
@@ -393,9 +391,9 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 	 * The operator expects us to track the n:o restarts ...
 	 */
 	memset(&reason, 0, sizeof(reason));
-	reason.cause   = WDOG_FAILED_UNKNOWN;
+	reason.code   = WDOG_FAILED_UNKNOWN;
 	reason.counter = reset_counter + 1;
-	reset_cause_clear(&reason);
+	reset_reason_clear(&reason);
 
 	if (wdt_testmode())
 		return 0;
@@ -555,7 +553,7 @@ int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 
 	/* Save reset cause */
 	reason->counter = reset_counter + 1;
-	reset_cause_set(reason, pid);
+	reset_reason_set(reason, pid);
 
 	/* Only save reset cause, no reboot ... */
 	if (timeout < 0)
@@ -581,7 +579,7 @@ int wdt_forced_reset(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 	wdog_reason_t reason;
 
 	memset(&reason, 0, sizeof(reason));
-	reason.cause = WDOG_FORCED_RESET;
+	reason.code = WDOG_FORCED_RESET;
 	strlcpy(reason.label, label, sizeof(reason.label));
 
 	return wdt_reset(ctx, pid, &reason, timeout);

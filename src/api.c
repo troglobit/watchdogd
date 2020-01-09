@@ -98,9 +98,9 @@ static void cmd(uev_t *w, void *arg, int events)
 	case WDOG_KICK_CMD:
 	case WDOG_RESET_CMD:
 	case WDOG_RESET_COUNTER_CMD:
-	case WDOG_RESET_CAUSE_CMD:
-	case WDOG_RESET_CAUSE_RAW_CMD:
-	case WDOG_CLEAR_CAUSE_CMD:
+	case WDOG_RESET_REASON_CMD:
+	case WDOG_RESET_REASON_RAW_CMD:
+	case WDOG_CLEAR_REASON_CMD:
 	case WDOG_FAILED_SYSTEMOK_CMD...WDOG_FAILED_OVERLOAD_CMD:
 		if (supervisor_cmd(w->ctx, &req)) {
 			req.cmd = WDOG_CMD_ERROR;

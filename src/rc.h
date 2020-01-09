@@ -1,4 +1,4 @@
-/* Reset cause API for backend store
+/* Reset reason API for backend store
  *
  * Copyright (C) 2017  Joachim Nilsson <troglobit@gmail.com>
  *
@@ -18,10 +18,10 @@
 #ifndef RC_H_
 #define RC_H_
 
-extern int reset_cause_init  (int enabled, char *file);
-extern int reset_cause_set   (wdog_reason_t *reason, pid_t  pid);
-extern int reset_cause_get   (wdog_reason_t *reason, pid_t *pid);
-extern int reset_cause_clear (wdog_reason_t *reason);
+extern int reset_reason_init  (int enabled, char *file);
+extern int reset_reason_set   (wdog_reason_t *reason, pid_t  pid);
+extern int reset_reason_get   (wdog_reason_t *reason, pid_t *pid);
+extern int reset_reason_clear (wdog_reason_t *reason);
 
 #endif /* RC_H_ */
 

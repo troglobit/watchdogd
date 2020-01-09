@@ -59,7 +59,7 @@ static void release(struct supervisor *p)
 	p->id = -1;
 }
 
-static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_cause_t c, int timeout)
+static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_code_t c, int timeout)
 {
 	wdog_reason_t reason;
 
@@ -80,13 +80,13 @@ static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_cause_t c, int time
 
 	memset(&reason, 0, sizeof(reason));
 	reason.wid = p->id;
-	reason.cause = c;
+	reason.code = c;
 	strlcpy(reason.label, p->label, sizeof(reason.label));
 
 	return wdt_reset(ctx, p->pid, &reason, timeout);
 }
 
-static void fail(uev_ctx_t *ctx, wdog_t *req, wdog_cause_t c, const char *msg)
+static void fail(uev_ctx_t *ctx, wdog_t *req, wdog_code_t c, const char *msg)
 {
 	struct supervisor *p;
 
@@ -99,7 +99,7 @@ static void fail(uev_ctx_t *ctx, wdog_t *req, wdog_cause_t c, const char *msg)
 static int supervisor_action(uev_ctx_t *ctx, wdog_t *req, int is_reset)
 {
 	struct supervisor *p;
-	wdog_cause_t cause;
+	wdog_code_t cause;
 	char *label = req->label;
 	int timeout;
 
@@ -247,7 +247,7 @@ static void next_ack(struct supervisor *p, wdog_t *req)
 	req->next_ack  = p->ack;
 }
 
-/* Client timed out.  Store its label in reset-cause, sync and reboot */
+/* Client timed out.  Save pid & label in reset reason, sync and reboot */
 static void timeout_cb(uev_t *w, void *arg, int events)
 {
 	struct supervisor *p = (struct supervisor *)arg;
@@ -344,21 +344,21 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		}
 		break;
 
-	case WDOG_RESET_CAUSE_CMD:
+	case WDOG_RESET_REASON_CMD:
 		reason = (wdog_reason_t *)req;
 		*reason = reset_reason;
 		break;
 
-	case WDOG_RESET_CAUSE_RAW_CMD:
+	case WDOG_RESET_REASON_RAW_CMD:
 		reason = (wdog_reason_t *)req;
-		if (reset_cause_get(reason, NULL)) {
+		if (reset_reason_get(reason, NULL)) {
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		}
 		break;
 
-	case WDOG_CLEAR_CAUSE_CMD:
-		if (reset_cause_clear(NULL)) {
+	case WDOG_CLEAR_REASON_CMD:
+		if (reset_reason_clear(NULL)) {
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		}

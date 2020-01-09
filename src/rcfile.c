@@ -1,4 +1,4 @@
-/* Watchdog API for reset cause, file store backend
+/* Watchdog API for reset reason, file store backend
  *
  * Copyright (C) 2012-2017  Joachim Nilsson <troglobit@gmail.com>
  *
@@ -22,7 +22,7 @@ static int rcenabled = 0;
 static char *rcfile  = NULL;
 
 
-int reset_cause_init(int enabled, char *file)
+int reset_reason_init(int enabled, char *file)
 {
 	if (rcfile)
 		free(rcfile);
@@ -36,7 +36,7 @@ int reset_cause_init(int enabled, char *file)
 	return 0;
 }
 
-int reset_cause_set(wdog_reason_t *reason, pid_t pid)
+int reset_reason_set(wdog_reason_t *reason, pid_t pid)
 {
 	FILE *fp;
 	const char *state;
@@ -64,7 +64,7 @@ int reset_cause_set(wdog_reason_t *reason, pid_t pid)
 	return 0;
 }
 
-int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
+int reset_reason_get(wdog_reason_t *reason, pid_t *pid)
 {
 	FILE *fp;
 	const char *state;
@@ -105,7 +105,7 @@ int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
  * the reset counter.  E.g. to detect sudden power-loss.  So this
  * function is then called with all fields cleared but counter.
  */
-int reset_cause_clear(wdog_reason_t *r)
+int reset_reason_clear(wdog_reason_t *r)
 {
 	wdog_reason_t reason;
 
@@ -113,7 +113,7 @@ int reset_cause_clear(wdog_reason_t *r)
 	if (!r)
 		r = &reason;
 
-	return reset_cause_set(r, 0);
+	return reset_reason_set(r, 0);
 }
 
 /**

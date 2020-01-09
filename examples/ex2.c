@@ -45,9 +45,18 @@ int main(int argc, char *argv[])
 	DEBUG("OK (debug:%d)!", id);
 
 	wdog_reset_reason(&reason);
-	printf("Reset reason: %s\n", wdog_reset_reason_str(&reason));
-	printf("wid %d, label %s, cause: %d, counter: %u\n",
-	       reason.wid, reason.label, reason.cause, reason.counter);
+	printf("Reset counter: %u\n", reason.counter);
+	printf("Reset reason: %d - %s\n", reason.code, wdog_reset_reason_str(&reason));
+	switch (reason.code) {
+	case WDOG_FAILED_SUBSCRIPTION:
+	case WDOG_FAILED_KICK:
+	case WDOG_FAILED_UNSUBSCRIPTION:
+	case WDOG_FAILED_TO_MEET_DEADLINE:
+		printf("Process wid %d, label %s\n", reason.wid, reason.label);
+		break;
+	default:
+		break;
+	}
 
 	id = wdog_subscribe(NULL, 2000, &ack);
 	if (id < 0) {

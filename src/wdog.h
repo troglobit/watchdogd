@@ -25,26 +25,26 @@ extern "C"
 
 #include <time.h>
 
-/* Reset cause codes */
+/* Reset reason codes */
 typedef enum {
-	WDOG_SYSTEM_NONE = 0,    /* After reset/power-on */
-	WDOG_SYSTEM_OK,
-	WDOG_FAILED_SUBSCRIPTION,
-	WDOG_FAILED_KICK,
-	WDOG_FAILED_UNSUBSCRIPTION,
-	WDOG_FAILED_TO_MEET_DEADLINE,
-	WDOG_FORCED_RESET,
-	WDOG_FAILED_UNKNOWN,
-	WDOG_DESCRIPTOR_LEAK,
-	WDOG_MEMORY_LEAK,
-	WDOG_CPU_OVERLOAD,
-} wdog_cause_t;
+	WDOG_SYSTEM_NONE = 0,	      /* After reset/power-on */
+	WDOG_SYSTEM_OK,		      /* Unused? */
+	WDOG_FAILED_SUBSCRIPTION,     /* Supervised process */
+	WDOG_FAILED_KICK,	      /* Supervised process */
+	WDOG_FAILED_UNSUBSCRIPTION,   /* Supervised process */
+	WDOG_FAILED_TO_MEET_DEADLINE, /* Supervised process */
+	WDOG_FORCED_RESET,	      /* Operator requested system reboot */
+	WDOG_FAILED_UNKNOWN,	      /* Likely, WDT timed out*/
+	WDOG_DESCRIPTOR_LEAK,	      /* filenr  pluing */
+	WDOG_MEMORY_LEAK,	      /* meminfo plugin */
+	WDOG_CPU_OVERLOAD,	      /* loadavg plugin */
+} wdog_code_t;
 
 typedef struct
 {
-	unsigned int  counter;   /* Global reset counter since power-on, not per-cause */
+	unsigned int  counter;   /* Global reset counter, not per-reason */
 	unsigned int  wid;       /* Watchdog ID of process causing reset */
-	wdog_cause_t  cause;     /* Reset cause */
+	wdog_code_t   code;      /* Reset reason code, use wdog_reset_reason_str() */
 	unsigned int  enabled;   /* Unused, kept for compat. */
 	char          label[48]; /* Process name causing reset, or label */
 	struct tm     date;      /* Recorded time of reset */
@@ -59,7 +59,7 @@ char *wdog_get_loglevel     (void);
 int   wdog_enable           (int enable);   /* Attempt to temp. disable */
 int   wdog_status           (int *status);  /* Check if enabled */
 
-int   wdog_failed           (wdog_cause_t cause, int pid, char *label, unsigned int timeout);
+int   wdog_failed           (wdog_code_t code, int pid, char *label, unsigned int timeout);
 
 int   wdog_reset            (int pid, char *label);
 int   wdog_reset_timeout    (int pid, char *label, unsigned int timeout);

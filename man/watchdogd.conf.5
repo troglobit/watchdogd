@@ -13,7 +13,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd Jan 10, 2018
+.Dd Jan 10, 2020
 .Dt WATCHDOGD 5 SMM
 .Os
 .Sh NAME
@@ -72,10 +72,11 @@ script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
 .Ed
 .Pp
 Health monitor plugins also have their own local script setting.
-.It Cm reset-cause Ar {}
-This section controls the reset cause \& reset counter.  By default this
-is disabled, since not all systems allow writing to disk, e.g. embedded
-systems using MTD devices with limited number of write cycles.
+.It Cm reset-reason Ar {}
+This section controls the reset reason, including the reset counter.  By
+default this is disabled, since not all systems allow writing to disk,
+e.g. embedded systems using MTD devices with limited number of write
+cycles.
 .Pp
 Another backend can be implemented and linked to the daemon, but make
 sure to
@@ -89,6 +90,11 @@ The default file setting is a non-volatile path, according to the FHS.
 It can be changed to another location, but make sure that location is
 writable first.
 .El
+.Pp
+.Sy Note:
+This section was previously called
+.Cm reset-cause ,
+which is deprecated and may be removed in a future release.
 .El
 .Ss Process Supervisor
 .Bl -tag -width TERM
@@ -277,7 +283,7 @@ supervisor {
     priority = 98
 }
 
-reset-cause {
+reset-reason {
     enabled = false
 #    file    = "/var/lib/watchdogd.state"
 }
