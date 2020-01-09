@@ -18,20 +18,20 @@
 #include "wdt.h"
 #include <stdio.h>
 
-static int rcenabled = 0;
-static char *rcfile  = NULL;
+static int rrenabled = 0;
+static char *rrfile  = NULL;
 
 
 int reset_reason_init(int enabled, char *file)
 {
-	if (rcfile)
-		free(rcfile);
+	if (rrfile)
+		free(rrfile);
 
 	if (!file)
-		rcfile = strdup(WDOG_STATE);
+		rrfile = strdup(WDOG_STATE);
 	else
-		rcfile = strdup(file);
-	rcenabled = enabled;
+		rrfile = strdup(file);
+	rrenabled = enabled;
 
 	return 0;
 }
@@ -44,9 +44,9 @@ int reset_reason_set(wdog_reason_t *reason, pid_t pid)
 	if (wdt_testmode())
 		state = WDOG_STATE_TEST;
 	else
-		state = rcfile;
+		state = rrfile;
 
-	if (!rcenabled || !rcfile) {
+	if (!rrenabled || !rrfile) {
 		DEBUG("Reset cause back-end disabled.");
 		return 0;
 	}
@@ -75,12 +75,12 @@ int reset_reason_get(wdog_reason_t *reason, pid_t *pid)
 	if (wdt_testmode())
 		state = WDOG_STATE_TEST;
 	else
-		state = rcfile;
+		state = rrfile;
 
 	/* Clear contents to handle first boot */
 	memset(reason, 0, sizeof(*reason));
 
-	if (!rcenabled || !rcfile) {
+	if (!rrenabled || !rrfile) {
 		DEBUG("Reset cause back-end disabled.");
 		return 0;
 	}

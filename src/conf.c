@@ -20,7 +20,7 @@
 #include <sched.h>
 
 #include "wdt.h"
-#include "rc.h"
+#include "rr.h"
 #include "script.h"
 #include "filenr.h"
 #include "loadavg.h"

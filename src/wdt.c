@@ -18,7 +18,7 @@
  */
 
 #include "wdt.h"
-#include "rc.h"
+#include "rr.h"
 #include "supervisor.h"
 
 static int fd = -1;

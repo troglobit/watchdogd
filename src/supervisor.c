@@ -18,7 +18,7 @@
 #include <sched.h>
 #include "wdt.h"
 #include "private.h"
-#include "rc.h"
+#include "rr.h"
 #include "wdog.h"
 #include "script.h"
 #include "supervisor.h"
