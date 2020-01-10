@@ -254,13 +254,13 @@ int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 			continue;
 
 		if (string_match(buf, WDT_REASON_LBL ": ")) {
-			ptr += strlen(WDT_REASON_LBL) + 2;
+			ptr += sizeof(WDT_REASON_LBL) + 2;
 			strlcpy(r->label, chomp(ptr), sizeof(r->label));
 			continue;
 		}
 
 		if (string_match(buf, WDT_RESET_DATE ": ")) {
-			ptr += strlen(WDT_RESET_DATE) + 2;
+			ptr += sizeof(WDT_RESET_DATE) + 2;
 			strptime(chomp(ptr), "%FT%TZ", &r->date);
 			continue;
 		}
