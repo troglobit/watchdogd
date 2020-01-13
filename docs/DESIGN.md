@@ -51,10 +51,8 @@ periodically and responds to client requests.
 
 For each reboot `watchdogd` maintains a reset counter, along with the
 data collected in the (state) file.  This reset counter is incremeted in
-the `Prepare WDT reset` state in Fig 1.  Hence, depending on the
-integrity class of the non-volatile store, this counter can be used as
-the snmpEngineBoots (RFC 2574) value, and the `sysinfo()` uptime value
-can be used as the snmpEngineTime.
+the `Prepare WDT reset` state in Fig 1.  This counter is cleared on
+power failure.
 
 The status can be read either from the file (status²), or by using the
 client API, like `watchdogctl` which returns (status¹).

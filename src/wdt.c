@@ -408,13 +408,12 @@ int wdt_set_bootstatus(int timeout, int interval)
 	}
 
 	/*
-	 * Clear latest reset cause log IF and only IF WDT reports power
-	 * failure as cause of this boot.  Keep reset counter, that must
-	 * be reset using the API, snmpEngineBoots (RFC 2574)
+	 * Clear latest reset cause and counter IF and only IF the WDT
+	 * reports power failure as cause of this boot.
 	 */
 	if (cause & WDIOF_POWERUNDER) {
 		memset(&reason, 0, sizeof(reason));
-		reason.counter = reset_counter;
+		reset_counter = 0;
 		pid = 0;
 	}
 

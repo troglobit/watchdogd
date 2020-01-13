@@ -80,7 +80,7 @@ aspects of the system, such as:
 - Memory leaks
 - File descriptor leaks
 - Process live locks
-- Reset counter, for snmpEngineBoots (RFC 2574)
+- Reset counter, warm boots since last power failure
 
 To top things off there is support for periodically calling a generic
 script where operators can do housekeeping checks.  For details on how
