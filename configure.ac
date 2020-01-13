@@ -57,8 +57,8 @@ AC_ARG_ENABLE(test-mode,
         AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
 AC_ARG_ENABLE(builtin-tests,
         AS_HELP_STRING([--disable-builtin-tests], [Disable process supervisor built-in tests]))
-AC_ARG_ENABLE(rcfile,
-        AS_HELP_STRING([--disable-rcfile], [Disable file store reset cause backend]))
+AC_ARG_ENABLE(rrfile,
+        AS_HELP_STRING([--disable-rrfile], [Disable reset reason file store backend]))
 
 AC_ARG_WITH([systemd],
 	[AS_HELP_STRING([--with-systemd=DIR], [Directory for systemd service files, default: auto])],,
@@ -92,8 +92,8 @@ AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
 AS_IF([test "x$enable_builtin_tests" != "xno"], enable_builtin_tests="yes",[
 	AC_DEFINE(SUPERVISOR_TESTS_DISABLED,  1, [Disable process supervisor tests in watchdogctl])])
 
-AS_IF([test "x$enable_rcfile" != "xno"], enable_rcfile="yes",[
-	AC_DEFINE(RCFILE_DISABLED,  1, [Disable reset cause file store backend])])
+AS_IF([test "x$enable_rrfile" != "xno"], enable_rrfile="yes",[
+	AC_DEFINE(RRFILE_DISABLED,  1, [Disable reset reason file store backend])])
 
 # Check where to install the systemd .service file
 AS_IF([test "x$with_systemd" = "xyes" -o "x$with_systemd" = "xauto"], [
@@ -112,7 +112,7 @@ AM_CONDITIONAL(FILENR_PLUGIN, [test "x$enable_filenr" != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$enable_meminfo" != "xno"])
 AM_CONDITIONAL(GENERIC_PLUGIN, [test "x$enable_generic" != "xno"])
 AM_CONDITIONAL(FINIT, [test "x$finit" = "xyes"])
-AM_CONDITIONAL(RCFILE, [test "x$enable_rcfile" = "xyes"])
+AM_CONDITIONAL(RRFILE, [test "x$enable_rrfile" = "xyes"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 
 # Expand $sbindir early, into $SBINDIR, for systemd unit file
@@ -141,25 +141,25 @@ cat <<EOF
 
 ------------------ Summary ------------------
  $PACKAGE_NAME version $PACKAGE_VERSION
-  Prefix..........: $prefix
-  Sysconfdir......: $SYSCONFDIR
-  Runstatedir.....: $RUNSTATEDIR
-  C Compiler......: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS
+  Prefix.............: $prefix
+  Sysconfdir.........: $SYSCONFDIR
+  Runstatedir........: $RUNSTATEDIR
+  C Compiler.........: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS
 
  Optional features:
-  compat mode.....: $enable_compat
-  client examples.: $enable_examples
-  test mode.......: $enable_test_mode
-  built-in tests..: $enable_builtin_tests
-  reset cause file: $enable_rcfile
-  systemd.........: $with_systemd
+  compat mode........: $enable_compat
+  client examples....: $enable_examples
+  test mode..........: $enable_test_mode
+  built-in tests.....: $enable_builtin_tests
+  reset reason file..: $enable_rrfile
+  systemd............: $with_systemd
 
  Plugins:
-  loadavg.........: $enable_loadavg
-  filenr..........: $enable_filenr
-  meminfo.........: $enable_meminfo
-  generic script..: $enable_generic
-  syslog mark.....: $enable_syslog_mark
+  loadavg............: $enable_loadavg
+  filenr.............: $enable_filenr
+  meminfo............: $enable_meminfo
+  generic script.....: $enable_generic
+  syslog mark........: $enable_syslog_mark
 
 ------------- Compiler version --------------
 $($CC --version || true)

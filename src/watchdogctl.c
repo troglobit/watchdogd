@@ -39,7 +39,7 @@ struct command {
 
 extern char *__progname;
 
-static wdog_cause_t cause = WDOG_FAILED_TO_MEET_DEADLINE;
+static wdog_code_t code = WDOG_FAILED_TO_MEET_DEADLINE;
 static pid_t pid = 0;
 static int verbose = 0;
 
@@ -87,13 +87,13 @@ static int do_enable(char *arg)
 	return result;
 }
 
-static int parse_cause(char *arg)
+static int parse_code(char *arg)
 {
 	const char *errstr;
-	int cause;
+	int rc;
 
 	if (!arg || arg[0] == '?' || string_match(arg, "help")) {
-		printf("Reset cause values:\n"
+		printf("Reset reason codes:\n"
 		       "  1   System OK\n"
 		       "  2   PID failed subscribing\n"
 		       "  3   PID failed kick\n"
@@ -107,11 +107,11 @@ static int parse_cause(char *arg)
 		exit(1);
 	}
 
-	cause = strtonum(arg, 1, 10, &errstr);
+	rc = strtonum(arg, 1, 10, &errstr);
 	if (errstr)
-		errx(1, "Error, reset cause is %s", errstr);
+		errx(1, "Error, reset reason code is %s", errstr);
 
-	return cause;
+	return rc;
 }
 
 static int parse_arg(char *arg, char **msg)
@@ -145,7 +145,7 @@ static int do_failed(char *arg)
 	char *msg = NULL;
 	int msec = parse_arg(arg, &msg);
 
-	return wdog_failed(cause, pid, msg, msec);
+	return wdog_failed(code, pid, msg, msec);
 }
 
 static int do_reset(char *arg)
@@ -362,7 +362,7 @@ static int usage(int code)
 	       "\n"
 	       "Options:\n"
 	       "  -h, --help           Display this help text and exit\n"
-	       "  -c, --cause=CAUSE    Reset cause for fail command.  List causes with: -c help\n"
+	       "  -c, --code=CODE      Reset reason code for fail command, -c help list codes\n"
 	       "  -p, --pid=PID        PID to use for fail and reset command\n"
 	       "  -v, --verbose        Verbose output, otherwise commands are silent\n"
 	       "  -V, --version        Show program version\n"
@@ -371,9 +371,9 @@ static int usage(int code)
 	       "  help                 This help text\n"
 	       "  debug                Toggle watchdogd debug level (notice <--> debug)\n"
 	       "  loglevel LVL         Set log level: none, err, warn, notice*, info, debug\n"
-	       "  fail [MSEC] [MSG]    Like reset command but can record any reset cause.\n"
+	       "  fail [MSEC] [MSG]    Like reset command but can record any reset reason code.\n"
 	       "                       Only performs an actual reset if MSEC is given\n"
-	       "                       Default reset cause: 5, failed to meet deadline\n"
+	       "                       Default reset reason code: 5, failed to meet deadline\n"
 //	       "  force-reset          Forced reset, alias to `reset 0`\n"
 	       "  reset [MSEC] [MSG]   Perform system reset, optional MSEC (millisecond) delay.\n"
 	       "                       The optional MSG is presented as 'label' on reboot.\n"
@@ -420,11 +420,12 @@ int main(int argc, char *argv[])
 	int c;
 	char *cmd, arg[120];
 	struct option long_options[] = {
-		{ "cause",             1, 0, 'c' },
-		{ "help",              0, 0, 'h' },
-		{ "pid",               1, 0, 'p' },
-		{ "verbose",           0, 0, 'v' },
-		{ "version",           0, 0, 'V' },
+		{ "cause",             1, 0, 1000 },
+		{ "code",              1, 0, 'c'  },
+		{ "help",              0, 0, 'h'  },
+		{ "pid",               1, 0, 'p'  },
+		{ "verbose",           0, 0, 'v'  },
+		{ "version",           0, 0, 'V'  },
 		{ NULL, 0, 0, 0 }
 	};
 	struct command command[] = {
@@ -450,8 +451,11 @@ int main(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, "c:hp:Vv" OPT_T, long_options, NULL)) != EOF) {
 		switch (c) {
+		case 1000:
+			warnx("Deprecated option --cause, replaced with --code");
+			/* fallthrough */
 		case 'c':
-			cause = parse_cause(optarg);
+			code = parse_code(optarg);
 			break;
 
 		case 'h':

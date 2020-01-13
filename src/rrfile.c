@@ -1,4 +1,4 @@
-/* Watchdog API for reset cause, file store backend
+/* Watchdog API for reset reason, file store backend
  *
  * Copyright (C) 2012-2017  Joachim Nilsson <troglobit@gmail.com>
  *
@@ -18,25 +18,25 @@
 #include "wdt.h"
 #include <stdio.h>
 
-static int rcenabled = 0;
-static char *rcfile  = NULL;
+static int rrenabled = 0;
+static char *rrfile  = NULL;
 
 
-int reset_cause_init(int enabled, char *file)
+int reset_reason_init(int enabled, char *file)
 {
-	if (rcfile)
-		free(rcfile);
+	if (rrfile)
+		free(rrfile);
 
 	if (!file)
-		rcfile = strdup(WDOG_STATE);
+		rrfile = strdup(WDOG_STATE);
 	else
-		rcfile = strdup(file);
-	rcenabled = enabled;
+		rrfile = strdup(file);
+	rrenabled = enabled;
 
 	return 0;
 }
 
-int reset_cause_set(wdog_reason_t *reason, pid_t pid)
+int reset_reason_set(wdog_reason_t *reason, pid_t pid)
 {
 	FILE *fp;
 	const char *state;
@@ -44,9 +44,9 @@ int reset_cause_set(wdog_reason_t *reason, pid_t pid)
 	if (wdt_testmode())
 		state = WDOG_STATE_TEST;
 	else
-		state = rcfile;
+		state = rrfile;
 
-	if (!rcenabled || !rcfile) {
+	if (!rrenabled || !rrfile) {
 		DEBUG("Reset cause back-end disabled.");
 		return 0;
 	}
@@ -64,7 +64,7 @@ int reset_cause_set(wdog_reason_t *reason, pid_t pid)
 	return 0;
 }
 
-int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
+int reset_reason_get(wdog_reason_t *reason, pid_t *pid)
 {
 	FILE *fp;
 	const char *state;
@@ -75,12 +75,12 @@ int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
 	if (wdt_testmode())
 		state = WDOG_STATE_TEST;
 	else
-		state = rcfile;
+		state = rrfile;
 
 	/* Clear contents to handle first boot */
 	memset(reason, 0, sizeof(*reason));
 
-	if (!rcenabled || !rcfile) {
+	if (!rrenabled || !rrfile) {
 		DEBUG("Reset cause back-end disabled.");
 		return 0;
 	}
@@ -105,7 +105,7 @@ int reset_cause_get(wdog_reason_t *reason, pid_t *pid)
  * the reset counter.  E.g. to detect sudden power-loss.  So this
  * function is then called with all fields cleared but counter.
  */
-int reset_cause_clear(wdog_reason_t *r)
+int reset_reason_clear(wdog_reason_t *r)
 {
 	wdog_reason_t reason;
 
@@ -113,7 +113,7 @@ int reset_cause_clear(wdog_reason_t *r)
 	if (!r)
 		r = &reason;
 
-	return reset_cause_set(r, 0);
+	return reset_reason_set(r, 0);
 }
 
 /**

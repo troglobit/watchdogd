@@ -22,8 +22,8 @@ endif
 if GENERIC_PLUGIN
 watchdogd_SOURCES  += generic.c		generic.h
 endif
-if RCFILE
-watchdogd_SOURCES  += rcfile.c		rc.h
+if RRFILE
+watchdogd_SOURCES  += rrfile.c		rr.h
 endif
 
 watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE
@@ -42,5 +42,5 @@ pkgincludedir       = $(includedir)/wdog
 pkginclude_HEADERS  =           wdog.h  compat.h
 libwdog_la_SOURCES  = wdog.c	wdog.h  compat.h
 libwdog_la_CFLAGS   = $(lite_CFLAGS) $(AM_CFLAGS)
-libwdog_la_LDFLAGS  = -version-info 1:1:0
+libwdog_la_LDFLAGS  = -version-info 2:0:0
 

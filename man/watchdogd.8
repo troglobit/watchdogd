@@ -13,9 +13,9 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd Jan 3, 2018
-.Dt WATCHDOGD 8
-.Os "watchdogd (3.0)"
+.Dd Jan 10, 2020
+.Dt WATCHDOGD 8 SMM
+.Os
 .Sh NAME
 .Nm watchdogd
 .Nd Advanced system & process monitor daemon
@@ -32,13 +32,18 @@
 is an advanced system and process supervisor daemon, primarily intended
 for embedded Linux and server systems.  It can monitor critical system
 resources, supervise the heartbeat of processes and record deadline
-transgressions before safely rebooting your system.
+transgressions, and initiate a controlled reset if needed.
 .Pp
-When a system comes back up after a reset,
+When a system starts up,
 .Nm
-determines the reset cause and records it in a logfile for later
-analysis by an operator or network management system (NMS).  This
-information can in turn then be used to put the system in an operational
+determines the
+.Em reset cause
+by querying the kernel.  I case of system reset, and not power loss, the
+.Em reset reason
+is available already in a file, stored by
+.Nm
+before the reset.  This reset reason can be then be used by an operator
+or network management system (NMS) to put the system in an operational
 safe state, or non-operational safe state.
 .Sh WATCHDOG
 A watchdog timer (WDT) is something most motherboards of laptops and
@@ -54,8 +59,8 @@ which could be good enough.
 .Pp
 The idea is to have a watchdog daemon in userspace that runs in the
 background of your system.  When there is no more CPU time for the
-watchdog daemon to run it will fail to "kick" the WDT.  This will in
-turn cause the WDT to reboot the system.
+watchdog daemon to run, it fails to "kick" the kernel WDT driver, which
+in turn causes the WDT to reboot the system.
 .Sh OPTIONS
 Earlier versions of
 .Nm
@@ -130,19 +135,24 @@ command from
 State pre boot, lists coming (re)boot reason.  Do not rely on the
 contents of this file, it is used by
 .Nm
-to maintain state across boots.  If you want the status and reset cause,
-read
+to maintain state across boots.  If you want the status and reset
+reason, read
 .Pa /run/watchdogd.status
 instead.
 .It Pa /run/watchdogd.pid
 For convenience to other processes when sending signals.  Also a useful
 synchronization point, because the PID file is only created when
 .Nm
-is ready to receive signals and register processes with the process supervisor API
+is ready to receive signals and register processes with the process
+supervisor API
 .It Pa /run/watchdogd.status
-Current status, contains HW WDT status word,
+Current status, contains kernel WDT
+.Em reset cause ,
 .Nm
-timeout and period, and the reset cause information from this boot.
+timeout and period, and the
+.Em reset reason
+.Nm
+determined from this boot.
 .It Pa /run/watchdogd.sock
 UNIX domain socket used by libwdog and
 .Nm watchdogctl

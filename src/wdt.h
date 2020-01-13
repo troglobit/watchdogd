@@ -51,13 +51,12 @@
 #define WDT_REASON_PID "PID                 "
 #define WDT_REASON_WID "Watchdog ID         "
 #define WDT_REASON_LBL "Label               "
-#define WDT_REASON_TME "Reset date          "
-#define WDT_REASON_CSE "Reset cause         "
+#define WDT_RESET_DATE "Reset date          "
+#define WDT_RESETCAUSE "Reset cause (WDIOF) "
 #define WDT_REASON_STR "Reset reason        "
-#define WDT_REASON_CNT "Reset counter       "
-#define WDT_REASON_WDT "Boot status (WDIOF) "
-#define WDT_REASON_TMO "Timeout (sec)       "
-#define WDT_REASON_INT "Kick interval       "
+#define WDT_RESETCOUNT "Reset counter       "
+#define WDT_TMOSEC_OPT "Timeout (sec)       "
+#define WDT_INTSEC_OPT "Kick interval       "
 
 #define EMERG(fmt, args...)  syslog(LOG_EMERG,   fmt, ##args)
 #define ERROR(fmt, args...)  syslog(LOG_ERR,     fmt, ##args)
@@ -112,9 +111,8 @@ int wdt_forced_reset   (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 int wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid);
 int wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid);
 
-int wdt_set_bootstatus (int cause, int timeout, int interval);
+int wdt_set_bootstatus (int timeout, int interval);
 int wdt_get_bootstatus (void);
-
 
 static inline unsigned int wdt_reset_counter(void)
 {

@@ -30,11 +30,12 @@ resetting the system.  In its more advanced guise it monitors critical
 system resources, supervises the heartbeat of processes, records
 deadline transgressions, and initiates a controlled reset if needed.
 
-When a system comes back up after a reset, `watchdogd` determines the
-reset cause and records it in a file for later analysis by an operator
-or network management system (NMS).  This information in turn can be
-used to put the system in an operational safe state, or non-operational
-safe state.
+When a system starts up, `watchdogd` determines the reset cause by
+querying the kernel.  In case of system reset, and not power loss, the
+reset reason is available already in a file for later analysis by an
+operator or network management system (NMS).  This information can in
+turn can be used to put the system in an operational safe state, or
+non-operational safe state.
 
 
 ### What is a watchdog timer?
@@ -57,8 +58,8 @@ module which in many cases can be good enough.
 The idea of a watchdog daemon in userspace is to run in the background
 of your system.  When there is no more CPU time for the watchdog daemon
 to run it will fail to "kick" the WDT.  This will in turn cause the WDT
-to reboot the system.  When it does `watchdogd` have already saved the
-reset cause for your post mortem.
+to reboot the system.  When it does `watchdogd` has already saved the
+reset reason for your post mortem.
 
 As a background process, `watchdogd` can of course also be used to
 monitor other aspects of the system ...
@@ -79,7 +80,7 @@ aspects of the system, such as:
 - Memory leaks
 - File descriptor leaks
 - Process live locks
-- Reset counter, for snmpEngineBoots (RFC 2574)
+- Reset counter, warm boots since last power failure
 
 To top things off there is support for periodically calling a generic
 script where operators can do housekeeping checks.  For details on how
@@ -200,18 +201,19 @@ internal deadlines be supervised.
 
 When a process fails to meet its deadlines, or a monitor plugin reaches
 critical level, `watchdogd` initiates a controlled reset.  To see the
-reset cause after reboot, the following section must be enabled in the
+reset reason after reboot, the following section must be enabled in the
 `/etc/watchdogd.conf` file:
 
 ```
-reset-cause {
+reset-reason {
     enabled = true
-#   file    = /var/lib/watchdogd.state
+#   file    = /var/lib/watchdogd.state  # default
 }
 ```
 
 The `file` setting is optional, the default is usually sufficient, but
-make sure the destination directory is writable if you change it.
+make sure the destination directory is writable if you change it.  You
+can either inspect the file, or use the `watchdogctl` tool.
 
 
 libwdog API

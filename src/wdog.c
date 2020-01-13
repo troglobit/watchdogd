@@ -167,8 +167,8 @@ static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int
 		goto error;
 	}
 
-	if (cmd == WDOG_RESET_CAUSE_CMD ||
-	    cmd == WDOG_RESET_CAUSE_RAW_CMD)
+	if (cmd == WDOG_RESET_REASON_CMD ||
+	    cmd == WDOG_RESET_REASON_RAW_CMD)
 		memcpy(ack, &req, sizeof(wdog_reason_t));
 	else if (ack)
 		*ack = req.next_ack;
@@ -275,9 +275,9 @@ int wdog_status(int *status)
 	return doit(WDOG_STATUS_CMD, 0, NULL, 0, (unsigned int *)status);
 }
 
-int wdog_failed(wdog_cause_t cause, int pid, char *label, unsigned int timeout)
+int wdog_failed(wdog_code_t code, int pid, char *label, unsigned int timeout)
 {
-	return doit(cause + WDOG_FAILED_BASE_CMD, pid, label, timeout, NULL);
+	return doit(code + WDOG_FAILED_BASE_CMD, pid, label, timeout, NULL);
 }
 
 int wdog_reset(pid_t pid, char *label)
@@ -294,7 +294,7 @@ int wdog_reset(pid_t pid, char *label)
  * file systems etc.
  *
  * This function is what init can use to order watchdogd to save the
- * reset cause before initiating the shutdown.  When this function has
+ * reset reason before initiating the shutdown.  When this function has
  * been called, with a reasonable timeout, watchdogd will go into a
  * special mode waiting only for SIGTERM.
  *
@@ -325,7 +325,7 @@ int wdog_reset_reason(wdog_reason_t *reason)
 		return -1;
 	}
 
-	return doit(WDOG_RESET_CAUSE_CMD, 0, NULL, 0, (unsigned int *)reason);
+	return doit(WDOG_RESET_REASON_CMD, 0, NULL, 0, (unsigned int *)reason);
 }
 
 int wdog_reset_reason_raw(wdog_reason_t *reason)
@@ -335,7 +335,7 @@ int wdog_reset_reason_raw(wdog_reason_t *reason)
 		return -1;
 	}
 
-	return doit(WDOG_RESET_CAUSE_RAW_CMD, 0, NULL, 0, (unsigned int *)reason);
+	return doit(WDOG_RESET_REASON_RAW_CMD, 0, NULL, 0, (unsigned int *)reason);
 }
 
 char *wdog_reset_reason_str(wdog_reason_t *reason)
@@ -345,7 +345,7 @@ char *wdog_reset_reason_str(wdog_reason_t *reason)
 		return "Unknown";
 	}
 
-	switch (reason->cause) {
+	switch (reason->code) {
 	case WDOG_SYSTEM_NONE:
 		return "None";
 
@@ -386,7 +386,7 @@ char *wdog_reset_reason_str(wdog_reason_t *reason)
 
 int wdog_reset_reason_clr(void)
 {
-	return doit(WDOG_CLEAR_CAUSE_CMD, -1, NULL, 0, NULL);
+	return doit(WDOG_RESET_REASON_CMD, -1, NULL, 0, NULL);
 }
 
 int wdog_reload(void)

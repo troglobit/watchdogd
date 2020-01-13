@@ -20,7 +20,7 @@
 #include <sched.h>
 
 #include "wdt.h"
-#include "rc.h"
+#include "rr.h"
 #include "script.h"
 #include "filenr.h"
 #include "loadavg.h"
@@ -81,12 +81,12 @@ static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 }
 #endif
 
-static int reset_cause(uev_ctx_t *ctx, cfg_t *cfg)
+static int validate_reset_reason(uev_ctx_t *ctx, cfg_t *cfg)
 {
 	if (!cfg)
-		return reset_cause_init(0, NULL);
+		return reset_reason_init(0, NULL);
 
-	return reset_cause_init(cfg_getbool(cfg, "enabled"), cfg_getstr(cfg, "file"));
+	return reset_reason_init(cfg_getbool(cfg, "enabled"), cfg_getstr(cfg, "file"));
 }
 
 static int validate_file(cfg_t *cfg, cfg_opt_t *opt)
@@ -106,12 +106,12 @@ static int validate_file(cfg_t *cfg, cfg_opt_t *opt)
 
 	dir = dirname(tmp);
 	if (file[0] != '/' || !dir) {
-		cfg_error(cfg, "reset-cause file must be an absolute path, skipping.");
+		cfg_error(cfg, "reset-reason backend file must be an absolute path, skipping.");
 		goto done;
 	}
 
 	if (access(dir, R_OK | W_OK)) {
-		cfg_error(cfg, "reset-cause dir '%s' not writable, error %d:%s.", dir, errno, strerror(errno));
+		cfg_error(cfg, "reset-reason dir '%s' not writable, error %d:%s.", dir, errno, strerror(errno));
 		goto done;
 	}
 
@@ -178,7 +178,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_STR ("script",   NULL, CFGF_NONE),
 		CFG_END()
 	};
-	cfg_opt_t reset_cause_opts[] =  {
+	cfg_opt_t reset_reason_opts[] =  {
 		CFG_BOOL("enabled",  cfg_false, CFGF_NONE),
 		CFG_STR ("file",     NULL, CFGF_NONE),
 		CFG_END()
@@ -206,7 +206,8 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
 		CFG_BOOL("safe-exit",   cfg_false, CFGF_NONE),
 		CFG_SEC ("supervisor",  supervisor_opts, CFGF_NONE),
-		CFG_SEC ("reset-cause", reset_cause_opts, CFGF_NONE),
+		CFG_SEC ("reset-cause", reset_reason_opts, CFGF_NONE), /* Compat only */
+		CFG_SEC ("reset-reason", reset_reason_opts, CFGF_NONE),
 		CFG_STR ("script",      NULL, CFGF_NONE),
 		CFG_SEC ("filenr",      checker_opts, CFGF_NONE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
@@ -214,7 +215,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("generic",     generic_plugin_opts, CFGF_NONE),
 		CFG_END()
 	};
-	cfg_t *cfg;
+	cfg_t *cfg, *opt;
 
 	if (!ctx) {
 		ERROR("Internal error, no event context");
@@ -240,7 +241,8 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 
 	/* Validators */
 	cfg_set_validate_func(cfg, "supervisor|priority", validate_priority);
-	cfg_set_validate_func(cfg, "reset-cause|file", validate_file);
+	cfg_set_validate_func(cfg, "reset-cause|file", validate_file); /* Compat only */
+	cfg_set_validate_func(cfg, "reset-reason|file", validate_file);
 
 	switch (cfg_parse(cfg, file)) {
 	case CFG_FILE_ERROR:
@@ -265,7 +267,10 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 
 	script_init(ctx, cfg_getstr(cfg, "script"));
 	supervisor(ctx, cfg_getnsec(cfg, "supervisor", 0));
-	reset_cause(ctx, cfg_getnsec(cfg, "reset-cause", 0));
+	opt = cfg_getnsec(cfg, "reset-reason", 0);
+	if (!opt)
+		opt = cfg_getnsec(cfg, "reset-cause", 0); /* Compat only */
+	validate_reset_reason(ctx, opt);
 
 #ifdef FILENR_PLUGIN
 	checker(ctx, cfg, "filenr", filenr_init);

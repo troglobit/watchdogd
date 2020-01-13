@@ -18,7 +18,7 @@
  */
 
 #include "wdt.h"
-#include "rc.h"
+#include "rr.h"
 #include "supervisor.h"
 
 static int fd = -1;
@@ -27,12 +27,10 @@ static uev_t period_watcher;
 static uev_t timeout_watcher;
 static struct watchdog_info info;
 
-/* Actual reset reason as read at boot, reported by supervisor API */
+/* Watchdogd reset reason as read at boot */
 wdog_reason_t reset_reason;
-
-/* Reset cause */
-wdog_cause_t reset_cause   = WDOG_SYSTEM_OK;
-unsigned int reset_counter = 0;
+wdog_code_t   reset_code    = WDOG_SYSTEM_OK;
+unsigned int  reset_counter = 0;
 
 /*
  * Connect to kernel wdt driver
@@ -40,10 +38,9 @@ unsigned int reset_counter = 0;
 int wdt_open(const char *dev)
 {
 	static int once  = 0;
-	static int cause = 0;
 
 	if (fd >= 0)
-		return cause;
+		return 0;
 
 	if (dev) {
 		if (!strncmp(dev, "/dev", 4))
@@ -95,8 +92,7 @@ int wdt_open(const char *dev)
 	if (!wdt_capability(WDIOF_POWERUNDER))
 		WARN("WDT does not support PWR fail condition, treating as card reset.");
 
-	/* Read boot cause from watchdog ... */
-	return cause = wdt_get_bootstatus();
+	return 0;
 }
 
 static void period_cb(uev_t *w, void *arg, int event)
@@ -110,13 +106,13 @@ static void period_cb(uev_t *w, void *arg, int event)
  */
 int wdt_init(uev_ctx_t *ctx, const char *dev)
 {
-	int T, cause;
+	int T, err;
 
 	if (wdt_testmode())
 		return 0;
 
-	cause = wdt_open(dev);
-	if (cause < 0)
+	err = wdt_open(dev);
+	if (err)
 		return 1;
 
 	/* Set requested WDT timeout right before we enter the event loop. */
@@ -147,7 +143,7 @@ int wdt_init(uev_ctx_t *ctx, const char *dev)
 		return 0;
 
 	/* Save/update /run/watchdogd.status */
-	wdt_set_bootstatus(cause, timeout, period);
+	wdt_set_bootstatus(timeout, period);
 
 	/* Calculate period (T) in milliseconds for libuEv */
 	T = period * 1000;
@@ -248,23 +244,23 @@ int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 		pid = &dummy;
 
 	while ((ptr = fgets(buf, sizeof(buf), fp))) {
-		if (sscanf(buf, WDT_REASON_CNT ": %u\n", &r->counter) == 1)
+		if (sscanf(buf, WDT_RESETCOUNT ": %u\n", &r->counter) == 1)
 			continue;
 		if (sscanf(buf, WDT_REASON_PID ": %d\n", pid) == 1)
 			continue;
 		if (sscanf(buf, WDT_REASON_WID ": %d\n", &r->wid) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_CSE ": %d\n", (int *)&r->cause) == 1)
+		if (sscanf(buf, WDT_REASON_STR ": %d\n", (int *)&r->code) == 1)
 			continue;
 
 		if (string_match(buf, WDT_REASON_LBL ": ")) {
-			ptr += strlen(WDT_REASON_LBL) + 2;
+			ptr += sizeof(WDT_REASON_LBL) + 2;
 			strlcpy(r->label, chomp(ptr), sizeof(r->label));
 			continue;
 		}
 
-		if (string_match(buf, WDT_REASON_TME ": ")) {
-			ptr += strlen(WDT_REASON_TME) + 2;
+		if (string_match(buf, WDT_RESET_DATE ": ")) {
+			ptr += sizeof(WDT_RESET_DATE) + 2;
 			strptime(chomp(ptr), "%FT%TZ", &r->date);
 			continue;
 		}
@@ -277,19 +273,27 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 {
 	time_t now;
 
-	fprintf(fp, WDT_REASON_CNT ": %u\n", r->counter);
+	fprintf(fp, WDT_RESETCOUNT ": %u\n", r->counter);
 	now = time(NULL);
 	if (now != (time_t)-1) {
 		char buf[25];
 
 		strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
-		fprintf(fp, WDT_REASON_TME ": %s\n", buf);
+		fprintf(fp, WDT_RESET_DATE ": %s\n", buf);
 	}
-	fprintf(fp, WDT_REASON_PID ": %d\n", pid);
-	fprintf(fp, WDT_REASON_WID ": %d\n", r->wid);
-	fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
-	fprintf(fp, WDT_REASON_CSE ": %d\n", r->cause);
-	fprintf(fp, WDT_REASON_STR ": %s\n", wdog_reset_reason_str(r));
+	fprintf(fp, WDT_REASON_STR ": %d - %s\n", r->code, wdog_reset_reason_str(r));
+	switch (r->code) {
+	case WDOG_FAILED_SUBSCRIPTION:
+	case WDOG_FAILED_KICK:
+	case WDOG_FAILED_UNSUBSCRIPTION:
+	case WDOG_FAILED_TO_MEET_DEADLINE:
+		fprintf(fp, WDT_REASON_PID ": %d\n", pid);
+		fprintf(fp, WDT_REASON_WID ": %d\n", r->wid);
+		fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
+		break;
+	default:
+		break;
+	}
 
 	return fclose(fp);
 }
@@ -319,7 +323,7 @@ static int compat_supervisor(wdog_reason_t *r)
 
 	fprintf(fp, "Watchdog ID  : %d\n", r->wid);
 	fprintf(fp, "Label        : %s\n", r->label);
-	fprintf(fp, "Reset cause  : %d (%s)\n", r->cause, wdog_get_reason_str(r));
+	fprintf(fp, "Reset cause  : %d (%s)\n", r->code, wdog_get_reason_str(r));
 	fprintf(fp, "Counter      : %u\n", r->counter);
 
 	return fclose(fp);
@@ -327,6 +331,31 @@ static int compat_supervisor(wdog_reason_t *r)
 #else
 #define compat_supervisor(r) 0
 #endif /* COMPAT_SUPERVISOR */
+
+const char *bootstatus_string(int cause)
+{
+	const char *str = NULL;
+
+	if (cause & WDIOF_CARDRESET)
+		str = "WDIOF_CARDRESET";
+	if (cause & WDIOF_EXTERN1)
+		str = "WDIOF_EXTERN1";
+	if (cause & WDIOF_EXTERN2)
+		str = "WDIOF_EXTERN2";
+	if (cause & WDIOF_POWERUNDER)
+		str = "WDIOF_POWERUNDER";
+	if (cause & WDIOF_POWEROVER)
+		str = "WDIOF_POWEROVER";
+	if (cause & WDIOF_FANFAULT)
+		str = "WDIOF_FANFAULT";
+	if (cause & WDIOF_OVERHEAT)
+		str = "WDIOF_OVERHEAT";
+
+	if (!str)
+		str = "WDIOF_UNKNOWN";
+
+	return str;
+}
 
 static int create_bootstatus(char *fn, wdog_reason_t *r, int cause, int timeout, int interval, pid_t pid)
 {
@@ -338,23 +367,27 @@ static int create_bootstatus(char *fn, wdog_reason_t *r, int cause, int timeout,
 		return -1;
 	}
 
-	fprintf(fp, WDT_REASON_WDT ": 0x%04x\n", cause >= 0 ? cause : 0);
-	fprintf(fp, WDT_REASON_TMO ": %d\n", timeout);
-	fprintf(fp, WDT_REASON_INT ": %d\n", interval);
+	fprintf(fp, WDT_TMOSEC_OPT ": %d\n", timeout);
+	fprintf(fp, WDT_INTSEC_OPT ": %d\n", interval);
+	fprintf(fp, WDT_RESETCAUSE ": 0x%04x - %s\n", cause >= 0 ? cause : 0, bootstatus_string(cause));
 
 	 return wdt_fstore_reason(fp, r, pid);
 }
 
-int wdt_set_bootstatus(int cause, int timeout, int interval)
+int wdt_set_bootstatus(int timeout, int interval)
 {
+	wdog_reason_t reason;
 	pid_t pid = 0;
 	char *status;
-	wdog_reason_t reason;
+	int cause;
 
 	if (wdt_testmode())
 		status = WDOG_STATUS_TEST;
 	else
 		status = WDOG_STATUS;
+
+	cause = wdt_get_bootstatus();
+	LOG("Reset cause: 0x%04x - %s", cause, bootstatus_string(cause));
 
 	/*
 	 * In case we're restarted at runtime this prevents us from
@@ -362,26 +395,25 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 	 */
 	if (fexist(status)) {
 		load_bootstatus(status, &reset_reason, &pid);
-		reset_cause   = reset_reason.cause;
+		reset_code   = reset_reason.code;
 		reset_counter = reset_reason.counter;
 
 		return create_bootstatus(status, &reset_reason, cause, timeout, interval, pid);
 	}
 
 	memset(&reason, 0, sizeof(reason));
-	if (!reset_cause_get(&reason, &pid)) {
-		reset_cause   = reason.cause;
+	if (!reset_reason_get(&reason, &pid)) {
+		reset_code   = reason.code;
 		reset_counter = reason.counter;
 	}
 
 	/*
-	 * Clear latest reset cause log IF and only IF WDT reports power
-	 * failure as cause of this boot.  Keep reset counter, that must
-	 * be reset using the API, snmpEngineBoots (RFC 2574)
+	 * Clear latest reset cause and counter IF and only IF the WDT
+	 * reports power failure as cause of this boot.
 	 */
 	if (cause & WDIOF_POWERUNDER) {
 		memset(&reason, 0, sizeof(reason));
-		reason.counter = reset_counter;
+		reset_counter = 0;
 		pid = 0;
 	}
 
@@ -393,9 +425,9 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 	 * The operator expects us to track the n:o restarts ...
 	 */
 	memset(&reason, 0, sizeof(reason));
-	reason.cause   = WDOG_FAILED_UNKNOWN;
+	reason.code   = WDOG_FAILED_UNKNOWN;
 	reason.counter = reset_counter + 1;
-	reset_cause_clear(&reason);
+	reset_reason_clear(&reason);
 
 	if (wdt_testmode())
 		return 0;
@@ -405,32 +437,22 @@ int wdt_set_bootstatus(int cause, int timeout, int interval)
 
 int wdt_get_bootstatus(void)
 {
-	int status = 0;
+	int cause;
 	int err;
 
 	if (wdt_testmode())
-		return status;
+		return 0;
 
 	if (fd == -1) {
 		DEBUG("Cannot get boot status, currently disabled.");
 		return 0;
 	}
 
-	if ((err = ioctl(fd, WDIOC_GETBOOTSTATUS, &status)))
-		status += err;
+	err = ioctl(fd, WDIOC_GETBOOTSTATUS, &cause);
+	if (err)
+		return err;
 
-	if (!err && status) {
-		if (status & WDIOF_POWERUNDER)
-			LOG("Reset cause: POWER-ON");
-		if (status & WDIOF_FANFAULT)
-			LOG("Reset cause: FAN-FAULT");
-		if (status & WDIOF_OVERHEAT)
-			LOG("Reset cause: CPU-OVERHEAT");
-		if (status & WDIOF_CARDRESET)
-			LOG("Reset cause: WATCHDOG");
-	}
-
-	return status;
+	return cause;
 }
 
 int wdt_enable(int enable)
@@ -555,7 +577,7 @@ int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 
 	/* Save reset cause */
 	reason->counter = reset_counter + 1;
-	reset_cause_set(reason, pid);
+	reset_reason_set(reason, pid);
 
 	/* Only save reset cause, no reboot ... */
 	if (timeout < 0)
@@ -581,7 +603,7 @@ int wdt_forced_reset(uev_ctx_t *ctx, pid_t pid, char *label, int timeout)
 	wdog_reason_t reason;
 
 	memset(&reason, 0, sizeof(reason));
-	reason.cause = WDOG_FORCED_RESET;
+	reason.code = WDOG_FORCED_RESET;
 	strlcpy(reason.label, label, sizeof(reason.label));
 
 	return wdt_reset(ctx, pid, &reason, timeout);
