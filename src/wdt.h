@@ -52,10 +52,9 @@
 #define WDT_REASON_WID "Watchdog ID         "
 #define WDT_REASON_LBL "Label               "
 #define WDT_RESET_DATE "Reset date          "
-#define WDT_RESETCAUSE "Reset cause         "
+#define WDT_RESETCAUSE "Reset cause (WDIOF) "
 #define WDT_REASON_STR "Reset reason        "
 #define WDT_RESETCOUNT "Reset counter       "
-#define WDT_BOOTSTATUS "Boot status (WDIOF) "
 #define WDT_TMOSEC_OPT "Timeout (sec)       "
 #define WDT_INTSEC_OPT "Kick interval       "
 

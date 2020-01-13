@@ -369,8 +369,7 @@ static int create_bootstatus(char *fn, wdog_reason_t *r, int cause, int timeout,
 
 	fprintf(fp, WDT_TMOSEC_OPT ": %d\n", timeout);
 	fprintf(fp, WDT_INTSEC_OPT ": %d\n", interval);
-	fprintf(fp, WDT_BOOTSTATUS ": 0x%04x\n", cause >= 0 ? cause : 0);
-	fprintf(fp, WDT_RESETCAUSE ": %s\n", bootstatus_string(cause));
+	fprintf(fp, WDT_RESETCAUSE ": 0x%04x - %s\n", cause >= 0 ? cause : 0, bootstatus_string(cause));
 
 	 return wdt_fstore_reason(fp, r, pid);
 }
