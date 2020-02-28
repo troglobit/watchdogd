@@ -52,6 +52,11 @@ static uev_t sigpwr_watcher;
 static uev_t sigusr1_watcher;
 static uev_t sigusr2_watcher;
 
+static void pidfile_touch(void)
+{
+	if (pidfile(prognm) && !wdt_testmode())
+		PERROR("Cannot create pidfile");
+}
 
 static void exit_cb(uev_t *w, void *arg, int events)
 {
@@ -90,6 +95,9 @@ static void reload_cb(uev_t *w, void *arg, int events)
 		return;
 
 	wdt_init(w->ctx, NULL);
+
+	/* Touch PID file to tell Finit we're done with HUP */
+	pidfile_touch();
 }
 
 static void ignore_cb(uev_t *w, void *arg, int events)
@@ -334,8 +342,7 @@ int main(int argc, char *argv[])
 	api_init(&ctx);
 
 	/* Create pidfile when we're done with all set up. */
-	if (pidfile(prognm) && !wdt_testmode())
-		PERROR("Cannot create pidfile");
+	pidfile_touch();
 
 	status = uev_run(&ctx, 0);
 	if (wdt_testmode())
