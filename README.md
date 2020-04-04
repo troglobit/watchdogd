@@ -396,7 +396,7 @@ more details, see the file [CONTRIBUTING][contrib].
 [GitHub]:          http://github.com/troglobit/watchdogd
 [ex1]:             https://github.com/troglobit/watchdogd/blob/master/examples/ex1.c
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
-[contrib]:         https://github.com/troglobit/watchdogd/blob/master/CONTRIBUTING.md
+[contrib]:         .github/CONTRIBUTING.md
 [Joachim Nilsson]: http://troglobit.com
 [logo]:            https://www.clipartof.com/435776
 [Ron Leishman]:    http://toonclips.com/design/788
