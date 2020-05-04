@@ -376,7 +376,7 @@ cd watchdogd
 
 The `autogen.sh` script runs `autoconf`, `automake`, et al to create the
 configure script and such generated files not part of the VCS tree.  For
-more details, see the file [CONTRIBUTING][contrib].
+more details, see the file [CONTRIBUTING][contrib] in the GIT sources.
 
 
 [uClinux-dist]:    http://www.uclinux.org/pub/uClinux/dist/
