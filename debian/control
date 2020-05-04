@@ -2,9 +2,9 @@ Source: watchdogd
 Section: admin
 Priority: optional
 Maintainer: Joachim Nilsson <troglobit@gmail.com>
-Build-Depends: debhelper (>= 9), dh-systemd (>= 1.5), pkg-config
-Standards-Version: 3.9.8
-Homepage: https://github.com/troglobit/watchdogd
+Build-Depends: debhelper (>= 10), pkg-config, systemd
+Standards-Version: 4.3.0
+Homepage: https://troglobit.com/watchdogd.html
 
 Package: watchdogd
 Architecture: any
