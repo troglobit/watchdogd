@@ -3,6 +3,17 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
+[3.4][] - 2020-04-xx
+--------------------
+
+### Changes
+- Clarify nomenclature: reset cause vs. reset reason
+- Change layout and formatting of watchdogd status output
+
+### Fixes
+- Fix missing pidfile touch on `SIGHUP`
+
+
 [3.3][] - 2020-01-05
 --------------------
 
