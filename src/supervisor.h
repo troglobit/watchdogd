@@ -1,6 +1,6 @@
 /* Process supervisor plugin
  *
- * Copyright (C) 2015-2018  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2015-2020  Joachim Wiberg <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

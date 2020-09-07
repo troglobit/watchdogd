@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2008       Michele d'Amico <michele.damico@fitre.it>
  * Copyright (C) 2008       Mike Frysinger <vapier@gentoo.org>
- * Copyright (C) 2012-2018  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2012-2020  Joachim Wiberg <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

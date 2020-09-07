@@ -352,7 +352,7 @@ Origin & References
 
 `watchdogd(8)` is an improved version of the original, created by
 Michele d'Amico and adapted to [uClinux-dist][] by Mike Frysinger.  It
-is maintained by [Joachim Nilsson][] collaboratively at [GitHub][].
+is maintained by [Joachim Wiberg][] collaboratively at [GitHub][].
 
 The [original code][] in uClinux-dist is available in the public domain,
 whereas this version is distributed under the ISC license.  See the
@@ -397,6 +397,6 @@ more details, see the file [CONTRIBUTING][contrib] in the GIT sources.
 [ex1]:             https://github.com/troglobit/watchdogd/blob/master/examples/ex1.c
 [LICENSE]:         https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [contrib]:         .github/CONTRIBUTING.md
-[Joachim Nilsson]: http://troglobit.com
+[Joachim Wiberg]:  http://troglobit.com
 [logo]:            https://www.clipartof.com/435776
 [Ron Leishman]:    http://toonclips.com/design/788
