@@ -5,6 +5,7 @@ watchdogd_SOURCES   = watchdogd.c	private.h	\
 		      wdt.c		wdt.h		\
 		      api.c		api.h		\
 		      conf.c		conf.h		\
+		      rrfile.c		rr.h		\
 		      script.c		script.h	\
 		      supervisor.c	supervisor.h
 if FINIT
@@ -21,9 +22,6 @@ watchdogd_SOURCES  += meminfo.c		meminfo.h
 endif
 if GENERIC_PLUGIN
 watchdogd_SOURCES  += generic.c		generic.h
-endif
-if RRFILE
-watchdogd_SOURCES  += rrfile.c		rr.h
 endif
 
 watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE
