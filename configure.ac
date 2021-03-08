@@ -40,10 +40,6 @@ AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build process supervisor client examples])],,
 	[enable_examples=no])
 
-AC_ARG_ENABLE([syslog-mark],
-	[AS_HELP_STRING([--enable-syslog-mark], [Periodic syslog *MARK* by monitor plugins])],
-	[enable_syslog_mark=yes], [enable_syslog_mark=no])
-
 AC_ARG_ENABLE(test-mode,
         AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
 
@@ -91,9 +87,6 @@ AS_IF([test "x$with_meminfo" != "xno"], [
 AS_IF([test "x$with_generic" != "xno"], [
 	AS_IF([test "x$with_generic" = "xyes"], [with_generic=300])
 	AC_DEFINE_UNQUOTED(GENERIC_PLUGIN, $with_generic, [Enable generic script monitor])])
-
-AS_IF([test "x$enable_syslog_mark" = "xyes"], [
-	AC_DEFINE(SYSLOG_MARK, 1, [Enable periodic syslog MARK by monitor plugins])])
 
 AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
 	AC_DEFINE(TESTMODE_DISABLED,  1, [Disable test mode])])
@@ -168,7 +161,6 @@ cat <<EOF
   loadavg poll (sec)..: $with_loadavg
   filenr poll (sec)...: $with_filenr
   meminfo poll (sec)..: $with_meminfo
-  syslog mark.........: $enable_syslog_mark
 
 ------------- Compiler version --------------
 $($CC --version || true)

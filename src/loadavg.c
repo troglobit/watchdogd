@@ -73,12 +73,10 @@ static void cb(uev_t *w, void *arg, int events)
 	for (int i = 0; i < 3; i++)
 		load[i] = (double)si.loads[i] / (1 << SI_LOAD_SHIFT);
 
-#ifdef SYSLOG_MARK
 //	LOG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
 //	    load[0], load[1], load[2], (int)num);
 	if (logmark)
 		LOG("Loadavg: %.2f, %.2f, %.2f (1, 5, 15 min)", load[0], load[1], load[2]);
-#endif
 
 #if 0
 	/* Compensate for number of CPU cores */
