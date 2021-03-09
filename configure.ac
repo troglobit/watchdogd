@@ -121,6 +121,8 @@ AC_SUBST(DOCDIR)
 SBINDIR=`eval echo $sbindir`
 SBINDIR=`eval echo $SBINDIR`
 AC_SUBST(SBINDIR)
+SYSCONFDIR=`eval echo $sysconfdir`
+AC_SUBST(SYSCONFDIR)
 
 # Generate all files
 AC_OUTPUT
