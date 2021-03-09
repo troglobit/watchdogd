@@ -154,16 +154,16 @@ static int usage(int status)
 	       "  -s, --syslog        Use syslog, even if running in foreground\n"
 	       "  -l, --loglevel=LVL  Log level: none, err, warn, notice*, info, debug\n"
 	       "\n"
-               "  -T, --timeout=SEC   HW watchdog timer (WDT) timeout, in SEC seconds\n"
-               "  -t, --interval=SEC  WDT kick interval, in SEC seconds, default: %d\n"
+               "  -T, --timeout=SEC   Watchdog timer (WDT) timeout, in seconds, default: %d\n"
+               "  -t, --interval=SEC  WDT kick interval, in seconds, default: %d\n"
                "  -x, --safe-exit     Disable watchdog on exit from SIGINT/SIGTERM,\n"
 	       "                      \"magic\" exit may not be supported by HW/driver\n"
 	       "\n"
 	       "  -V, --version       Display version and exit\n"
                "  -h, --help          Display this help message and exit\n"
 	       "\n"
-	       "Bug report address: %s\n", prognm, WDT_DEVNODE, prognm, WDT_KICK_DEFAULT,
-	       PACKAGE_BUGREPORT);
+	       "Bug report address: %s\n", prognm, WDT_DEVNODE, prognm,
+	       WDT_TIMEOUT_DEFAULT, WDT_KICK_DEFAULT, PACKAGE_BUGREPORT);
 
 	return status;
 }
