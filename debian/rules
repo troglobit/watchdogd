@@ -3,7 +3,7 @@
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
-	dh $@ --with=systemd
+	dh $@ --with autoreconf,systemd
 
 override_dh_auto_configure:
 	dh_auto_configure -- --with-filenr --with-loadavg --with-meminfo --with-generic
