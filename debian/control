@@ -4,7 +4,6 @@ Priority: optional
 Maintainer: Joachim Wiberg <troglobit@gmail.com>
 Build-Depends: debhelper (>= 10),
                 pkg-config,
-                systemd,
                 libuev-dev,
                 libconfuse-dev,
 Standards-Version: 4.3.0
