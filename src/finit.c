@@ -43,7 +43,7 @@ int wdt_register(void)
 		return 0;
 	}
 
-	sd = socket(AF_UNIX, SOCK_STREAM, 0);
+	sd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
 	if (-1 == sd)
 		return -1;
 
