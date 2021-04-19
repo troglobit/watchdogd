@@ -244,24 +244,32 @@ int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 		pid = &dummy;
 
 	while ((ptr = fgets(buf, sizeof(buf), fp))) {
-		if (sscanf(buf, WDT_RESETCOUNT ": %u\n", &r->counter) == 1)
+		chomp(buf);
+
+		if (sscanf(buf, WDT_RESETCOUNT ": %u", &r->counter) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_PID ": %d\n", pid) == 1)
+		if (sscanf(buf, WDT_REASON_PID ": %d", pid) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_WID ": %d\n", &r->wid) == 1)
+		if (sscanf(buf, WDT_REASON_WID ": %d", &r->wid) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_STR ": %d\n", (int *)&r->code) == 1)
+		if (sscanf(buf, WDT_REASON_STR ": %d", (int *)&r->code) == 1)
 			continue;
 
-		if (string_match(buf, WDT_REASON_LBL ": ")) {
-			ptr += sizeof(WDT_REASON_LBL) + 2;
-			strlcpy(r->label, chomp(ptr), sizeof(r->label));
+		if (string_match(buf, WDT_REASON_LBL)) {
+			ptr = strchr(buf, ':');
+			if (ptr) {
+				ptr += 2;
+				strlcpy(r->label, chomp(ptr), sizeof(r->label));
+			}
 			continue;
 		}
 
-		if (string_match(buf, WDT_RESET_DATE ": ")) {
-			ptr += sizeof(WDT_RESET_DATE) + 2;
-			strptime(chomp(ptr), "%FT%TZ", &r->date);
+		if (string_match(buf, WDT_RESET_DATE)) {
+			ptr = strchr(buf, ':');
+			if (ptr) {
+				ptr += 2;
+				strptime(chomp(ptr), "%FT%TZ", &r->date);
+			}
 			continue;
 		}
 	}
