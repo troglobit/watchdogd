@@ -233,6 +233,8 @@ static int testit(void)
 
 	if (false_ack)
 		ack += 42;
+	if (failed_kick)
+		count++;	  /* catch invalid ACK on second kick */
 	if (false_unsubscribe) {
 		ack += 42;
 		count = 0;
