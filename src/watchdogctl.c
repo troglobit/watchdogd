@@ -224,8 +224,11 @@ static int testit(void)
 	log("Subscribing to process supervisor");
 	id = wdog_subscribe(NULL, tmo, &ack);
 	if (id < 0) {
-		perror("Failed connecting to wdog");
-		return 1;
+		if (errno == EOPNOTSUPP)
+			errx(1, "Cannot run tests, supervisor not enabled.");
+
+		err(1, "Failed connecting to wdog");
+		return 1; /* UNREACHED, silence Coverity/compiler */
 	}
 
 	if (false_ack)
