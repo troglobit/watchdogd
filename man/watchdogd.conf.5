@@ -1,5 +1,5 @@
 .\"                                                               -*-nroff-*-
-.\" Copyright (c) 2018-2020  Joachim Wiberg <troglobit@gmail.com>
+.\" Copyright (c) 2018-2021  Joachim Wiberg <troglobit@gmail.com>
 .\"
 .\" Permission to use, copy, modify, and/or distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd Sep 7, 2020
+.Dd Apr 19, 2021
 .Dt WATCHDOGD 5 SMM
 .Os
 .Sh NAME
@@ -279,13 +279,13 @@ interval  = 10
 safe-exit = false
 
 supervisor {
-    enabled  = false
+    enabled  = true
     priority = 98
 }
 
 reset-reason {
-    enabled = false
-#    file    = "/var/lib/watchdogd.state"
+    enabled = true
+    file    = "/var/lib/watchdogd.state"
 }
 
 ### Checkers/Monitors ##################################################
