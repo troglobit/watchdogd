@@ -42,7 +42,7 @@ provides a safe way of querying status and controlling
 .It Fl c, -code Ar CODE
 Reset reason codes for fail command:
 .Pp
-.Bl -tag -width false-unsubscribe -compact -offset indent
+.Bl -tag -width 99 -compact -offset indent
 .It Cm 1
 System OK
 .It Cm 2
@@ -140,19 +140,19 @@ option to enable output.
 .Pp
 .Bl -tag -width false-unsubscribe -compact -offset indent
 .It Cm complete-cycle
-Verify subscribe, kick, and unsubscribe (no reboot)
+Verify subscribe, kick, and unsubscribe (no reset)
 .It Cm disable-enable
-Verify WDT disable, and re-enable (no reboot)
-.It Cm false-ack
-Verify kick with invalid ACK (reboot)
-.It Cm false-unsubscribe
-Verify unsubscribe with invalid ACK (reboot)
-.It Cm failed-kick
-Verify reboot on missing kick (reboot)
-.It Cm no-kick
-Verify reboot on missing first kick (reboot)
+Verify WDT disable, and re-enable (no reset)
 .It Cm premature-trigger
-Verify no premature trigger before unsubscribe (reboot)
+Verify no premature trigger before unsubscribe (no reset)
+.It Cm no-kick
+Verify reset on missing first kick (reset)
+.It Cm false-ack
+Verify reset on invalid ACK in first kick (reset)
+.It Cm failed-kick
+Verify reset on invalid ACK in second kick (reset)
+.It Cm false-unsubscribe
+Verify unsubscribe with invalid ACK (reset)
 .El
 .It Cm version
 Show program version.
