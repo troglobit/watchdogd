@@ -4,8 +4,10 @@ watchdogd (3.4-rc1) unstable; urgency=medium
   * Change layout and formatting of watchdogd status output
   * Fix missing pidfile touch on SIGHUP
   * Update packaging to Standards-Version 4.3.0
+  * Add /etc/default/watchdogd for reading by init scripts
+  * Update SysV init script, load options from /etc/default/watchdogd
 
- -- Joachim Nilsson <troglobit@gmail.com>  Mon, 04 May 2020 13:21:21 +0200
+ -- Joachim Wiberg <troglobit@gmail.com>  Mon, 19 Apr 2021 12:27:24 +0200
 
 watchdogd (3.3) unstable; urgency=medium
 

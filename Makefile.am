@@ -46,9 +46,9 @@ release-hook:
 		echo;									\
 	fi
 
-## Generate .deb package
+## Generate .deb package(s)
 package:
-	@dpkg-buildpackage -uc -us -B
+	@debuild -uc -us -B --lintian-opts --profile debian -i -I --show-overrides
 
 ## Target to run when building a release
 release: distcheck release-hook md5-dist package

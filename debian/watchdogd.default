@@ -2,7 +2,10 @@
 # watchdogd defaults
 #
 
+# Extra modules to load (optional)
+#WATCHDOG_MODULES="none"
+
 # -t 20  Time between kicks from daemon to WDT driver
 # -T 60  WDT timeout, when daemon/userspace is considered dead/hung
 # -x     Safe exit, not supported by all WDT drivers (try it!)
-WATCHDOGD_OPTS="-t 20 -T 60 -x /dev/watchdog"
+#WATCHDOGD_OPTS="-t 20 -T 60 -x /dev/watchdog"

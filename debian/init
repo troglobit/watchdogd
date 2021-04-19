@@ -1,86 +1,113 @@
 #!/bin/sh
-#/etc/init.d/watchdog: start system watchdog daemon.
-
 ### BEGIN INIT INFO
-# Provides:          watchdogd
-# Short-Description: Start system watchdog daemon
-# Required-Start:    $all
-# Required-Stop:     $all
-# Should-Start:      
-# Should-Stop:       
+# Provides:          watchdog
+# Required-Start:    $syslog
+# Required-Stop:     $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
+# Short-Description: System watchdog daemon
+# Description:       Advanced Linux system watchdog daemon with process supervision
 ### END INIT INFO
-
-PATH=/bin:/usr/bin:/sbin:/usr/sbin
-
-test -x /usr/sbin/watchdogd || exit 0
-
-# Set run_watchdog to 1 to start watchdog or 0 to disable it.
-run_watchdog=0
-
-# Specify additional watchdog options here (see manpage).
-watchdog_options=""
-
-# Specify module to load
-watchdog_module="none"
-
-NAME=watchdogd
-DAEMON=/usr/sbin/watchdogd
-
-STOP_RETRY_SCHEDULE='TERM/10/forever/KILL/1'
-
-# Get lsb functions
 . /lib/lsb/init-functions
 
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+DESC="System watchdog daemon"
+NAME=watchdogd
+
+DAEMON=/usr/sbin/watchdogd
+PIDFILE=/var/run/watchdogd.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Define LSB log_* functions.
+. /lib/lsb/init-functions
+
+do_start()
+{
+    start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON -- $WATCHDOGD_OPTS
+}
+
+do_signal()
+{
+    start-stop-daemon --stop --quiet --signal $1 $2 --pidfile $PIDFILE --exec $DAEMON
+}
+
+do_stop()
+{
+    do_signal TERM --oknodo
+}
+
+do_reload()
+{
+    do_signal HUP
+}
+
+load_module()
+{
+    if [ "${WATCHDOG_MODULES:-none}" != "none" ]; then
+	for module in $WATCHDOG_MODULES; do
+	    modprobe $module 2> /dev/null || true
+	done
+    fi
+}
+
 case "$1" in
-  start)
-    if [ $run_watchdog = 1 ]
-    then
-    	# do we have to load a module?
-	[ "${watchdog_module:-none}" != "none" ] && /sbin/modprobe $watchdog_module
+    start)
+        log_daemon_msg "Starting $DESC" "$NAME"
+        load_module
+        do_start
+        case "$?" in
+            0) log_end_msg 0 ;;
+            1) log_progress_msg "already started"
+               log_end_msg 0 ;;
+            *) log_end_msg 1 ;;
+        esac
+        ;;
 
-	log_begin_msg "Starting watchdog daemon..."
-	start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
-             --exec $DAEMON -- $watchdog_options
-	log_end_msg $?
-    fi
-    ;;
+    stop)
+        log_daemon_msg "Stopping $DESC" "$NAME"
+        do_stop
+        case "$?" in
+            0) log_end_msg 0 ;;
+            1) log_progress_msg "already stopped"
+               log_end_msg 0 ;;
+            *) log_end_msg 1 ;;
+        esac
+        ;;
 
-  stop)
-    if [ $run_watchdog = 1 ]
-    then
-	log_begin_msg "Stopping watchdog daemon..."
-	start-stop-daemon --stop --quiet --retry $STOP_RETRY_SCHEDULE \
-	    --pidfile /var/run/$NAME.pid
-	log_end_msg $?
-    fi
-    ;;
+    reload)
+        log_daemon_msg "Reloading $DESC" "$NAME"
+	do_reload
+        case "$?" in
+            0) log_end_msg 0 ;;
+            1) log_progress_msg "not running"
+               log_end_msg 1 ;;
+            *) log_end_msg 1 ;;
+        esac
+	;;
 
-  restart)
-    $0 force-reload
-    ;;
+    restart|force-reload)
+        $0 stop
+        $0 start
+        ;;
 
-  force-reload)
-    if [ $run_watchdog = 0 ]; then exit 0; fi
-    log_daemon_msg "Restarting $NAME"
-    log_progress_msg "Stopping watchdog daemon..."
-    start-stop-daemon --stop --pidfile /var/run/$NAME.pid --quiet \
-	--retry $STOP_RETRY_SCHEDULE || log_end_msg $?
-    log_progress_msg "Starting watchdog daemon..."
-    start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
-	--exec $DAEMON -- $watchdog_options
-    log_end_msg $?
-    ;;
+    try-restart)
+        $0 status >/dev/null 2>&1 && $0 restart
+        ;;
 
-  status)
-    status_of_proc "$DAEMON" watchdog
-    ;;
+    status)
+        status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+        ;;
 
-  *)
-    echo "Usage: /etc/init.d/watchdog {start|stop|restart|force-reload|status}"
-    exit 1
-
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|reload|restart|force-reload|try-restart|status}" >&2
+        exit 3
+        ;;
 esac
 
-exit 0
+:
