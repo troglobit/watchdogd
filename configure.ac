@@ -47,7 +47,7 @@ AC_ARG_ENABLE(builtin-tests,
         AS_HELP_STRING([--disable-builtin-tests], [Disable process supervisor built-in tests]))
 
 AC_ARG_WITH([generic],
-	[AS_HELP_STRING([--with-generic], [Enable generic script monitor, poll: 300 sec])],
+	[AS_HELP_STRING([--with-generic[=SEC]], [Enable generic script monitor, poll: 300 sec])],
 	[with_generic=$withval], [with_generic=no])
 
 AC_ARG_WITH([loadavg],
