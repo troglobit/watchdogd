@@ -33,4 +33,6 @@ Package: libwdog-dev
 Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, libwdog (= ${binary:Version})
-Description: Static library, header files, and docs for libwdog
+Description: Development files for libwdog
+ This package contains the static library, header files, and docs for
+ libwdog.
