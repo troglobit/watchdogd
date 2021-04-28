@@ -1,8 +1,8 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          watchdog
-# Required-Start:    $syslog
-# Required-Stop:     $syslog
+# Provides:          watchdog watchdogd
+# Required-Start:    $local_fs $syslog
+# Required-Stop:     $local_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: System watchdog daemon
