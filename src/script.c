@@ -62,7 +62,7 @@ static void cb(uev_t *w, void *arg, int events)
 			if (status)
 				WARN("Script (PID %d) returned error: %d", pid, status);
 			else
-				INFO("Script (PID %d) exited succesful", pid);
+				INFO("Script (PID %d) exited successful", pid);
 
 			cleanup_exec_info(MAX_EXEC_INFO_LIST_SIZE - 1);
 

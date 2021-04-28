@@ -167,7 +167,7 @@ Minor bugfix release
 - Only `write()` to watchdog if descriptor is valid, fixes annoying
   issue with watchdog not being properly disabled with `wdt_enable()`
 - Fix issue in `wdt_enable()` which could possible deref. NULL pointer
-- Only change enabled state in `wdt_enable()` if operation is succesful
+- Only change enabled state in `wdt_enable()` if operation is successful
 
 
 [2.0][] - 2015-09-20
