@@ -2,10 +2,7 @@ Source: watchdogd
 Section: admin
 Priority: optional
 Maintainer: Joachim Wiberg <troglobit@gmail.com>
-Build-Depends: debhelper (>= 10),
-                pkg-config,
-                libuev-dev,
-                libconfuse-dev,
+Build-Depends: debhelper (>= 10), pkg-config, libuev-dev, libconfuse-dev
 Standards-Version: 4.3.0
 Homepage: https://troglobit.com/watchdogd.html
 
@@ -19,7 +16,7 @@ Description: Advanced system and process supervisor for (embedded) Linux
  /dev/watchdog, if the system is overloaded and watchdogd misses a kick
  the system will be rebooted.
 
-Package: libwdog
+Package: libwdog2
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -34,5 +31,10 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, libwdog (= ${binary:Version})
 Description: Development files for libwdog
+ This library is used by watchdogctl to connect to watchdogd.  Tt can
+ also be used by an application to query status and even connect to the
+ daemon for the purpose of monitoring critical services the application
+ provides to the system.
+ .
  This package contains the static library, header files, and docs for
  libwdog.

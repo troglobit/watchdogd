@@ -1,4 +1,5 @@
 etc/watchdogd.conf
+lib/systemd/system/*
 usr/bin/watchdogctl
 usr/sbin/watchdogd
 usr/share/man/man1/*
