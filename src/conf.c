@@ -36,7 +36,7 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 	cfg_t *sec;
 
 	sec = cfg_getnsec(cfg, sect, 0);
-	if (sec) {
+	if (sec && cfg_getbool(sec, "enabled")) {
 		int period, logmark;
 		char *script;
 		float warn, crit;
@@ -64,8 +64,8 @@ static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 	int warn_level, crit_level;
 
 	sec = cfg_getnsec(cfg, "generic", 0);
-	if (!sec) {
-		INFO("Generic plugin config section not found, not loaded");
+	if (!sec || !cfg_getbool(sec, "enabled")) {
+		INFO("Generic plugin config section not found, or disabled");
 		return 0;
 
 	}
@@ -184,6 +184,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_END()
 	};
 	cfg_opt_t checker_opts[] = {
+		CFG_BOOL ("enabled",  cfg_false, CFGF_NONE),
 		CFG_INT  ("interval", 300, CFGF_NONE),
 		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
 		CFG_FLOAT("warning",  0.9, CFGF_NONE),
@@ -192,6 +193,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_END()
 	};
 	cfg_opt_t generic_plugin_opts[] = {
+		CFG_BOOL ("enabled",        cfg_false, CFGF_NONE),
 		CFG_INT  ("interval",       300, CFGF_NONE),
 		CFG_INT  ("timeout",        300, CFGF_NONE),
 		CFG_BOOL ("logmark",        cfg_false, CFGF_NONE),

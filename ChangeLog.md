@@ -12,6 +12,9 @@ All notable changes to the project are documented in this file.
 
 ### Fixes
 - Fix missing pidfile touch on `SIGHUP`
+- Fix problem with plugins being enabled (but incomplete) by default.
+  Now all sections have an `enabled = [true|false]` setting, and
+  all are disabled by default.  You need to uncomment *end* enable.
 
 
 [3.3][] - 2020-01-05
