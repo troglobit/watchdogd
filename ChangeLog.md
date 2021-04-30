@@ -3,15 +3,21 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
-[3.4][] - 2020-04-xx
+[3.4][] - 2021-04-30
 --------------------
 
 ### Changes
 - Clarify nomenclature: reset cause vs. reset reason
-- Change layout and formatting of watchdogd status output
+- Change layout and formatting of `watchdogctl` status output
+- Change defaults for supervisor, still disabled by default but now
+  also with priority set to zero by default.  This allows running
+  the supervisor in cgroups v2 systems without realtime priority.
 
 ### Fixes
 - Fix missing pidfile touch on `SIGHUP`
+- Fix problem with plugins being enabled (but incomplete) by default.
+  Now all sections have an `enabled = [true|false]` setting, and
+  all are disabled by default.  You need to uncomment *end* enable.
 
 
 [3.3][] - 2020-01-05
@@ -216,7 +222,8 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.3...HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.4...HEAD
+[3.4]:        https://github.com/troglobit/watchdogd/compare/3.3...3.4
 [3.3]:        https://github.com/troglobit/watchdogd/compare/3.2...3.3
 [3.2]:        https://github.com/troglobit/watchdogd/compare/3.1...3.2
 [3.1]:        https://github.com/troglobit/watchdogd/compare/3.0...3.1

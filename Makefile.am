@@ -16,19 +16,15 @@ if HAVE_SYSTEMD
 systemd_DATA        = watchdogd.service
 endif
 
-## Compat hook
+#
+# Compat hook
+#
 install-dev:
 	@make -C src install-pkgincludeHEADERS
 
-## Generate MD5 checksum file
-MD5 = md5sum
-md5-dist:
-	@for file in $(DIST_ARCHIVES); do	\
-		$(MD5) $$file > ../$$file.md5;	\
-		mv $$file ../;			\
-	done
-
-## Check if tagged in git
+#
+# Check if tagged in git
+#
 release-hook:
 	if [ ! `git tag | grep $(PACKAGE_VERSION)` ]; then				\
 		echo;									\
@@ -46,18 +42,28 @@ release-hook:
 		echo;									\
 	fi
 
-## Generate .deb package(s)
+#
+# Generate .deb package(s)
+#
 package:
 	@debuild -uc -us -B --lintian-opts --profile debian -i -I --show-overrides
 
-## Target to run when building a release
-release: distcheck release-hook md5-dist package
+#
+# Target to run when building a release
+#
+release: release-hook distcheck package
+	@for file in $(DIST_ARCHIVES); do		\
+		md5sum    $$file > ../$$file.md5;	\
+		sha256sum $$file > ../$$file.sha256;	\
+	done
+	@mv $(DIST_ARCHIVES) ../
 	@echo
 	@echo "Resulting release files:"
-	@echo "========================================================================="
-	@for file in $(DIST_ARCHIVES); do						\
-		printf "%-40s Distribution tarball\n" $$file;				\
-		printf "%-40s " $$file.md5; cat ../$$file.md5 | cut -f1 -d' ';		\
+	@echo "================================================================="
+	@for file in $(DIST_ARCHIVES); do					\
+		printf "$$file    \tDistribution tarball\n";			\
+		printf "$$file.md5\t"; cat ../$$file.md5 | cut -f1 -d' ';	\
+		printf "$$file.sha256\t"; cat ../$$file.sha256 | cut -f1 -d' ';	\
 	done
 	@for file in `cd ..; ls $(PACKAGE)_$(subst _,.,$(VERSION))*`; do		\
 		printf "%-40s Debian/Ubuntu package file\n" $$file;			\

@@ -208,7 +208,13 @@ static int show_status(char *arg)
 
 static int show_version(char *arg)
 {
-	return puts(PACKAGE_VERSION) != EOF;
+	puts(PACKAGE_STRING);
+	printf("Bug report address: %-40s\n", PACKAGE_BUGREPORT);
+#ifdef PACKAGE_URL
+	printf("Project homepage: %s\n", PACKAGE_URL);
+#endif
+
+	return 0;
 }
 
 #ifndef SUPERVISOR_TESTS_DISABLED
