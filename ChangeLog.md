@@ -222,7 +222,8 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.3...HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.4...HEAD
+[3.4]:        https://github.com/troglobit/watchdogd/compare/3.3...3.4
 [3.3]:        https://github.com/troglobit/watchdogd/compare/3.2...3.3
 [3.2]:        https://github.com/troglobit/watchdogd/compare/3.1...3.2
 [3.1]:        https://github.com/troglobit/watchdogd/compare/3.0...3.1
