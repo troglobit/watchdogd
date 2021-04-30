@@ -1,4 +1,5 @@
-AC_INIT(watchdogd, 3.4-rc1, https://github.com/troglobit/watchdogd/issues)
+AC_INIT([watchdogd], [3.4-rc1], [https://github.com/troglobit/watchdogd/issues],,
+	[https://troglobit.com/watchdogd.html])
 AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz subdir-objects])
 LT_INIT
