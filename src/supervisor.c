@@ -143,22 +143,23 @@ static int supervisor_reset(uev_ctx_t *ctx, wdog_t *req)
  */
 static void set_priority(int enabled, int rtprio)
 {
-	int result = 0;
 	struct sched_param prio;
+	int ena;
+	int rc = 0;
 
-	if (enabled) {
+	ena = enabled && rtprio > 0;
+	if (ena) {
 		DEBUG("Setting SCHED_RR rtprio %d", rtprio);
 		prio.sched_priority = rtprio;
-		result = sched_setscheduler(getpid(), SCHED_RR, &prio);
+		rc = sched_setscheduler(getpid(), SCHED_RR, &prio);
 	} else {
 		DEBUG("Setting SCHED_OTHER prio %d", 0);
 		prio.sched_priority = 0;
-		result = sched_setscheduler(getpid(), SCHED_OTHER, &prio);
+		rc = sched_setscheduler(getpid(), SCHED_OTHER, &prio);
 	}
 
-	if (result && !wdt_testmode())
-		PERROR("Failed setting process %spriority",
-		       enabled ? "realtime " : "");
+	if (rc && !wdt_testmode())
+		PERROR("Failed setting process %spriority", ena ? "realtime " : "");
 }
 
 /*
@@ -172,8 +173,8 @@ static void set_priority(int enabled, int rtprio)
  */
 static struct supervisor *allocate(pid_t pid, char *label, unsigned int timeout)
 {
-	size_t i;
 	struct supervisor *p = NULL;
+	size_t i;
 
 	if (!label || timeout < WDOG_SUPERVISOR_MIN_TIMEOUT) {
 		errno = EINVAL;

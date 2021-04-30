@@ -185,9 +185,10 @@ file descriptor usage, see [this article][filenr].  For more info on the
 details of memory usage, see [this article][meminfo].
 
 `watchdogd` v2.0 and later comes with a process supervisor (previously
-called pmon).  When the supervisor is enabled the daemon runs as a
-real-time task with the configured priority, default 98.  Monitored
-clients connect to the supervisor using the libwdog API.
+called pmon).  When the supervisor is enabled, and the priority is set
+to a value > 0, the daemon runs as a real-time task with the configured
+priority.  Monitored clients connect to the supervisor using the libwdog
+API.
 
 ```
 supervisor {
@@ -195,6 +196,8 @@ supervisor {
     priority = 98
 }
 ```
+
+> **Note:** Linux cgroup v2 do not support realtime tasks in sub-groups.
 
 [See below](#libwdog-api) for details on how to have your process
 internal deadlines be supervised.

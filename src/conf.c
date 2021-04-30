@@ -174,7 +174,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 {
 	cfg_opt_t supervisor_opts[] =  {
 		CFG_BOOL("enabled",  cfg_false, CFGF_NONE),
-		CFG_INT ("priority", 98, CFGF_NONE),
+		CFG_INT ("priority", 0, CFGF_NONE),
 		CFG_STR ("script",   NULL, CFGF_NONE),
 		CFG_END()
 	};

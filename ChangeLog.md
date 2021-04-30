@@ -9,6 +9,9 @@ All notable changes to the project are documented in this file.
 ### Changes
 - Clarify nomenclature: reset cause vs. reset reason
 - Change layout and formatting of watchdogd status output
+- Change defaults for supervisor, still disabled by default but now
+  also with priority set to zero by default.  This allows running
+  the supervisor in cgroups v2 systems without realtime priority.
 
 ### Fixes
 - Fix missing pidfile touch on `SIGHUP`
