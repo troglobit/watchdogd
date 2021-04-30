@@ -8,7 +8,7 @@ Homepage: https://troglobit.com/watchdogd.html
 
 Package: watchdogd
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libwdog (= ${binary:Version}), lsb-base (>= 3.2-14)
+Depends: ${shlibs:Depends}, ${misc:Depends}, libwdog2 (= ${binary:Version}), lsb-base (>= 3.2-14)
 Conflicts: watchdog
 Description: Advanced system and process supervisor for (embedded) Linux
  The watchdog daemon runs in the background on your system, monitoring
@@ -29,12 +29,12 @@ Description: Client library for watchdogd
 Package: libwdog-dev
 Section: libdevel
 Architecture: any
-Depends: ${misc:Depends}, libwdog (= ${binary:Version})
-Description: Development files for libwdog
+Depends: ${misc:Depends}, libwdog2 (= ${binary:Version})
+Description: Development files for libwdog2
  This library is used by watchdogctl to connect to watchdogd.  Tt can
  also be used by an application to query status and even connect to the
  daemon for the purpose of monitoring critical services the application
  provides to the system.
  .
  This package contains the static library, header files, and docs for
- libwdog.
+ libwdog2.
