@@ -134,6 +134,7 @@ monitoring can be enabled with:
 
 ```
 loadavg {
+    enabled  = true
     interval = 300       # Every 5 mins
     warning  = 1.5
     critical = 2.0
@@ -144,6 +145,7 @@ Second, the memory leak detector, a value of 1.0 means 100% memory use:
 
 ```
 meminfo {
+    enabled  = true
     interval = 3600       # Every hour
     warning  = 0.9
     critical = 0.95
@@ -154,6 +156,7 @@ Third, file descriptor leak detector:
 
 ```
 filenr {
+    enabled  = true
     interval = 3600       # Every hour
     warning  = 0.8
     critical = 0.95

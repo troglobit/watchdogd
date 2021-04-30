@@ -162,6 +162,8 @@ non-zero from the script instead.
 Monitors file descriptor leaks based on
 .Ql /proc/sys/fs/file-nr .
 .Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable plugin, default: disabled
 .It Cm interval = Ar SEC
 Poll interval, default: 300 sec
 .It Cm logmark = Ar true | false
@@ -195,6 +197,8 @@ loads of 16.00 on an 8 core system may be responsive and still useful
 but 2.00 on a 2 core system may be completely bogged down.  Read up on
 the subject and test your system before enabling the critical level.
 .Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable plugin, default: disabled
 .It Cm interval = Ar SEC
 Poll interval, default: 300 sec
 .It Cm logmark = Ar true | false
@@ -218,6 +222,8 @@ script, same arguments.
 Monitors free RAM based on data from
 .Ql /proc/meminfo .
 .Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable plugin, default: disabled
 .It Cm interval = Ar SEC
 Poll interval, default: 300 sec
 .It Cm logmark = Ar true | false
@@ -241,6 +247,8 @@ script, same arguments.
 Monitor a generic script.  Trigger warning and critical actions based on
 the exit code of the script.
 .Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable plugin, default: disabled
 .It Cm interval = Ar SEC
 How often to run the
 .Cm monitor-script ,
@@ -301,6 +309,7 @@ reset-reason {
 
 # Monitors file descriptor leaks based on /proc/sys/fs/file-nr
 filenr {
+    enabled  = true
     interval = 300
     logmark  = false
     warning  = 0.9
@@ -311,6 +320,7 @@ filenr {
 # Monitors load average based on sysinfo() from /proc/loadavg
 # The level is composed from the average of the 1 and 5 min marks.
 loadavg {
+    enabled  = true
     interval = 300
     logmark  = false
     warning  = 1.0
@@ -320,6 +330,7 @@ loadavg {
 
 # Monitors free RAM based on data from /proc/meminfo
 meminfo {
+    enabled  = true
     interval = 300
     logmark  = false
     warning  = 0.9
@@ -329,6 +340,7 @@ meminfo {
 
 # Generic site-specific script
 generic {
+    enabled  = true
     interval = 60
     timeout = 10
     warning = 10
