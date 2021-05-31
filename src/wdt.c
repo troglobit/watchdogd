@@ -594,7 +594,7 @@ int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 #ifdef HAVE_FINIT_FINIT_H
 	if (!rebooting) {
 		in_progress = 1;
-		kill(1, SIGINT);
+		kill(1, SIGTERM);
 		timeout = 10000;
 	}
 #endif
