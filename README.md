@@ -340,12 +340,15 @@ all of them use de facto standard `configure` scripts and support
 `pkg-config`.  The latter is used by the `watchdogd` `configure` script
 use to locate requried libraries and header files.
 
-Hence, the regular `./configure && make` is usually sufficient to build
-`watchdogd`.  But, if libraries are installed in non-standard locations
-you may need to provide their paths:
+The common `./configure --some --args --here && make` is usually
+sufficient to build `watchdogd`.  But, if libraries are installed in
+non-standard locations you may need to provide their paths, e.g. with
+`PKG_CONFIG_PATH`.  The following also sets the most common install
+and search paths for the build:
 
 ```shell
-PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig ./configure
+PKG_CONFIG_PATH=/opt/lib/pkgconfig:/home/ian/lib/pkgconfig \
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
 make
 ```
 
