@@ -1,0 +1,75 @@
+name: Bob the Builder
+
+# Run on all branches, including all pull requests, except the 'dev'
+# branch since that's where we run Coverity Scan (limited tokens/day)
+on:
+  push:
+    branches:
+      - '**'
+      - '!dev'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    # Verify we can build on latest Ubuntu with both gcc and clang
+    name: ${{ matrix.compiler }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+      fail-fast: false
+    env:
+      MAKEFLAGS: -j3
+      CC: ${{ matrix.compiler }}
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install pkg-config libsystemd-dev libuev-dev libite-dev libconfuse-dev
+      - uses: actions/checkout@v2
+      - name: Configure
+        # Build in a sub-directory so we can safely set a+w on all
+        # directories.  Needed for `make check` since it runs with
+        # root dropped and wants to write .trs and .log files.
+        run: |
+          ./autogen.sh
+          ./configure --prefix=/opt --sysconfdir=/etc --localstatedir=/var --enable-examples
+      - name: Build
+        run: |
+          make V=1 distcheck
+          make V=1
+      - name: Install
+        run: |
+          sudo make install-strip
+          tree /opt
+          ldd /opt/sbin/watchdogd
+          LD_LIBRARY_PATH=/opt/lib /opt/sbin/watchdogd -h
+          LD_LIBRARY_PATH=/opt/lib /opt/bin/watchdogctl -h
+      - name: Test
+        run: |
+          LD_LIBRARY_PATH=/opt/lib ./src/testit.sh
+  debian:
+    # Verify that Debian packages can be built
+    name: Debian Package
+    runs-on: ubuntu-latest
+    container: debian:stable
+    steps:
+      - uses: actions/checkout@v2
+      - name: Installing dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential bison flex autoconf automake pkg-config \
+                             libuev-dev libite-dev libconfuse-dev libsystemd-dev     \
+                             systemd dpkg-dev debhelper devscripts
+      - name: Building Debian package
+        run: |
+          ./autogen.sh
+          ./configure
+          make distcheck
+          make package
+          echo "== watchdogd.changes ================================================"
+          cat ../watchdogd*.changes
+          echo "== libwdoig.changes ================================================="
+          cat ../libwdog*.changes 
