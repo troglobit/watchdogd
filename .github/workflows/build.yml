@@ -26,15 +26,12 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
+          curl -sS https://deb.troglobit.com/pubkey.gpg | sudo apt-key add -
+          echo "deb [arch=amd64] https://deb.troglobit.com/debian stable main" \
+               | sudo tee /etc/apt/sources.list.d/troglobit.list
           sudo apt-get -y update
-          sudo apt-get -y install pkg-config libsystemd-dev libconfuse-dev
-          wget https://github.com/troglobit/libuev/releases/download/v2.1.0/libuev-2.1.0.tar.xz
-          wget https://github.com/troglobit/libite/releases/download/v2.0.1/libite-2.0.1.tar.xz
-          tar xf libuev-2.1.0.tar.xz
-          tar xf libite-2.0.1.tar.xz
-          (cd libuev-2.1.0 && ./configure --prefix=/usr && make && sudo make install-strip)
-          (cd libite-2.0.1 && ./configure --prefix=/usr && make && sudo make install-strip)
-          sudo ldconfig
+          sudo apt-get -y install pkg-config libsystemd-dev libconfuse-dev \
+                                  libuev-dev libite-dev
       - uses: actions/checkout@v2
       - name: Configure
         # Build in a sub-directory so we can safely set a+w on all
@@ -83,5 +80,3 @@ jobs:
           make package
           echo "== watchdogd.changes ================================================"
           cat ../watchdogd*.changes
-          echo "== libwdoig.changes ================================================="
-          cat ../libwdog*.changes 
