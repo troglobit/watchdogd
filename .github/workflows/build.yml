@@ -34,7 +34,7 @@ jobs:
           tar xf libite-2.0.1.tar.xz
           (cd libuev-2.1.0 && ./configure --prefix=/usr && make && sudo make install-strip)
           (cd libite-2.0.1 && ./configure --prefix=/usr && make && sudo make install-strip)
-          ldconfig
+          sudo ldconfig
       - uses: actions/checkout@v2
       - name: Configure
         # Build in a sub-directory so we can safely set a+w on all
@@ -67,9 +67,15 @@ jobs:
       - name: Installing dependencies
         run: |
           apt-get update
-          apt-get install -y build-essential bison flex autoconf automake pkg-config \
-                             libuev-dev libite-dev libconfuse-dev libsystemd-dev     \
-                             systemd dpkg-dev debhelper devscripts
+          apt-get install -y build-essential bison flex autoconf automake pkg-config libconfuse-dev \
+                             libsystemd-dev systemd dpkg-dev debhelper devscripts
+          wget https://github.com/troglobit/libuev/releases/download/v2.1.0/libuev-2.1.0.tar.xz
+          wget https://github.com/troglobit/libite/releases/download/v2.0.1/libite-2.0.1.tar.xz
+          tar xf libuev-2.1.0.tar.xz
+          tar xf libite-2.0.1.tar.xz
+          (cd libuev-2.1.0 && ./configure --prefix=/usr && make && make install-strip)
+          (cd libite-2.0.1 && ./configure --prefix=/usr && make && make install-strip)
+          ldconfig
       - name: Building Debian package
         run: |
           ./autogen.sh
