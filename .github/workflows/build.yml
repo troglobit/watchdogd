@@ -27,7 +27,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -y update
-          sudo apt-get -y install pkg-config libsystemd-dev libuev-dev libite-dev libconfuse-dev
+          sudo apt-get -y install pkg-config libsystemd-dev libconfuse-dev
+          wget https://github.com/troglobit/libuev/releases/download/v2.1.0/libuev-2.1.0.tar.xz
+          wget https://github.com/troglobit/libite/releases/download/v2.0.1/libite-2.0.1.tar.xz
+          tar xf libuev-2.1.0.tar.xz
+          tar xf libite-2.0.1.tar.xz
+          (cd libuev-2.1.0 && ./configure --prefix=/usr && make && make install-strip)
+          (cd libite-2.0.1 && ./configure --prefix=/usr && make && make install-strip)
+          ldconfig
       - uses: actions/checkout@v2
       - name: Configure
         # Build in a sub-directory so we can safely set a+w on all
