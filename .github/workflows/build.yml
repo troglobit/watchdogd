@@ -67,15 +67,14 @@ jobs:
       - name: Installing dependencies
         run: |
           apt-get update
-          apt-get install -y build-essential bison flex autoconf automake pkg-config libconfuse-dev \
-                             libsystemd-dev systemd dpkg-dev debhelper devscripts wget
-          wget https://github.com/troglobit/libuev/releases/download/v2.1.0/libuev-2.1.0.tar.xz
-          wget https://github.com/troglobit/libite/releases/download/v2.0.1/libite-2.0.1.tar.xz
-          tar xf libuev-2.1.0.tar.xz
-          tar xf libite-2.0.1.tar.xz
-          (cd libuev-2.1.0 && ./configure --prefix=/usr && make && make install-strip)
-          (cd libite-2.0.1 && ./configure --prefix=/usr && make && make install-strip)
-          ldconfig
+          apt-get install -y build-essential bison flex autoconf automake         \
+                             pkg-config libconfuse-dev libsystemd-dev systemd     \
+                             dpkg-dev debhelper devscripts wget curl debian-keyring
+          curl -sS https://deb.troglobit.com/pubkey.gpg | apt-key add -
+          echo "deb [arch=amd64] https://deb.troglobit.com/debian stable main" \
+               | tee /etc/apt/sources.list.d/troglobit.list
+          apt-get update
+          apt-get install -y libuev-dev libite-dev
       - name: Building Debian package
         run: |
           ./autogen.sh
