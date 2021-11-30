@@ -77,11 +77,6 @@ This section controls the reset reason, including the reset counter.  By
 default this is disabled, since not all systems allow writing to disk,
 e.g. embedded systems using MTD devices with limited number of write
 cycles.
-.Pp
-Another backend can be implemented and linked to the daemon, but make
-sure to
-.Ql --disable-rcfile
-with the configure script first.
 .Bl -tag -width TERM
 .It Cm enabled = Ar true | false
 Enable or disable storing reset cause, default: disabled
