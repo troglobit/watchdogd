@@ -22,7 +22,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <lite/lite.h>
+
+#ifdef _LIBITE_LITE
+# include <libite/lite.h>
+#else
+# include <lite/lite.h>
+#endif
 
 #include "config.h"
 #include "private.h"

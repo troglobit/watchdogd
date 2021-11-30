@@ -38,8 +38,12 @@
 #include <syslog.h>
 #include <sched.h>
 
-#include "lite/lite.h"
-#include "uev/uev.h"
+#ifdef _LIBITE_LITE
+# include <libite/lite.h>
+#else
+# include <lite/lite.h>
+#endif
+#include <uev/uev.h>
 
 #include "private.h"
 #include "wdog.h"

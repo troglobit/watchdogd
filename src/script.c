@@ -20,7 +20,11 @@
 #include <sys/wait.h>		/* waitpid() */
 #include <unistd.h>		/* execv(), _exit() */
 
-#include <lite/queue.h>
+#ifdef _LIBITE_LITE
+# include <libite/queue.h>
+#else
+# include <lite/queue.h>
+#endif
 
 #include "wdt.h"
 #include "script.h"
