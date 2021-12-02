@@ -3,7 +3,7 @@ watchdogd (3.5) unstable; urgency=medium
   * Use SIGTERM to signal PID 1, SIGINT Stops working in Finit v4.1
   * Updated examples and manual page(s) with new 'enabled' setting
 
- -- Joachim Wiberg <troglobit@gmail.com>  Sun, 10 Oct 2021 20:29:09 +0200
+ -- Joachim Wiberg <troglobit@gmail.com>  Thu, 02 Dec 2021 01:17:28 +0100
 
 watchdogd (3.4) stable; urgency=medium
 

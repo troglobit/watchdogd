@@ -3,12 +3,18 @@ ChangeLog
 
 All notable changes to the project are documented in this file.
 
-[3.5][UNRELEASED]
------------------
+
+[3.5][] - 2021-12-02
+--------------------
+
+Minor compat release; integration with Finit and new libite.
 
 ### Changes
+  * Migrate from Travis-CI to GitHub Actions
   * Use SIGTERM to signal PID 1, SIGINT Stops working in Finit v4.1
   * Updated examples and manual page(s) with new 'enabled' setting
+  * Updated README with exact build example for correct paths
+  * Add support for new libite namespace, as of libite v2.5.0
 
 
 [3.4][] - 2021-04-30
@@ -230,7 +236,7 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.4...HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.5..HEAD
 [3.5]:        https://github.com/troglobit/watchdogd/compare/3.4...3.5
 [3.4]:        https://github.com/troglobit/watchdogd/compare/3.3...3.4
 [3.3]:        https://github.com/troglobit/watchdogd/compare/3.2...3.3
