@@ -39,7 +39,7 @@ jobs:
         # root dropped and wants to write .trs and .log files.
         run: |
           ./autogen.sh
-          ./configure --prefix=/opt --sysconfdir=/etc --localstatedir=/var --enable-examples
+          ./configure --prefix=/tmp --sysconfdir=/etc --localstatedir=/var --enable-examples
       - name: Build
         run: |
           make V=1 distcheck
@@ -47,13 +47,13 @@ jobs:
       - name: Install
         run: |
           sudo make install-strip
-          tree /opt
-          ldd /opt/sbin/watchdogd
-          LD_LIBRARY_PATH=/opt/lib /opt/sbin/watchdogd -h
-          LD_LIBRARY_PATH=/opt/lib /opt/bin/watchdogctl -h
+          tree /tmp
+          ldd /tmp/sbin/watchdogd
+          LD_LIBRARY_PATH=/tmp/lib /tmp/sbin/watchdogd -h
+          LD_LIBRARY_PATH=/tmp/lib /tmp/bin/watchdogctl -h
       - name: Test
         run: |
-          LD_LIBRARY_PATH=/opt/lib ./src/testit.sh
+          LD_LIBRARY_PATH=/tmp/lib ./src/testit.sh
   debian:
     # Verify that Debian packages can be built
     name: Debian Package
