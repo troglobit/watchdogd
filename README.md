@@ -67,7 +67,7 @@ monitor other aspects of the system ...
 
 ### What can watchdogd do?
 
-Without arguments `watchdogd` runs in the background, monitoring the the
+Without arguments `watchdogd` runs in the background, monitoring the
 CPU, and as long as there is CPU time it "kicks" the WDT chip (via the
 driver).  If `watchdogd` is stopped, or does not get enough CPU time to
 run, the WDT will detect this and reboot the system.  This is the normal
