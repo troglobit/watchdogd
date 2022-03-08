@@ -258,8 +258,10 @@ int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 		if (string_match(buf, WDT_REASON_LBL)) {
 			ptr = strchr(buf, ':');
 			if (ptr) {
-				ptr += 2;
-				strlcpy(r->label, chomp(ptr), sizeof(r->label));
+				if (strlen(ptr) > 2) {
+					ptr += 2;
+					strlcpy(r->label, ptr, sizeof(r->label));
+				}
 			}
 			continue;
 		}
@@ -267,8 +269,10 @@ int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 		if (string_match(buf, WDT_RESET_DATE)) {
 			ptr = strchr(buf, ':');
 			if (ptr) {
-				ptr += 2;
-				strptime(chomp(ptr), "%FT%TZ", &r->date);
+				if (strlen(ptr) > 2) {
+					ptr += 2;
+					strptime(ptr, "%FT%TZ", &r->date);
+				}
 			}
 			continue;
 		}
