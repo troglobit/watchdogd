@@ -65,7 +65,7 @@ int wdt_open(const char *dev)
 
 		wdt_kick("WDT handover complete.");
 	} else {
-		finit_register();
+		finit_register(devnode);
 	}
 
 	/* Skip capability check etc. if done already */

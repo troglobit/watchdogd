@@ -38,7 +38,7 @@ int is_finit_system(void)
 	return already;
 }
 
-int finit_register(void)
+int finit_register(const char *devnode)
 {
 	struct init_request rq = {
 		.magic    = INIT_MAGIC,
@@ -81,6 +81,7 @@ int finit_register(void)
 	if (poll(&pfd, 1, 3000) <= 0)
 		goto err;
 
+	strlcpy(rq.data, devnode, sizeof(rq.data));
 	if (write(sd, &rq, len) != (ssize_t)len)
 		goto err;
 
@@ -113,7 +114,7 @@ int finit_handover(const char *devnode)
 	int rc = -1;
 
 	DEBUG("Attempting WDT handover with Finit ...");
-	if (finit_register())
+	if (finit_register(devnode))
 		return -1;
 
 	/*

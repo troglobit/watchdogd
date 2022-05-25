@@ -33,7 +33,7 @@ struct init_request {
 };
 
 int is_finit_system (void);
-int finit_register  (void);
+int finit_register  (const char *dev);
 int finit_handover  (const char *dev);
 
 
