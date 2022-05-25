@@ -17,6 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "finit.h"
 #include "wdt.h"
 #include "rr.h"
 #include "supervisor.h"

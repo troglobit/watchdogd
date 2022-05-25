@@ -45,7 +45,6 @@
 #endif
 #include <uev/uev.h>
 
-#include "finit.h"
 #include "private.h"
 #include "wdog.h"
 
