@@ -56,7 +56,7 @@ int wdt_open(const char *dev)
 		 * If we're called in a system with Finit running, tell it to
 		 * disable its built-in watchdog daemon.
 		 */
-		fd = wdt_handover(devnode);
+		fd = finit_handover(devnode);
 		if (fd == -1) {
 			if (errno != ENOENT)
 				PERROR("Failed communicating WDT handover with finit");
@@ -65,7 +65,7 @@ int wdt_open(const char *dev)
 
 		wdt_kick("WDT handover complete.");
 	} else {
-		wdt_register();
+		finit_register();
 	}
 
 	/* Skip capability check etc. if done already */

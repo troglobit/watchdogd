@@ -38,7 +38,7 @@ int is_finit_system(void)
 	return already;
 }
 
-int wdt_register(void)
+int finit_register(void)
 {
 	struct init_request rq = {
 		.magic    = INIT_MAGIC,
@@ -107,13 +107,13 @@ err:
 /*
  * Communicate WDT ownership handover to Finit
  */
-int wdt_handover(const char *devnode)
+int finit_handover(const char *devnode)
 {
 	int retries = 3;
 	int rc = -1;
 
 	DEBUG("Attempting WDT handover with Finit ...");
-	if (wdt_register())
+	if (finit_register())
 		return -1;
 
 	/*
