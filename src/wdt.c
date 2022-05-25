@@ -37,7 +37,7 @@ unsigned int  reset_counter = 0;
  */
 int wdt_open(const char *dev)
 {
-	static int once  = 0;
+	static int once = 0;
 
 	if (fd >= 0)
 		return 0;
@@ -49,9 +49,6 @@ int wdt_open(const char *dev)
 
 	fd = open(devnode, O_WRONLY);
 	if (fd == -1) {
-#ifndef HAVE_FINIT_FINIT_H
-		return -1;
-#else
 		if (EBUSY != errno)
 			return -1;
 
@@ -61,14 +58,14 @@ int wdt_open(const char *dev)
 		 */
 		fd = wdt_handover(devnode);
 		if (fd == -1) {
-			PERROR("Failed communicating WDT handover with finit");
+			if (errno != ENOENT)
+				PERROR("Failed communicating WDT handover with finit");
 			return -1;
 		}
 
 		wdt_kick("WDT handover complete.");
 	} else {
 		wdt_register();
-#endif /* HAVE_FINIT_FINIT_H */
 	}
 
 	/* Skip capability check etc. if done already */
@@ -570,14 +567,12 @@ static void reboot_timeout_cb(uev_t *w, void *arg, int events)
  */
 int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 {
-#ifdef HAVE_FINIT_FINIT_H
 	static int in_progress = 0;
 
-	if (in_progress) {
+	if (in_progress && is_finit_system()) {
 		DEBUG("Reboot already in progress, due to supervisor/checker reset.");
 		return 0;
 	}
-#endif
 
 	if (!ctx || !reason)
 		return errno = EINVAL;
@@ -595,13 +590,11 @@ int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 	if (timeout < 0)
 		return 0;
 
-#ifdef HAVE_FINIT_FINIT_H
-	if (!rebooting) {
+	if (!rebooting && is_finit_system()) {
 		in_progress = 1;
 		kill(1, SIGTERM);
 		timeout = 10000;
 	}
-#endif
 
 	if (timeout > 0)
 		return uev_timer_init(ctx, &timeout_watcher, reboot_timeout_cb, NULL, timeout, 0);

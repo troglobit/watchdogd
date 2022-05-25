@@ -32,4 +32,9 @@ struct init_request {
 	char	data[368];
 };
 
+int is_finit_system    (void);
+int wdt_register       (void);
+int wdt_handover       (const char *dev);
+
+
 #endif /* WDOG_FINIT_H_ */

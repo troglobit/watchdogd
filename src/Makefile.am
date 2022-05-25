@@ -8,9 +8,8 @@ watchdogd_SOURCES   = watchdogd.c	private.h	\
 		      rrfile.c		rr.h		\
 		      script.c		script.h	\
 		      supervisor.c	supervisor.h
-if FINIT
 watchdogd_SOURCES  += finit.c
-endif
+
 if FILENR_PLUGIN
 watchdogd_SOURCES  += filenr.c		filenr.h
 endif

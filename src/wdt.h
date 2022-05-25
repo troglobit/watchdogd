@@ -45,6 +45,7 @@
 #endif
 #include <uev/uev.h>
 
+#include "finit.h"
 #include "private.h"
 #include "wdog.h"
 
@@ -96,9 +97,6 @@ int wdt_exit           (uev_ctx_t *ctx);
 
 int wdt_open           (const char *dev);
 int wdt_close          (uev_ctx_t *ctx);
-
-int wdt_register       (void);
-int wdt_handover       (const char *dev);
 
 int wdt_capability     (uint32_t flag);
 

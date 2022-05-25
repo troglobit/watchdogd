@@ -24,7 +24,6 @@ AC_PROG_INSTALL
 
 # Check for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS([finit/finit.h], [finit=yes], [finit=no])
 
 # Check for required library versions
 PKG_PROG_PKG_CONFIG
@@ -108,7 +107,6 @@ AM_CONDITIONAL(LOADAVG_PLUGIN, [test "x$with_loadavg" != "xno"])
 AM_CONDITIONAL(FILENR_PLUGIN, [test "x$with_filenr" != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$with_meminfo" != "xno"])
 AM_CONDITIONAL(GENERIC_PLUGIN, [test "x$with_generic" != "xno"])
-AM_CONDITIONAL(FINIT, [test "x$finit" = "xyes"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 
 # Expand $sbindir early, into $SBINDIR, for systemd unit file

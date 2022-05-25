@@ -21,7 +21,6 @@
 #include <sys/un.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <finit/finit.h>
 
 #ifdef _LIBITE_LITE
 # include <libite/lite.h>
@@ -29,12 +28,18 @@
 # include <lite/lite.h>
 #endif
 
+#include "finit.h"
 #include "wdt.h"
 
+static int already;
+
+int is_finit_system(void)
+{
+	return already;
+}
 
 int wdt_register(void)
 {
-	static int already = 0;
 	struct init_request rq = {
 		.magic    = INIT_MAGIC,
 		.cmd      = INIT_CMD_WDOG_HELLO,
@@ -42,8 +47,11 @@ int wdt_register(void)
 	};
 	struct sockaddr_un sun;
 	struct pollfd pfd;
+	int retry = 3;
+	int rc = -1;
 	size_t len;
-	int sd, rc = -1, retry = 3;
+	int error;
+	int sd;
 
 	if (already) {
 		DEBUG("No need to handover to Finit again.");
@@ -62,8 +70,8 @@ int wdt_register(void)
 	sun.sun_family = AF_UNIX;
 	strlcpy(sun.sun_path, INIT_SOCKET, sizeof(sun.sun_path));
 	while (connect(sd, (struct sockaddr*)&sun, sizeof(sun)) == -1) {
-		if (retry-- == 0)
-			goto err;
+		if (retry-- == 0 || errno == ENOENT)
+			goto err;	/* Likely not Finit */
 		sleep(1);
 	}
 
@@ -89,7 +97,9 @@ int wdt_register(void)
 	if (!rc)
 		already = 1;
 err:
-	close(sd);
+	error = errno;
+	(void)close(sd);
+	errno = error;
 
 	return rc;
 }
