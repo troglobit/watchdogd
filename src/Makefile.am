@@ -5,10 +5,10 @@ watchdogd_SOURCES   = watchdogd.c	private.h	\
 		      wdt.c		wdt.h		\
 		      api.c		api.h		\
 		      conf.c		conf.h		\
+		      finit.c		finit.h		\
 		      rrfile.c		rr.h		\
 		      script.c		script.h	\
 		      supervisor.c	supervisor.h
-watchdogd_SOURCES  += finit.c
 
 if FILENR_PLUGIN
 watchdogd_SOURCES  += filenr.c		filenr.h
