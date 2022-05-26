@@ -71,7 +71,7 @@ static void exit_cb(uev_t *w, void *arg, int events)
 
 static void reboot_cb(uev_t *w, void *arg, int events)
 {
-	int timeout = 0;
+	int delay = 0;
 
 	DEBUG("Got signal %d, rebooting:%d ...", w->signo, rebooting);
 	if (rebooting) {
@@ -82,10 +82,10 @@ static void reboot_cb(uev_t *w, void *arg, int events)
 	rebooting = 1;
 
 	if (w->signo == SIGPWR)
-		timeout = 10000;
+		delay = 10000;
 
 	/* XXX: A future version may try to figure out PID of sender */
-	wdt_forced_reset(w->ctx, 1, (char *)arg, timeout);
+	wdt_forced_reset(w->ctx, 1, (char *)arg, delay);
 }
 
 static void reload_cb(uev_t *w, void *arg, int events)
