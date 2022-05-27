@@ -16,7 +16,7 @@
  */
 
 #ifndef WDOG_API_H_
-#define WDOG_API_H
+#define WDOG_API_H_
 
 extern int api_init(uev_ctx_t *ctx);
 extern int api_exit(void);

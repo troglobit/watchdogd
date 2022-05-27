@@ -16,7 +16,7 @@
  */
 
 #ifndef WDOG_CONF_H_
-#define WDOG_CONF_H
+#define WDOG_CONF_H_
 
 extern int conf_parse_file(uev_ctx_t *ctx, char *file);
 
