@@ -247,8 +247,7 @@ int wdog_status      (int *enabled);
 int wdog_ping        (void);
 
 /*
- * Register with process supervisor, timeout in msec
- * Return value is the `id`, or -1 on error
+ * Register/unregister with process supervisor
  */
 int wdog_subscribe   (char *label, unsigned int timeout, unsigned int *ack);
 int wdog_unsubscribe (int id, unsigned int ack);
@@ -256,6 +255,8 @@ int wdog_kick        (int id, unsigned int timeout, unsigned int ack, unsigned i
 int wdog_kick2       (int id, unsigned int *ack);
 int wdog_extend_kick (int id, unsigned int timeout, unsigned int *ack);
 ```
+
+See [wdog.h](src/wdog.h) for detailed API documentation.
 
 It is highly recommended to use an event loop like libev, [libuev][], or
 similar.  For such libraries one can simply add a timer callback for the
