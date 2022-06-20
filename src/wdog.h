@@ -69,16 +69,71 @@ int   wdog_reset_reason_raw (wdog_reason_t *reason);
 char *wdog_reset_reason_str (wdog_reason_t *reason);
 int   wdog_reset_reason_clr (void);
 
+/*
+ * Check if watchdogd API is actively responding,
+ * returns %TRUE(1) or %FALSE(0)
+ */
 int   wdog_ping             (void);
 int   wdog_reload           (void);
 
 /*
  * Process supervisor API, see also compat.h
  */
+
+/**
+ * Start supervising a subscriber
+ *
+ * After this, one of the kick functions must be called at least every `timeout` ms until
+ * wdog_unsubscribe is called.  If not, watchdogd will (depending on the configuration)
+ * reset the system or call the supervisor script.
+ *
+ * @param label Name of this subscriber. If NULL, process ID will be used.
+ * @param timeout Timeout in ms
+ * @param[out] next_ack out-parameter - the value must be passed to next API call
+ * @return ID on success, negative on error (also sets @param errno)
+ */
 int   wdog_subscribe        (char *label, unsigned int timeout, unsigned int *next_ack);
+
+/**
+ * Stop supervising a subscriber
+ * Checks ack and stops supervisor for this subscriber
+ * @param id return value from wdog_subscribe
+ * @param ack Last ack received from the wdog API
+ * @return 0 on success, negative on error (also sets @param errno)
+ */
 int   wdog_unsubscribe      (int id, unsigned int ack);
+
+/**
+ * Kick the watchdog with a custom timeout (old API)
+ * Checks ack, restarts timer with provided timeout and sets next_ack
+ * @param id return value from wdog_subscribe
+ * @param timeout Number of ms to set timeout to
+ * @param ack ack received from last wdog API call
+ * @param[out] next_ack ack to pass to next wdog API call
+ * @return 0 on success, negative on error (also sets @param errno)
+ */
 int   wdog_kick             (int id, unsigned int timeout, unsigned int ack, unsigned int *next_ack);
+
+/**
+ * Kick the watchdog with a custom timeout
+ * Checks ack, restarts timer with provided timeout and sets ack
+ * @param id return value from wdog_subscribe
+ * @param timeout Number of ms to set timeout to
+ * @param[in,out] ack Pointer to ack received from last wdog API call.  Will be updated with new ack.
+ * @return 0 on success, negative on error (also sets @param errno)
+ */
 int   wdog_extend_kick      (int id, unsigned int timeout, unsigned int *ack);
+
+/**
+ * Kick the watchdog
+ *
+ * Checks ack, restarts timer and sets next_ack
+ * Uses the timeout value provided in wdog_subscribe
+ *
+ * @param id The ID returned from wdog_subscribe()
+ * @param[in,out] ack Pointer to ack received from last wdog API call.  Will be updated with new ack.
+ * @return 0 on success, negative on error (also sets @param errno)
+ */
 int   wdog_kick2            (int id, unsigned int *ack);
 
 /*
