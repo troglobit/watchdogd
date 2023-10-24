@@ -65,7 +65,7 @@ static void generic_cb(uev_t *w, void *arg, int events)
 	}
 
 	gs->script_runtime += 1000;
-	if (gs->script_runtime >= gs->script_runtime_max) {
+	if (gs->script_runtime >= (gs->script_runtime_max * 1000)) {
 		ERROR("Monitor script PID %d still running after %d sec", gs->pid, gs->script_runtime_max);
 		if (checker_exec(gs->exec, "generic", 1, 255, gs->warning, gs->critical))
 			wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
