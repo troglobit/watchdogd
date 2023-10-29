@@ -32,14 +32,14 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install pkg-config libsystemd-dev libconfuse-dev \
                                   libuev-dev libite-dev
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Configure
         # Build in a sub-directory so we can safely set a+w on all
         # directories.  Needed for `make check` since it runs with
         # root dropped and wants to write .trs and .log files.
         run: |
           ./autogen.sh
-          ./configure --prefix=/tmp --sysconfdir=/etc --localstatedir=/var --enable-examples
+          ./configure --prefix=/tmp/wdog --sysconfdir=/etc --localstatedir=/var --enable-examples
       - name: Build
         run: |
           make V=1 distcheck
@@ -47,20 +47,20 @@ jobs:
       - name: Install
         run: |
           sudo make install-strip
-          tree /tmp
-          ldd /tmp/sbin/watchdogd
-          LD_LIBRARY_PATH=/tmp/lib /tmp/sbin/watchdogd -h
-          LD_LIBRARY_PATH=/tmp/lib /tmp/bin/watchdogctl -h
+          tree /tmp/wdog
+          ldd /tmp/wdog/sbin/watchdogd
+          LD_LIBRARY_PATH=/tmp/wdog/lib /tmp/wdog/sbin/watchdogd -h
+          LD_LIBRARY_PATH=/tmp/wdog/lib /tmp/wdog/bin/watchdogctl -h
       - name: Test
         run: |
-          LD_LIBRARY_PATH=/tmp/lib ./src/testit.sh
+          LD_LIBRARY_PATH=/tmp/wdog/lib ./src/testit.sh
   debian:
     # Verify that Debian packages can be built
     name: Debian Package
     runs-on: ubuntu-latest
     container: debian:stable
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Installing dependencies
         run: |
           apt-get update
