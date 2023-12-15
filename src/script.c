@@ -151,9 +151,8 @@ int checker_exec(char *exec, char *nm, int iscrit, double val, double warn, doub
 	return 0;
 }
 
-int supervisor_exec(char *exec, int c, int p, char *label)
+pid_t supervisor_exec(char *exec, int c, int p, char *label)
 {
-	pid_t pid;
 	char cause[5], id[10];
 	char *argv[] = {
 		exec,
@@ -163,6 +162,7 @@ int supervisor_exec(char *exec, int c, int p, char *label)
 		label,
 		NULL,
 	};
+	pid_t pid;
 
 	snprintf(cause, sizeof(cause), "%d", c);
 	argv[2] = cause;
@@ -177,12 +177,12 @@ int supervisor_exec(char *exec, int c, int p, char *label)
 		PERROR("Cannot start script %s", exec);
 		return -1;
 	}
-	LOG("Started script %s, PID %d", exec, pid);
 
-	return 0;
+	LOG("Started script %s, PID %d", exec, pid);
+	return pid;
 }
 
-int generic_exec(char *exec, int warn, int crit)
+pid_t generic_exec(char *exec, int warn, int crit)
 {
 	pid_t pid;
 	char value[5];
@@ -201,11 +201,6 @@ int generic_exec(char *exec, int warn, int crit)
 	pid = fork();
 	if (!pid)
 		_exit(execv(argv[0], argv));
-	if (pid < 0) {
-		PERROR("Cannot start script %s", exec);
-		return -1;
-	}
-	INFO("Started generic script %s, PID %d", exec, pid);
 
 	return pid;
 }
