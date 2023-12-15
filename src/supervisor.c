@@ -118,6 +118,7 @@ static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_code_t c, int timeo
 		PERROR("Failed starting supervisor script %s, calling wdt_reset() for %s", exec, p->label);
 	}
 
+	EMERG("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
 	return reset(p, c, timeout);
 }
 
@@ -288,8 +289,6 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 {
 	struct supervisor *p = (struct supervisor *)arg;
 
-	EMERG("Process %s[%d] failed to meet its deadline, rebooting ...",
-	      p->label, p->pid);
 	action(w->ctx, p, WDOG_FAILED_TO_MEET_DEADLINE, 0);
 }
 
