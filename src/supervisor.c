@@ -30,19 +30,16 @@ static struct supervisor {
 	int   timeout;		/* Period time, in msec. */
 	uev_t watcher;		/* Process timer */
 	int   ack;		/* Next expected ACK from process */
+	struct {
+		uev_ctx_t *ctx;
+		pid_t      pid;
+		int        code;
+		int        timeout;
+	} ecb;			/* Supervisor script callback data */
 } process[256];                 /* Max ID 0-255 */
-
-static struct {
-	uev_ctx_t         *ctx;
-	struct supervisor *proc;
-	wdog_code_t        code;
-	int                timeout;
-} arg;
 
 static int   supervisor_enabled;
 static int   supervisor_realtime;
-static uev_t exec_watcher;
-static pid_t exec_pid;
 static char *exec;
 
 
@@ -68,7 +65,7 @@ static void release(struct supervisor *p)
 	p->id = -1;
 }
 
-static int reset(struct supervisor *p, wdog_code_t c, int timeout)
+static int reset(uev_ctx_t *ctx, struct supervisor *p, wdog_code_t c, int timeout)
 {
 	wdog_reason_t reason = { 0 };
 
@@ -78,7 +75,7 @@ static int reset(struct supervisor *p, wdog_code_t c, int timeout)
 	reason.code = c;
 	strlcpy(reason.label, p->label, sizeof(reason.label));
 
-	return wdt_reset(arg.ctx, p->pid, &reason, timeout);
+	return wdt_reset(ctx, p->pid, &reason, timeout);
 }
 
 /*
@@ -86,40 +83,41 @@ static int reset(struct supervisor *p, wdog_code_t c, int timeout)
  * the situation properly.  So we remove this process
  * from our supervision and go about our business.
  */
-static void exec_cb(uev_t *w, void *cb_arg, int events)
+static void exec_cb(void *arg)
 {
-	if (!exit_code(exec_pid))
-		release(arg.proc);
-	else
-		reset(arg.proc, arg.code, arg.timeout);
+	struct supervisor *p = (struct supervisor *)arg;
 
-	exec_pid = 0;
+	if (!script_exit_status(p->ecb.pid)) {
+		EMERG("Process %s[%d] stopped by %s ...", p->label, p->pid, exec);
+		release(p);
+	} else
+		reset(p->ecb.ctx, p, p->ecb.code, p->ecb.timeout);
+
+	p->ecb.pid = 0;
 }
 
 static int action(uev_ctx_t *ctx, struct supervisor *p, wdog_code_t c, int timeout)
 {
 	if (exec && !access(exec, X_OK)) {
-		if (exec_pid > 0) {
-			INFO("Busy, previous supervisor script for %s has not exited yet.", arg.proc->label);
+		if (p->ecb.pid > 0) {
+			INFO("Busy, previous supervisor script for %s has not exited yet.", p->label);
 			return 0;
 		}
 
-		exec_pid = supervisor_exec(exec, c, p->pid, p->label);
-		if (exec_pid > 0) {
-			INFO("Started supervisor script %s, PID %d", exec, exec_pid);
-
-			arg.timeout = timeout;
-			arg.proc = p;
-			arg.code = c;
-			arg.ctx = ctx;
-			return uev_timer_init(ctx, &exec_watcher, exec_cb, NULL, 5000, 0);
+		p->ecb.ctx = ctx;
+		p->ecb.timeout = timeout;
+		p->ecb.code = c;
+		p->ecb.pid = supervisor_exec(exec, c, p->pid, p->label, exec_cb, p);
+		if (p->ecb.pid > 0) {
+			INFO("Started supervisor script %s, PID %d", exec, p->ecb.pid);
+			return 0;
 		}
 
 		PERROR("Failed starting supervisor script %s, calling wdt_reset() for %s", exec, p->label);
 	}
 
 	EMERG("Process %s[%d] failed to meet its deadline, rebooting ...", p->label, p->pid);
-	return reset(p, c, timeout);
+	return reset(ctx, p, c, timeout);
 }
 
 static void fail(uev_ctx_t *ctx, wdog_t *req, wdog_code_t c, const char *msg)

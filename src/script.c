@@ -29,20 +29,25 @@
 #include "wdt.h"
 #include "script.h"
 
-#define MAX_EXEC_INFO_LIST_SIZE 5
+#define MAX_EXEC_INFO_LIST_SIZE 50
+
+struct exec_info {
+	pid_t   pid;
+	int     exit_status;
+	void  (*cb)(void *arg);
+	void   *arg;
+	LIST_ENTRY(exec_info) entry;
+};
+
+static LIST_HEAD(exec_info_list, exec_info) exec_info_head;
 
 static char *global_exec = NULL;
 static uev_t watcher;
-typedef struct exec_info {
-	pid_t pid;
-	int exit_status;
-	LIST_ENTRY(exec_info) entry;
-} exec_info_t;
-static LIST_HEAD(exec_info_list, exec_info) exec_info_head;
+
 
 static void cleanup_exec_info(int max_size)
 {
-	exec_info_t *info, *next;
+	struct exec_info *info, *next;
 	int size = 0;
 
 	LIST_FOREACH_SAFE(info, &exec_info_head, entry, next) {
@@ -54,9 +59,60 @@ static void cleanup_exec_info(int max_size)
 	}
 }
 
+static void add(pid_t pid, void (*cb)(void *), void *arg)
+{
+	struct exec_info *info;
+
+	info = malloc(sizeof(*info));
+	if (!info) {
+		PERROR("Failed recording PID %d of script", pid);
+		return;
+	}
+
+	info->pid = pid;
+	info->cb  = cb;
+	info->arg = arg;
+	LIST_INSERT_HEAD(&exec_info_head, info, entry);
+}
+
+static int exec(pid_t pid, int status)
+{
+	struct exec_info *info;
+
+	LIST_FOREACH(info, &exec_info_head, entry) {
+		if (info->pid != pid)
+			continue;
+
+		info->exit_status = status;
+		if (info->cb)
+			info->cb(info->arg);
+
+		return 0;
+	}
+
+	return -1;
+}
+
+int script_exit_status(pid_t pid)
+{
+	struct exec_info *info;
+	int status = -1;
+
+	LIST_FOREACH(info, &exec_info_head, entry) {
+		if (info->pid != pid)
+			continue;
+
+		status = info->exit_status;
+		LIST_REMOVE(info, entry);
+		free(info);
+		break;
+	}
+
+	return status;
+}
+
 static void cb(uev_t *w, void *arg, int events)
 {
-	exec_info_t *info;
 	pid_t pid = 1;
 	int status;
 
@@ -68,19 +124,10 @@ static void cb(uev_t *w, void *arg, int events)
 			else
 				INFO("Script (PID %d) exited successful", pid);
 
+			exec(pid, status);
 			cleanup_exec_info(MAX_EXEC_INFO_LIST_SIZE - 1);
-
-			info = malloc(sizeof(*info));
-			if (!info) {
-				PERROR("Failed recording PID %d exit status %d", pid, status);
-				return;
-			}
-
-			info->pid = pid;
-			info->exit_status = status;
-			LIST_INSERT_HEAD(&exec_info_head, info, entry);
 		} else {
-			INFO("Script (PID %d) is not yet exited?", pid);
+			INFO("Script (PID %d) has not yet exited?", pid);
 		}
 	}
 }
@@ -151,7 +198,7 @@ int checker_exec(char *exec, char *nm, int iscrit, double val, double warn, doub
 	return 0;
 }
 
-pid_t supervisor_exec(char *exec, int c, int p, char *label)
+pid_t supervisor_exec(char *exec, int c, int p, char *label, void (*cb)(void *), void *arg)
 {
 	char cause[5], id[10];
 	char *argv[] = {
@@ -179,6 +226,8 @@ pid_t supervisor_exec(char *exec, int c, int p, char *label)
 	}
 
 	LOG("Started script %s, PID %d", exec, pid);
+	add(pid, cb, arg);
+
 	return pid;
 }
 
@@ -202,25 +251,10 @@ pid_t generic_exec(char *exec, int warn, int crit)
 	if (!pid)
 		_exit(execv(argv[0], argv));
 
+	LOG("Started script %s, PID %d", exec, pid);
+	add(pid, NULL, NULL);
+
 	return pid;
-}
-
-int exit_code(pid_t pid)
-{
-	exec_info_t *info;
-	int rc = -1;
-
-	LIST_FOREACH(info, &exec_info_head, entry) {
-		if (info->pid != pid)
-			continue;
-
-		rc = info->exit_status;
-		LIST_REMOVE(info, entry);
-		free(info);
-		break;
-	}
-
-	return rc;
 }
 
 /**

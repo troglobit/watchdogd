@@ -43,7 +43,7 @@ static void generic_cb(uev_t *w, void *arg, int events)
 	int status;
 
 	DEBUG("Verifying if monitor script PID %d is still running", gs->pid);
-	status = exit_code(gs->pid);
+	status = script_exit_status(gs->pid);
 	if (status >= 0) {
 		uev_timer_stop(&gs->script_watcher);
 		gs->is_running = 0;
