@@ -113,13 +113,13 @@ error:
 
 static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int *ack)
 {
-	int sd;
-	size_t len;
 	wdog_t req = {
 		.cmd     = cmd,
 		.pid     = getpid(),
 		.timeout = timeout,
 	};
+	size_t len;
+	int sd;
 
 	sd = api_init();
 	if (-1 == sd) {
@@ -166,13 +166,21 @@ static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int
 		errno = req.error;
 		goto error;
 	}
-
-	if (cmd == WDOG_RESET_REASON_CMD ||
-	    cmd == WDOG_RESET_REASON_RAW_CMD)
-		memcpy(ack, &req, sizeof(wdog_reason_t));
-	else if (ack)
-		*ack = req.next_ack;
 	close(sd);
+
+	if (ack) {
+		wdog_reason_t *reason = (wdog_reason_t *)ack;
+
+		switch (cmd) {
+		case WDOG_RESET_REASON_CMD:
+		case WDOG_RESET_REASON_RAW_CMD:
+			memcpy(reason, &req, sizeof(wdog_reason_t));
+			break;
+		default:
+			*ack = req.next_ack;
+			break;
+		}
+	}
 
 	if (WDOG_SUBSCRIBE_CMD == cmd)
 		return req.id;
