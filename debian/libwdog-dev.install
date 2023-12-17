@@ -1,4 +1,0 @@
-usr/include/wdog/*.h
-usr/lib/*/lib*.a
-usr/lib/*/lib*.so
-usr/lib/*/pkgconfig/lib*.pc

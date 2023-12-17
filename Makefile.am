@@ -43,12 +43,6 @@ release-hook:
 	fi
 
 #
-# Generate .deb package(s)
-#
-package:
-	@debuild -uc -us -B --lintian-opts --profile debian -i -I --show-overrides
-
-#
 # Target to run when building a release
 #
 release: release-hook distcheck
@@ -64,7 +58,4 @@ release: release-hook distcheck
 		printf "$$file    \tDistribution tarball\n";			\
 		printf "$$file.md5\t"; cat ../$$file.md5 | cut -f1 -d' ';	\
 		printf "$$file.sha256\t"; cat ../$$file.sha256 | cut -f1 -d' ';	\
-	done
-	@for file in `cd ..; ls $(PACKAGE)_$(subst _,.,$(VERSION))*`; do		\
-		printf "%-40s Debian/Ubuntu package file\n" $$file;			\
 	done

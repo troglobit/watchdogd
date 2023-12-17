@@ -51,29 +51,3 @@ jobs:
       - name: Test
         run: |
           LD_LIBRARY_PATH=/tmp/wdog/lib ./src/testit.sh
-  debian:
-    # Verify that Debian packages can be built
-    name: Debian Package
-    runs-on: ubuntu-latest
-    container: debian:stable
-    steps:
-      - uses: actions/checkout@v4
-      - name: Installing dependencies
-        run: |
-          apt-get update
-          apt-get install -y build-essential bison flex autoconf automake         \
-                             pkg-config libconfuse-dev libsystemd-dev systemd     \
-                             dpkg-dev debhelper devscripts wget curl debian-keyring
-          curl -sS https://deb.troglobit.com/pubkey.gpg | apt-key add -
-          echo "deb [arch=amd64] https://deb.troglobit.com/debian stable main" \
-               | tee /etc/apt/sources.list.d/troglobit.list
-          apt-get update
-          apt-get install -y libuev-dev libite-dev
-      - name: Building Debian package
-        run: |
-          ./autogen.sh
-          ./configure
-          make distcheck
-          make package
-          echo "== watchdogd.changes ================================================"
-          cat ../watchdogd*.changes
