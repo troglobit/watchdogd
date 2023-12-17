@@ -28,6 +28,8 @@
 #include "supervisor.h"
 #include "generic.h"
 
+static char *fn;
+
 #if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 		   int (*init)(uev_ctx_t *, int, int, float, float, char *))
@@ -160,12 +162,15 @@ static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 {
 	char fmt[80];
 
-	if (cfg && cfg->filename && cfg->line)
-		snprintf(fmt, sizeof(fmt), "%s:%d: %s", cfg->filename, cfg->line, format);
-	else if (cfg && cfg->filename)
-		snprintf(fmt, sizeof(fmt), "%s: %s", cfg->filename, format);
+	if (!cfg) {
+		vsyslog(LOG_ERR, format, args);
+		return;
+	}
+
+	if (cfg->line)
+		snprintf(fmt, sizeof(fmt), "%s:%d: %s", fn, cfg->line, format);
 	else
-		snprintf(fmt, sizeof(fmt), "%s", format);
+		snprintf(fmt, sizeof(fmt), "%s: %s", fn, format);
 
 	vsyslog(LOG_ERR, fmt, args);
 }
@@ -239,6 +244,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	}
 
 	/* Custom logging, rather than default Confuse stderr logging */
+	fn = file;
 	cfg_set_error_function(cfg, conf_errfunc);
 
 	/* Validators */
