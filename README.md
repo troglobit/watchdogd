@@ -1,6 +1,6 @@
 System & Process Supervisor for Linux
 =====================================
-[![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
+[![License Badge][]][License] [![GitHub Status][]][GitHub] [![Coverity Status][]][Coverity Scan]
 
 <a href="https://www.clipartof.com/435776"><img align="right" src="logo.png"
    alt="http://toonclips.com/design/788" title="Copyright © Ron Leishman"></a>
@@ -399,8 +399,8 @@ more details, see the file [CONTRIBUTING][contrib] in the GIT sources.
 [libConfuse]:      https://github.com/martinh/libconfuse/
 [License]:         https://en.wikipedia.org/wiki/ISC_license
 [License Badge]:   https://img.shields.io/badge/License-ISC-blue.svg
-[Travis]:          https://travis-ci.org/troglobit/watchdogd
-[Travis Status]:   https://travis-ci.org/troglobit/watchdogd.png?branch=master
+[GitHub]:           https://github.com/troglobit/finit/actions/workflows/build.yml/
+[GitHub Status]:    https://github.com/troglobit/finit/actions/workflows/build.yml/b
 [Coverity Scan]:   https://scan.coverity.com/projects/6458
 [Coverity Status]: https://scan.coverity.com/projects/6458/badge.svg
 [GitHub]:          http://github.com/troglobit/watchdogd
