@@ -56,7 +56,8 @@ jobs:
       - name: Configure
         run: |
           ./autogen.sh
-          ./configure
+          ./configure --with-generic --with-loadavg --with-filenr \
+                      --with-meminfo --enable-examples
       - name: Build
         run: |
           export PATH=`pwd`/coverity/bin:$PATH
