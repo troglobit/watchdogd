@@ -175,6 +175,7 @@ static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int
 		case WDOG_RESET_REASON_CMD:
 		case WDOG_RESET_REASON_RAW_CMD:
 			memcpy(reason, &req, sizeof(wdog_reason_t));
+			reason->label[sizeof(reason->label) - 1] = 0;
 			break;
 		default:
 			*ack = req.next_ack;
