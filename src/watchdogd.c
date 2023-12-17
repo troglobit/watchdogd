@@ -318,11 +318,11 @@ int main(int argc, char *argv[])
 	setlogmask(LOG_UPTO(loglevel));
 	openlog(prognm, log_opts, LOG_DAEMON);
 
-	/* Read /etc/watchdogd.conf if it exists */
-	conf_parse_file(&ctx, opt_config);
-
 	/* Hello world ... */
 	LOG("%s v%s %s ...", prognm, PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
+
+	/* Read /etc/watchdogd.conf if it exists */
+	conf_parse_file(&ctx, opt_config);
 
 	/* Setup callbacks for SIGUSR1 and, optionally, exit magic on SIGINT/SIGTERM */
 	setup_signals(&ctx);
