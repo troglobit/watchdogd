@@ -82,11 +82,13 @@ static void cb(uev_t *w, void *arg, int events)
 
 			if (!strncmp(buf, meminfo[i].str, len)) {
 				char *ptr = buf + len + 1;
+				uint32_t val;
 
 				while (isspace(*ptr))
 					ptr++;
 
-				sscanf(ptr, "%u kB", &meminfo[i].val);
+				if (sscanf(ptr, "%u kB", &val) == 1)
+					meminfo[i].val = val;
 			}
 		}
 	}
