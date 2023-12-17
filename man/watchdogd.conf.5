@@ -80,7 +80,7 @@ cycles.
 .Bl -tag -width TERM
 .It Cm enabled = Ar true | false
 Enable or disable storing reset cause, default: disabled
-.It Cm file = Ar "/var/lib/watchdogd.state"
+.It Cm file = Ar "/var/lib/misc/watchdogd.state"
 The default file setting is a non-volatile path, according to the FHS.
 It can be changed to another location, but make sure that location is
 writable first.
@@ -288,7 +288,7 @@ supervisor {
 
 reset-reason {
     enabled = true
-    file    = "/var/lib/watchdogd.state"
+    file    = "/var/lib/misc/watchdogd.state"
 }
 
 ### Checkers/Monitors ##################################################

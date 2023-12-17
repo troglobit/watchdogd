@@ -30,10 +30,13 @@
 #define WDOG_SOCKNAME               "watchdogd.sock"
 #define WDOG_SUPERVISOR_PATH        _PATH_VARRUN   WDOG_SOCKNAME
 #define WDOG_SUPERVISOR_TEST        _PATH_TMP      WDOG_SOCKNAME
-#define WDOG_STATE                  _PATH_PRESERVE "/watchdogd.state"
-#define WDOG_STATE_TEST             _PATH_TMP      "watchdogd.state"
-#define WDOG_STATUS                 _PATH_VARRUN   "watchdogd.status"
-#define WDOG_STATUS_TEST            _PATH_TMP      "watchdogd.status"
+#define WDOG_STATENAME              "watchdogd.state"
+#define WDOG_STATEDIR               _PATH_PRESERVE "/misc/"
+#define WDOG_STATE                  WDOG_STATEDIR  WDOG_STATENAME
+#define WDOG_STATE_TEST             _PATH_TMP      WDOG_STATENAME
+#define WDOG_STATUSNAME             "watchdogd.status"
+#define WDOG_STATUS                 _PATH_VARRUN   WDOG_STATUSNAME
+#define WDOG_STATUS_TEST            _PATH_TMP      WDOG_STATUSNAME
 
 #define WDOG_SUBSCRIBE_CMD          1
 #define WDOG_UNSUBSCRIBE_CMD        2

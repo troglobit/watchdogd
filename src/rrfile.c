@@ -27,9 +27,25 @@ int reset_reason_init(int enabled, char *file)
 	if (rrfile)
 		free(rrfile);
 
-	if (!file)
-		rrfile = strdup(WDOG_STATE);
-	else
+	if (!file) {
+		const char *oldpath = _PATH_PRESERVE "/" WDOG_STATENAME;
+
+		if (access(WDOG_STATEDIR, W_OK)) {
+			if (access(oldpath, W_OK)) {
+				PERROR("cannot write to %s", WDOG_STATEDIR);
+				rrenabled = 0;
+				rrfile = NULL;
+				return -1;
+			}
+			rrfile = strdup(oldpath);
+		} else {
+			if (!access(oldpath, R_OK)) {
+				LOG("migrating %s to new path %s", oldpath, WDOG_STATE);
+				rename(oldpath, WDOG_STATE);
+			}
+			rrfile = strdup(WDOG_STATE);
+		}
+	} else
 		rrfile = strdup(file);
 	rrenabled = enabled;
 

@@ -213,7 +213,7 @@ reset reason after reboot, the following section must be enabled in the
 ```
 reset-reason {
     enabled = true
-#   file    = /var/lib/watchdogd.state  # default
+#   file    = /var/lib/misc/watchdogd.state  # default
 }
 ```
 
