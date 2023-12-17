@@ -26,9 +26,6 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          curl -sS https://deb.troglobit.com/pubkey.gpg | sudo apt-key add -
-          echo "deb [arch=amd64] https://deb.troglobit.com/debian stable main" \
-               | sudo tee /etc/apt/sources.list.d/troglobit.list
           sudo apt-get -y update
           sudo apt-get -y install pkg-config libsystemd-dev libconfuse-dev \
                                   libuev-dev libite-dev
