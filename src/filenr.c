@@ -31,10 +31,11 @@ static double critical = 0.0;
 
 static void cb(uev_t *w, void *arg, int events)
 {
-	char *ptr, buf[80];
-	FILE *fp;
-	double level;
 	uint32_t curr = 0, un = 0, max = 0;
+	char *ptr, buf[80];
+	double level;
+	FILE *fp;
+	int rc;
 
 	fp = fopen(PROC_FILE, "r");
 	if (!fp) {
@@ -54,7 +55,13 @@ static void cb(uev_t *w, void *arg, int events)
 		return;
 	}
 
-	sscanf(buf, "%d\t%d\%d", &curr, &un, &max);
+	chomp(buf);
+	rc = sscanf(buf, "%u\t%u\%u", &curr, &un, &max);
+	if (rc == EOF || rc < 3 || max == 0) {
+		WARN("Bailing out, failed parsing %s: '%s'", PROC_FILE, buf);
+		return;
+	}
+
 	level = (double)(curr - un) / max;
 
 //	LOG("Current file-nr: %d max: %d, level: %.0f%%, warning: %.0f%%, critical: %.0f%%",
