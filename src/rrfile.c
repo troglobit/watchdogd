@@ -39,11 +39,17 @@ int reset_reason_init(int enabled, char *file)
 			}
 			rrfile = strdup(oldpath);
 		} else {
-			if (!access(oldpath, R_OK)) {
-				LOG("migrating %s to new path %s", oldpath, WDOG_STATE);
-				rename(oldpath, WDOG_STATE);
+			if (rename(oldpath, WDOG_STATE)) {
+				if (errno == ENOENT) {
+					rrfile = strdup(WDOG_STATE);
+				} else {
+					PERROR("failed migrating %s, will continue using it", oldpath);
+					rrfile = strdup(oldpath);
+				}
+			} else {
+				LOG("migrated %s to new path %s", oldpath, WDOG_STATE);
+				rrfile = strdup(WDOG_STATE);
 			}
-			rrfile = strdup(WDOG_STATE);
 		}
 	} else
 		rrfile = strdup(file);
