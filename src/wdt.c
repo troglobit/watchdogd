@@ -248,7 +248,7 @@ int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
 			continue;
 		if (sscanf(buf, WDT_REASON_PID ": %d", pid) == 1)
 			continue;
-		if (sscanf(buf, WDT_REASON_WID ": %d", &r->wid) == 1)
+		if (sscanf(buf, WDT_REASON_WID ": %u", &r->wid) == 1)
 			continue;
 		if (sscanf(buf, WDT_REASON_STR ": %d", (int *)&r->code) == 1)
 			continue;
@@ -298,7 +298,7 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 	case WDOG_FAILED_UNSUBSCRIPTION:
 	case WDOG_FAILED_TO_MEET_DEADLINE:
 		fprintf(fp, WDT_REASON_PID ": %d\n", pid);
-		fprintf(fp, WDT_REASON_WID ": %d\n", r->wid);
+		fprintf(fp, WDT_REASON_WID ": %ui\n", r->wid);
 		fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
 		break;
 	default:
@@ -331,7 +331,7 @@ static int compat_supervisor(wdog_reason_t *r)
 		return -1;
 	}
 
-	fprintf(fp, "Watchdog ID  : %d\n", r->wid);
+	fprintf(fp, "Watchdog ID  : %u\n", r->wid);
 	fprintf(fp, "Label        : %s\n", r->label);
 	fprintf(fp, "Reset cause  : %d (%s)\n", r->code, wdog_get_reason_str(r));
 	fprintf(fp, "Counter      : %u\n", r->counter);

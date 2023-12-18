@@ -270,7 +270,7 @@ static int testit(void)
 		log("Sleeping %d msec", tmo / 2);
 		usleep(tmo / 2 * 1000);
 
-		log("Kicking watchdog: id %d, ack %d", id, ack);
+		log("Kicking watchdog: id %d, ack %u", id, ack);
 		if (wdog_kick2(id, &ack))
 			errx(1, "Failed kicking");
 
@@ -285,7 +285,7 @@ static int testit(void)
 			usleep(tmo / 2 * 1000 - 500000);
 	}
 
-	log("Unsubscribing: id %d, ack %d", id, ack);
+	log("Unsubscribing: id %d, ack %u", id, ack);
 	if (wdog_unsubscribe(id, ack))
 		errx(1, "Failed unsubscribe");
 

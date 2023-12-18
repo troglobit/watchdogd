@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 		if (wdog_status(&enabled))
 			PERROR("Failed reading wdog status");
 
-		DEBUG("=> Kicking ack:%d ... (%sABLED)", ack, enabled ? "EN" : "DIS");
+		DEBUG("=> Kicking ack:%u ... (%sABLED)", ack, enabled ? "EN" : "DIS");
 		if (wdog_kick2(id, &ack))
 			PERROR("Failed kicking");
 		sleep(2);
