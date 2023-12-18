@@ -342,20 +342,20 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
 		} else {
-			int timeout = p->timeout;
+			int msec = p->timeout;
 
 			/*
 			 * If process needs to request an extended timemout
 			 * Like in subscribe we allow for some scheduling slack
 			 */
 			if (req->timeout > 0)
-				timeout = req->timeout + 500;
+				msec = req->timeout + 500;
 
 			DEBUG("How do you do %s[%d], id:%d?  ACK should be %d, is %d",
 			      req->label, req->pid, req->id, p->ack, req->ack);
 			next_ack(p, req);
 			if (enabled)
-				uev_timer_set(&p->watcher, timeout, timeout);
+				uev_timer_set(&p->watcher, msec, msec);
 		}
 		break;
 
