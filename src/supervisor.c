@@ -298,6 +298,8 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 	if (!supervisor_enabled)
 		return 1;
 
+	DEBUG("supervisor cmd %d", req->cmd);
+
 	switch (req->cmd) {
 	case WDOG_SUBSCRIBE_CMD:
 		/* Start timer, return ID from allocated timer. */
@@ -391,6 +393,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		break;
 
 	case WDOG_CLEAR_REASON_CMD:
+		DEBUG("Got request to clear reset reason data.");
 		if (reset_reason_clear(NULL)) {
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
@@ -398,6 +401,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		break;
 
 	default:
+		DEBUG("Unknown command %d", req->cmd);
 		return 1;
 	}
 

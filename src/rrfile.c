@@ -80,6 +80,7 @@ int reset_reason_set(wdog_reason_t *reason, pid_t pid)
 		return 1;
 	}
 
+	DEBUG("Storing reset reason, pid %d, in %s", pid, state);
 	if (wdt_fstore_reason(fp, reason, pid))
 		PERROR("Failed writing reset cause to disk");
 

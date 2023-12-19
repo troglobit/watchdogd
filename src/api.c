@@ -36,6 +36,7 @@ static void cmd(uev_t *w, void *arg, int events)
 	wdog_t req;
 	int sd;
 
+	DEBUG("Waking up");
 	sd = accept(w->fd, NULL, NULL);
 	if (-1 == sd) {
 		WARN("Failed accepting incoming client connection");
@@ -53,6 +54,7 @@ static void cmd(uev_t *w, void *arg, int events)
 
 	/* Make sure to terminate string, needed below. */
 	req.label[sizeof(req.label) - 1] = 0;
+	DEBUG("cmd %d", req.cmd);
 
 	switch (req.cmd) {
 	case WDOG_ENABLE_CMD:
@@ -102,6 +104,7 @@ static void cmd(uev_t *w, void *arg, int events)
 	case WDOG_RESET_REASON_RAW_CMD:
 	case WDOG_CLEAR_REASON_CMD:
 	case WDOG_FAILED_SYSTEMOK_CMD...WDOG_FAILED_OVERLOAD_CMD:
+		DEBUG("Delegating %d to supervisor", req.cmd);
 		if (supervisor_cmd(w->ctx, &req)) {
 			req.cmd = WDOG_CMD_ERROR;
 			req.error = EOPNOTSUPP;
