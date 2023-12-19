@@ -15,7 +15,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/** libwdog API
+/** The libwdog API defines how to connect to watchdogd at runtime to
+ * query status, including reset cause data, adjust logging, and for
+ * advanced users: to ask watchdogd to monitor a process.
+ *
+ * Please note, the logo, "Watch Dog Detective Taking Notes", is licensed
+ * for use by the watchdogd project, copyright © Ron Leishman
+ *
+ * Typically a process' event/@c while(1) loop is instrumented with a
+ * call to "kick" the watchdog periodically to inform watchdogd that it
+ * is still operational.  See the included examples for how this can be
+ * used
+ *
  * @file wdog.h
  * @example ex1.c
  * @example ex2.c
