@@ -14,7 +14,7 @@
 # paths will be considered relative to the root of the repository, not the
 # location of the DOXYFILE.
 
-DOXYFILE =
+#DOXYFILE =
 
 # Specify external repository to link documentation with.
 # This is similar to Doxygen's TAGFILES option, but will automatically link to
@@ -24,7 +24,7 @@ DOXYFILE =
 #   TAGLINKS = doxygen/doxygen CodeDocs/osg
 # Note: these repositories must already be built on CodeDocs.
 
-TAGLINKS =
+#TAGLINKS =
 
 #---------------------------------------------------------------------------
 # Doxygen Configuration
@@ -120,7 +120,7 @@ TAGLINKS =
 # HTML_TIMESTAMP =
 # IDL_PROPERTY_SUPPORT =
 # IGNORE_PREFIX =
-# IMAGE_PATH =
+IMAGE_PATH = ./
 # INCLUDED_BY_GRAPH =
 # INCLUDE_FILE_PATTERNS =
 # INCLUDE_GRAPH =
@@ -131,7 +131,7 @@ TAGLINKS =
 # INLINE_INHERITED_MEMB =
 # INLINE_SIMPLE_STRUCTS =
 # INLINE_SOURCES =
-INPUT = src/wdog.h
+INPUT = README.md src/wdog.h
 # INPUT_ENCODING =
 # INTERACTIVE_SVG =
 # INTERNAL_DOCS =
@@ -188,6 +188,6 @@ INPUT = src/wdog.h
 # TYPEDEF_HIDES_STRUCT =
 # UML_LIMIT_NUM_FIELDS =
 # UML_LOOK =
-# USE_MDFILE_AS_MAINPAGE =
+USE_MDFILE_AS_MAINPAGE = README.md
 # VERBATIM_HEADERS =
 #
