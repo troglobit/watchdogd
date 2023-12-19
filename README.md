@@ -399,8 +399,8 @@ more details, see the file [CONTRIBUTING][contrib] in the GIT sources.
 [libConfuse]:      https://github.com/martinh/libconfuse/
 [License]:         https://en.wikipedia.org/wiki/ISC_license
 [License Badge]:   https://img.shields.io/badge/License-ISC-blue.svg
-[GitHub]:           https://github.com/troglobit/finit/actions/workflows/build.yml/
-[GitHub Status]:    https://github.com/troglobit/finit/actions/workflows/build.yml/b
+[GitHub]:          https://github.com/troglobit/watchdogd/actions/workflows/build.yml/
+[GitHub Status]:   https://github.com/troglobit/watchdogd/actions/workflows/build.yml/badge.svg
 [Coverity Scan]:   https://scan.coverity.com/projects/6458
 [Coverity Status]: https://scan.coverity.com/projects/6458/badge.svg
 [GitHub]:          http://github.com/troglobit/watchdogd
