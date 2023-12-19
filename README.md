@@ -222,12 +222,11 @@ make sure the destination directory is writable if you change it.  You
 can either inspect the file, or use the `watchdogctl` tool.
 
 
+<a href="https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html"><img
+   align="right"  src="doc/api.png" alt="API" title="API docs"></a>
+
 libwdog API
 -----------
-
-<div align="right">
-	<a href="https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html">🕮 API docs</a>
-</div>
 
 To have `watchdogd` supervise a process, it must be instrumented with at
 least a "subscribe" and a "kick" API call.  Commonly this is achieved by
@@ -260,9 +259,7 @@ int wdog_kick2       (int id, unsigned int *ack);
 int wdog_extend_kick (int id, unsigned int timeout, unsigned int *ack);
 ```
 
-See [wdog.h](src/wdog.h) or
-[codedocs.xyz](https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html)
-for detailed API documentation.
+See [wdog.h](src/wdog.h) or 🕮 [codedocs.xyz](https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html) for detailed API documentation.
 
 It is highly recommended to use an event loop like libev, [libuev][], or
 similar.  For such libraries one can simply add a timer callback for the
