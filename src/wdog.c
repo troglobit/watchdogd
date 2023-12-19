@@ -395,7 +395,7 @@ char *wdog_reset_reason_str(wdog_reason_t *reason)
 
 int wdog_reset_reason_clr(void)
 {
-	return doit(WDOG_RESET_REASON_CMD, -1, NULL, 0, NULL);
+	return doit(WDOG_CLEAR_REASON_CMD, -1, NULL, 0, NULL);
 }
 
 int wdog_reload(void)

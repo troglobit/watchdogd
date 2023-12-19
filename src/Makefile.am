@@ -39,5 +39,5 @@ pkgincludedir       = $(includedir)/wdog
 pkginclude_HEADERS  =           wdog.h  compat.h
 libwdog_la_SOURCES  = wdog.c	wdog.h  compat.h
 libwdog_la_CFLAGS   = $(lite_CFLAGS) $(AM_CFLAGS)
-libwdog_la_LDFLAGS  = -version-info 2:0:0
+libwdog_la_LDFLAGS  = -version-info 2:1:0
 
