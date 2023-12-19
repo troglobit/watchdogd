@@ -191,7 +191,7 @@ details of memory usage, see [this article][meminfo].
 called pmon).  When the supervisor is enabled, and the priority is set
 to a value > 0, the daemon runs as a real-time task with the configured
 priority.  Monitored clients connect to the supervisor using the libwdog
-API.
+API (see below).
 
 ```
 supervisor {
@@ -225,6 +225,10 @@ can either inspect the file, or use the `watchdogctl` tool.
 libwdog API
 -----------
 
+<div align="right">
+	<a href="https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html">🕮 API docs</a>
+</div>
+
 To have `watchdogd` supervise a process, it must be instrumented with at
 least a "subscribe" and a "kick" API call.  Commonly this is achieved by
 adding the `wdog_kick()` call to the main event loop.
@@ -256,7 +260,9 @@ int wdog_kick2       (int id, unsigned int *ack);
 int wdog_extend_kick (int id, unsigned int timeout, unsigned int *ack);
 ```
 
-See [wdog.h](src/wdog.h) for detailed API documentation.
+See [wdog.h](src/wdog.h) or
+[codedocs.xyz](https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html)
+for detailed API documentation.
 
 It is highly recommended to use an event loop like libev, [libuev][], or
 similar.  For such libraries one can simply add a timer callback for the
