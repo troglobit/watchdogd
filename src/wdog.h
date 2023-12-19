@@ -83,12 +83,13 @@ int   wdog_reload           (void);
 /**
  * Start supervising a subscriber
  *
- * After this, one of the kick functions must be called at least every `timeout` ms until
- * wdog_unsubscribe is called.  If not, watchdogd will (depending on the configuration)
- * reset the system or call the supervisor script.
+ * After this, one of the kick functions must be called at least every
+ * @param timeout millisecods until wdog_unsubscribe() is called.  If
+ * not, watchdogd will (depending on the configuration) reset the system
+ * or call the supervisor script.
  *
- * @param label Name of this subscriber. If NULL, process ID will be used.
- * @param timeout Timeout in ms
+ * @param label Name of this subscriber. If @c NULL, process ID will be used.
+ * @param timeout Timeout in milliseconds
  * @param[out] next_ack out-parameter - the value must be passed to next API call
  * @return ID on success, negative on error (also sets @param errno)
  */
@@ -96,7 +97,9 @@ int   wdog_subscribe        (char *label, unsigned int timeout, unsigned int *ne
 
 /**
  * Stop supervising a subscriber
+ *
  * Checks ack and stops supervisor for this subscriber
+ *
  * @param id return value from wdog_subscribe
  * @param ack Last ack received from the wdog API
  * @return 0 on success, negative on error (also sets @param errno)
@@ -105,20 +108,28 @@ int   wdog_unsubscribe      (int id, unsigned int ack);
 
 /**
  * Kick the watchdog with a custom timeout (old API)
- * Checks ack, restarts timer with provided timeout and sets next_ack
+ *
+ * Checks ack, restarts timer with provided timeout and sets @param next_ack.
+ * This API is kept for backwards compatibility.  The new wdog_kick2() API is
+ * a lot easier to use.
+ *
  * @param id return value from wdog_subscribe
- * @param timeout Number of ms to set timeout to
+ * @param timeout Number of milliseconds to set timeout to
  * @param ack ack received from last wdog API call
  * @param[out] next_ack ack to pass to next wdog API call
+ * @see wdog_kick2()
  * @return 0 on success, negative on error (also sets @param errno)
  */
 int   wdog_kick             (int id, unsigned int timeout, unsigned int ack, unsigned int *next_ack);
 
 /**
  * Kick the watchdog with a custom timeout
- * Checks ack, restarts timer with provided timeout and sets ack
+ *
+ * Checks ack, restarts timer with new timeout and sets ack.  Use this
+ * to extend the kick interval set in wdog_subscribe().
+ *
  * @param id return value from wdog_subscribe
- * @param timeout Number of ms to set timeout to
+ * @param timeout Number of milliseconds to set timeout to
  * @param[in,out] ack Pointer to ack received from last wdog API call.  Will be updated with new ack.
  * @return 0 on success, negative on error (also sets @param errno)
  */
