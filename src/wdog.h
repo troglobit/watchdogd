@@ -17,7 +17,8 @@
 
 /** libwdog API
  * @file wdog.h
- *
+ * @example ex1.c
+ * @example ex2.c
  */
 
 #ifdef __cplusplus
