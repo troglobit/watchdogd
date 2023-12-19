@@ -2,7 +2,7 @@ System & Process Supervisor for Linux
 =====================================
 [![License Badge][]][License] [![GitHub Status][]][GitHub] [![Coverity Status][]][Coverity Scan]
 
-<a href="https://www.clipartof.com/435776"><img align="right" src="logo.png"
+<a href="https://www.clipartof.com/435776"><img align="right" src="./doc/logo.png"
    alt="http://toonclips.com/design/788" title="Copyright © Ron Leishman"></a>
 
 
