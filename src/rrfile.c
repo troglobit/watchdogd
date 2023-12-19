@@ -60,8 +60,8 @@ int reset_reason_init(int enabled, char *file)
 
 int reset_reason_set(wdog_reason_t *reason, pid_t pid)
 {
-	FILE *fp;
 	const char *state;
+	FILE *fp;
 
 	if (wdt_testmode())
 		state = WDOG_STATE_TEST;
@@ -88,8 +88,8 @@ int reset_reason_set(wdog_reason_t *reason, pid_t pid)
 
 int reset_reason_get(wdog_reason_t *reason, pid_t *pid)
 {
-	FILE *fp;
 	const char *state;
+	FILE *fp;
 
 	if (!reason)
 		return errno = EINVAL;

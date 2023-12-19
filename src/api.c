@@ -31,10 +31,10 @@ extern const char *__wdog_levellog(int log);
 /* Client connected to domain socket sent a request */
 static void cmd(uev_t *w, void *arg, int events)
 {
-	int sd;
+	const char *tmp;
 	ssize_t num;
 	wdog_t req;
-	const char *tmp;
+	int sd;
 
 	sd = accept(w->fd, NULL, NULL);
 	if (-1 == sd) {
