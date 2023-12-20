@@ -8,6 +8,12 @@ All notable changes to the project are documented in this file.
 --------------------
 
 ### Changes
+- A new file system monitor has been added: `fsmon /var { ... }`
+- The syntax for the generic monitor script has changed, `watchdogd`,
+  however, remains backwards compatible.  New syntax:
+
+        generic /path/to/montor-script.sh { ... }
+
 - Documentation of the libwdog supervisor API by Andreas Helbech Kleist
 - API docs at <https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html>
 - State file location changed from `/var/lib/` to `/var/lib/misc/`.
