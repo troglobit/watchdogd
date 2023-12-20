@@ -48,7 +48,7 @@ that it can reset the board if the timer expires.  The WDT driver, and
 this daemon, periodically "kick" (reset) the timer to prevent it from
 firing.
 
-Most embedded systems utilise watchdog timers as a way to automatically
+Most embedded systems utilize watchdog timers as a way to automatically
 recover from malfunctions: lock-ups, live-locks, CPU overload.  With a
 bit of logic sprinkled on top the cause can more easily be tracked down.
 
@@ -97,11 +97,11 @@ Build & Install
 > see `./configure --help`
 
 `watchdogd` is tailored for Linux systems and builds against most modern
-C libries.  However, three external libraries are required: [libite][],
+C libraries.  However, three external libraries are required: [libite][],
 [libuEv][], and [libConfuse][].  Neither should present any surprises,
 all of them use de facto standard `configure` scripts and support
 `pkg-config`.  The latter is used by the `watchdogd` `configure` script
-use to locate requried libraries and header files.
+use to locate required libraries and header files.
 
 The common `./configure --some --args --here && make` is usually
 sufficient to build `watchdogd`.  But, if libraries are installed in
