@@ -83,7 +83,7 @@ aspects of the system, such as:
 - Memory leaks
 - File descriptor leaks
 - Process live locks
-- Reset counter
+- Reset counter, e.g., for snmpEngineBoots (RFC 2574)
 - Generic script
 
 Read more about [Built-in Monitors](doc/features.md#built-in-monitors)
