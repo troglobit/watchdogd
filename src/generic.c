@@ -138,7 +138,7 @@ static void cleanup(generic_t *gs)
  * Every T seconds we run the given script
  * If it returns nonzero or runs for more than timeout we are critical
  */
-int generic_init(uev_ctx_t *ctx, int T, int timeout, char *monitor, int warn, int crit, char *script)
+int generic_init(uev_ctx_t *ctx, const char *monitor, int T, int timeout, int warn, int crit, char *script)
 {
 	static generic_t *gs = NULL;
 

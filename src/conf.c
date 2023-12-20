@@ -57,11 +57,12 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 #endif
 
 #if defined(GENERIC_PLUGIN)
-static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
+static int generic_checker(uev_ctx_t *ctx, cfg_t *cfg)
 {
 	int warn_level, crit_level;
-	char *script, *monitor;
 	int period, timeout;
+	const char *monitor;
+	char *script;
 	cfg_t *sec;
 
 	sec = cfg_getnsec(cfg, "generic", 0);
@@ -75,10 +76,16 @@ static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 	timeout    = cfg_getint(sec, "timeout");
 	warn_level = cfg_getint(sec, "warning");
 	crit_level = cfg_getint(sec, "critical");
-	monitor    = cfg_getstr(sec, "monitor-script");
 	script     = cfg_getstr(sec, "script");
+	monitor    = cfg_title(sec);
+	if (!monitor)
+		monitor = cfg_getstr(sec, "monitor-script");
+	if (!monitor) {
+		ERROR("generic script, missing path argument.");
+		return 1;
+	}
 
-	return generic_init(ctx, period, timeout, monitor, warn_level, crit_level, script);
+	return generic_init(ctx, monitor, period, timeout, warn_level, crit_level, script);
 }
 #endif
 
@@ -196,7 +203,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_STR  ("script",   NULL, CFGF_NONE),
 		CFG_END()
 	};
-	cfg_opt_t generic_plugin_opts[] = {
+	cfg_opt_t generic_opts[] = {
 		CFG_BOOL ("enabled",        cfg_false, CFGF_NONE),
 		CFG_INT  ("interval",       300, CFGF_NONE),
 		CFG_INT  ("timeout",        300, CFGF_NONE),
@@ -219,7 +226,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("fsmon",       checker_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
-		CFG_SEC ("generic",     generic_plugin_opts, CFGF_NONE),
+		CFG_SEC ("generic",     generic_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_END()
 	};
 	cfg_t *cfg, *opt;
@@ -293,7 +300,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	checker(ctx, cfg, "meminfo", meminfo_init);
 #endif
 #ifdef GENERIC_PLUGIN
-	generic_plugin_checker(ctx, cfg);
+	generic_checker(ctx, cfg);
 #endif
 
 	return cfg_free(cfg);

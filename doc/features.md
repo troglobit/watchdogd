@@ -127,13 +127,12 @@ In addition to the built-in monitors, there is support for periodically
 calling a generic script where operators can do housekeeping checks. 
 
 ```
-generic {
+generic /path/to/monitor-script.sh {
     enabled = true
     interval = 300
     timeout = 60
     warning  = 1
     critical = 10
-    monitor-script = "/path/to/monitor-script.sh"
 }
 ```
 

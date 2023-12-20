@@ -283,9 +283,13 @@ script, same arguments.
 .El
 .Ss Generic Script Monitor
 .Bl -tag -width TERM
-.It Cm generic Ar {}
-Monitor a generic script.  Trigger warning and critical actions based on
-the exit code of the script.
+.It Cm generic Ar "/path/to/monitor-script.sh" {}
+Monitor status of a generic script.  Called every
+.Cm interval
+seconds, with a deadline of
+.Cm timeout
+seconds.  Trigger warning and critical actions are based on the exit
+code of the script.
 .Bl -tag -width TERM
 .It Cm enabled = Ar true | false
 Enable or disable plugin, default: disabled
@@ -294,9 +298,7 @@ How often to run the
 .Cm monitor-script ,
 default: 300 sec
 .It Cm timeout = Ar SEC
-Maximum amount of seconds
-.Cm monitor-script
-is allowed to run, default: 300 sec
+Maximum runtime of script, in seconds, default: 300 sec
 .It Cm warning = Ar VAL
 High watermark level, alert sent to log if exit status from
 .Cm monitor-script
@@ -307,10 +309,17 @@ Critical watermark level, alert sent to log, followed by reboot or
 action if
 .Cm monitor-script
 exit status is greater or equal to this value.
-.It Cm monitor-script = Ar "/path/to/generic-script.sh"
+.It Cm monitor-script = Ar "/path/to/generic-script.sh" Sy (DEPRECATED)
 Monitor script to run every
 .Cm interval
-seconds.
+seconds.  This setting is deprecated in favor of the new syntax:
+.Bd -unfilled -offset indent
+generic /path/to/monitor-script.sh { ... }
+.Ed
+.Pp
+If the new syntax is not used,
+.Nm
+falls back to look for this setting.
 .It Cm script = Ar "/path/to/reboot-action.sh"
 Optional script to run instead of reboot if critical watermark level is
 reached.  If omitted the global
@@ -379,13 +388,12 @@ meminfo {
 }
 
 # Generic site-specific script
-generic {
+generic /path/to/monitor-script.sh {
     enabled  = true
     interval = 60
     timeout = 10
     warning = 10
     critical = 100
-    monitor-script = "/path/to/monitor-script.sh"
 #    script = "/path/to/alt-reboot-action.sh"
 }
 .Ed

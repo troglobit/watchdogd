@@ -24,7 +24,7 @@ int fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn,
 int loadavg_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 int meminfo_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 
-int generic_init (uev_ctx_t* ctx, int T, int timeout, char* monitor, int warn, int crit, char* script);
+int generic_init (uev_ctx_t* ctx, const char *name, int T, int timeout, int warn, int crit, char* script);
 
 #endif /* WDOG_MONITOR_H_ */
 
