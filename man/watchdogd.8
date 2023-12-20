@@ -120,7 +120,7 @@ Use
 for log messages, warnings and error conditions.  This is the default
 when running in the background.  When running in the foreground, see
 .Fl n ,
-log messages are printed to stdout.
+log messages are printed to stderr.
 .It Fl t, -interval Ar SEC
 HW watchdog (WDT) kick interval, in seconds, default: 10
 .It Fl T, -timeout Ar SEC
@@ -156,7 +156,7 @@ When
 backgrounds itself, syslog is implicitly used for all informational and
 debug messages.  If a user requests to run the daemon in the foreground
 .Nm
-will also log to STDERR, unless the user gives the
+will also log to stderr, unless the user gives the
 .Fl -syslog
 option to force use of syslog.
 .Pp
