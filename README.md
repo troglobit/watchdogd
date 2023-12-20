@@ -81,6 +81,7 @@ aspects of the system, such as:
 - Load average
 - Memory leaks
 - File descriptor leaks
+- File system usage
 - Process live locks
 - Reset counter, e.g., for snmpEngineBoots (RFC 2574)
 - Generic script

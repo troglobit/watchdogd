@@ -82,8 +82,11 @@ static void cb(uev_t *w, void *arg, int events)
 	}
 }
 
-int filenr_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script)
+int filenr_init(uev_ctx_t *ctx, const char *name, int T, int mark,
+		float warn, float crit, char *script)
 {
+	(void)name;
+
 	if (!T) {
 		INFO("File descriptor leak monitor disabled.");
 		return uev_timer_stop(&watcher);

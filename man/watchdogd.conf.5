@@ -33,6 +33,8 @@ Process supervisor, monitor the heartbeat of processes
 .It Cm filenr
 File descriptor monitor, also covers sockets, and other descriptor based
 resources
+.It Cm fsmon
+File system monitor, checks both availble blocks and inodes.
 .It Cm loadavg
 CPU load average monitor
 .It Cm meminfo
@@ -158,6 +160,47 @@ non-zero from the script instead.
 .It Cm filenr Ar {}
 Monitors file descriptor leaks based on
 .Ql /proc/sys/fs/file-nr .
+.Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable plugin, default: disabled
+.It Cm interval = Ar SEC
+Poll interval, default: 300 sec
+.It Cm logmark = Ar true | false
+Log current stats every poll interval.  Default: disabled
+.It Cm warning = Ar LEVEL
+High watermark level, alert sent to log.
+.It Cm critical = Ar LEVEL
+Critical watermark level, alert sent to log, followed by reboot or
+script action.
+.It Cm script = Ar "/path/to/reboot-action.sh"
+Optional script to run instead of reboot if critical watermark level is
+reached.  If omitted the global
+.Ql script
+action is used.  The scripts are called in the same way as the global
+script, same arguments.
+.El
+.El
+.Ss File System Monitor
+.Bl -tag -width TERM
+.It Cm fsmon Ar /mounpoint {}
+Monitors file the given path
+.Ar /mountpoint
+for block and inode usage.  If either exceeds the configured watermarks
+action is taken.
+.Pp
+The script is called with the
+.Cm fsmon
+label as the first argument, and the monitored path and exceeded
+resource are available as environment variables:
+.Pp
+.Bl -tag -compact
+.It Cm FSMON_TYPE
+One of 'blocks' or 'inodes' that exceeded the watermark.
+.It Cm FSMON_NAME
+Name of monitored path.
+.El
+.Pp
+The settings are the same as the other monitor plugins:
 .Bl -tag -width TERM
 .It Cm enabled = Ar true | false
 Enable or disable plugin, default: disabled

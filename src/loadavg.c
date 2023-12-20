@@ -104,8 +104,11 @@ static void cb(uev_t *w, void *arg, int events)
  * Every T seconds we check loadavg
  * First run is after 1 sec on init, then every period seconds
  */
-int loadavg_init(uev_ctx_t *ctx, int T, int mark, float warn, float crit, char *script)
+int loadavg_init(uev_ctx_t *ctx, const char *name, int T, int mark,
+		 float warn, float crit, char *script)
 {
+	(void)name;
+
 	if (!T) {
 		INFO("Load average monitor disabled.");
 		return uev_timer_stop(&watcher);

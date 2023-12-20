@@ -14,6 +14,9 @@ watchdogd_SOURCES   = watchdogd.c	private.h	\
 if FILENR_PLUGIN
 watchdogd_SOURCES  += filenr.c
 endif
+if FSMON_PLUGIN
+watchdogd_SOURCES  += fsmon.c
+endif
 if LOADAVG_PLUGIN
 watchdogd_SOURCES  += loadavg.c
 endif

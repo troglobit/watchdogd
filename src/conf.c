@@ -27,27 +27,29 @@
 
 static char *fn;
 
-#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN)
+#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN)
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
-		   int (*init)(uev_ctx_t *, int, int, float, float, char *))
+		   int (*init)(uev_ctx_t *, const char *, int, int, float, float, char *))
 {
-	int rc;
 	cfg_t *sec;
+	int rc;
 
 	sec = cfg_getnsec(cfg, sect, 0);
 	if (sec && cfg_getbool(sec, "enabled")) {
 		int period, logmark;
-		char *script;
+		const char *name;
 		float warn, crit;
+		char *script;
 
+		name    = cfg_title(sec);
 		period  = cfg_getint(sec, "interval");
 		logmark = cfg_getbool(sec, "logmark");
 		warn    = cfg_getfloat(sec, "warning");
 		crit    = cfg_getfloat(sec, "critical");
 		script  = cfg_getstr(sec, "script");
-		rc = init(ctx, period, logmark, warn, crit, script);
+		rc = init(ctx, name, period, logmark, warn, crit, script);
 	} else {
-		rc = init(ctx, 0, 0, 0.0, 0.0, NULL);
+		rc = init(ctx, NULL, 0, 0, 0.0, 0.0, NULL);
 	}
 
 	return rc;
@@ -57,10 +59,10 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 #if defined(GENERIC_PLUGIN)
 static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 {
-	cfg_t *sec;
+	int warn_level, crit_level;
 	char *script, *monitor;
 	int period, timeout;
-	int warn_level, crit_level;
+	cfg_t *sec;
 
 	sec = cfg_getnsec(cfg, "generic", 0);
 	if (!sec || !cfg_getbool(sec, "enabled")) {
@@ -214,6 +216,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("reset-reason", reset_reason_opts, CFGF_NONE),
 		CFG_STR ("script",      NULL, CFGF_NONE),
 		CFG_SEC ("filenr",      checker_opts, CFGF_NONE),
+		CFG_SEC ("fsmon",       checker_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
 		CFG_SEC ("generic",     generic_plugin_opts, CFGF_NONE),
@@ -279,6 +282,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 
 #ifdef FILENR_PLUGIN
 	checker(ctx, cfg, "filenr", filenr_init);
+#endif
+#ifdef FSMON_PLUGIN
+	checker(ctx, cfg, "fsmon", fsmon_init);
 #endif
 #ifdef LOADAVG_PLUGIN
 	checker(ctx, cfg, "loadavg", loadavg_init);

@@ -16,56 +16,7 @@ Built-in Monitors
 -----------------
 
 [watchdogd(8)][] supports optional monitoring of several system resources that
-can be enabled in [watchdogd.conf(5)][].  First, system load average that can
-be monitored with:
-
-```
-loadavg {
-    enabled  = true
-    interval = 300       # Every 5 mins
-	logmark  = true
-    warning  = 1.5
-    critical = 2.0
-}
-```
-
-By enabling output in syslog, using `logmark = true`, you can set up the
-system to forward the monitored resources to a remote syslog server.  The
-syslog output for load average looks like this:
-
-    watchdogd[2323]: Loadavg: 0.32, 0.07, 0.02 (1, 5, 15 min)
-
-Second, the memory leak detector, a value of 1.0 means 100% memory use:
-
-```
-meminfo {
-    enabled  = true
-    interval = 3600       # Every hour
-	logmark  = true
-    warning  = 0.9
-    critical = 0.95
-}
-```
-
-The syslog output looks like this:
-
-    watchdogd[2323]: Meminfo: 59452 kB, cached: 23912 kB, total: 234108 kB
-
-Third, file descriptor leak detector:
-
-```
-filenr {
-    enabled  = true
-    interval = 3600       # Every hour
-	logmark  = true
-    warning  = 0.8
-    critical = 0.95
-}
-```
-
-The syslog output looks like this:
-
-    watchdogd[2323]: File nr: 288/17005
+can be enabled in [watchdogd.conf(5)][].
 
 All of these monitors can be *very* useful on an embedded or headless
 system with little or no operator supervision.
@@ -90,6 +41,83 @@ detected by reading the file `/proc/meminfo`, looking for the
 `SwapTotal:` value.  For more details on the underlying mechanisms of
 file descriptor usage, see [this article][filenr].  For more info on the
 details of memory usage, see [this article][meminfo].
+
+
+### System Load
+
+System load average that can be monitored with:
+
+```
+loadavg {
+    enabled  = true
+    interval = 300       # Every 5 mins
+	logmark  = true
+    warning  = 1.5
+    critical = 2.0
+}
+```
+
+By enabling output in syslog, using `logmark = true`, you can set up the
+system to forward the monitored resources to a remote syslog server.  The
+syslog output for load average looks like this:
+
+    watchdogd[2323]: Loadavg: 0.32, 0.07, 0.02 (1, 5, 15 min)
+
+### Memory Usage
+
+The memory leak detector, a value of 1.0 means 100% memory use:
+
+```
+meminfo {
+    enabled  = true
+    interval = 3600       # Every hour
+	logmark  = true
+    warning  = 0.9
+    critical = 0.95
+}
+```
+
+The syslog output looks like this:
+
+    watchdogd[2323]: Meminfo: 59452 kB, cached: 23912 kB, total: 234108 kB
+
+### File Descriptor Usage
+
+File descriptor leak detector:
+
+```
+filenr {
+    enabled  = true
+    interval = 3600       # Every hour
+	logmark  = true
+    warning  = 0.8
+    critical = 0.95
+}
+```
+
+The syslog output looks like this:
+
+    watchdogd[2323]: File nr: 288/17005
+
+
+### File System Usage
+
+Currently only a single file system can be monitored, in this example we
+monitor `/var` every five minutes.
+
+```
+fsmon /var {
+    enabled  = true
+    interval = 300       # Every five minutes
+	logmark  = true
+    warning  = 0.8
+    critical = 0.95
+}
+```
+
+The syslog output looks like this:
+
+    watchdogd[2323]: Fsmon /var: blocks 404/28859 inodes 389/28874
 
 
 Generic Script

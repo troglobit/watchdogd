@@ -64,6 +64,10 @@ AC_ARG_WITH([filenr],
 	AS_HELP_STRING([--with-filenr[=SEC]], [Enable file descriptor leak monitor, poll: 300 sec]),
 	[with_filenr=$withval], [with_filenr=no])
 
+AC_ARG_WITH([fsmon],
+	AS_HELP_STRING([--with-fsmon[=SEC]], [Enable file system monitor, poll: 300 sec]),
+	[with_fsmon=$withval], [with_fsmon=no])
+
 AC_ARG_WITH([meminfo],
 	[AS_HELP_STRING([--with-meminfo[=SEC]], [Enable memory leak monitor, poll: 300 sec])],
 	[with_meminfo=$withval], [with_meminfo=no])
@@ -82,6 +86,10 @@ AS_IF([test "x$with_loadavg" != "xno"], [
 AS_IF([test "x$with_filenr" != "xno"], [
 	AS_IF([test "x$with_filenr" = "xyes"], [with_filenr=300])
 	AC_DEFINE_UNQUOTED(FILENR_PLUGIN, $with_filenr, [Enable file descriptor leak monitor])])
+
+AS_IF([test "x$with_fsmon" != "xno"], [
+	AS_IF([test "x$with_fsmon" = "xyes"], [with_fsmon=300])
+	AC_DEFINE_UNQUOTED(FSMON_PLUGIN, $with_fsmon, [Enable file system monitor])])
 
 AS_IF([test "x$with_meminfo" != "xno"], [
 	AS_IF([test "x$with_meminfo" = "xyes"], [with_meminfo=300])
@@ -108,11 +116,12 @@ AS_IF([test "x$with_systemd" = "xyes" -o "x$with_systemd" = "xauto"], [
 AS_IF([test "x$with_systemd" != "xno"],
      [AC_SUBST([systemddir], [$with_systemd])])
 
-AM_CONDITIONAL([HAVE_SYSTEMD], [test "x$with_systemd" != "xno"])
-AM_CONDITIONAL(LOADAVG_PLUGIN, [test "x$with_loadavg" != "xno"])
-AM_CONDITIONAL(FILENR_PLUGIN, [test "x$with_filenr" != "xno"])
-AM_CONDITIONAL(MEMINFO_PLUGIN, [test "x$with_meminfo" != "xno"])
-AM_CONDITIONAL(GENERIC_PLUGIN, [test "x$with_generic" != "xno"])
+AM_CONDITIONAL([HAVE_SYSTEMD],  [test "x$with_systemd"  != "xno"])
+AM_CONDITIONAL(LOADAVG_PLUGIN,  [test "x$with_loadavg"  != "xno"])
+AM_CONDITIONAL(FILENR_PLUGIN,   [test "x$with_filenr"   != "xno"])
+AM_CONDITIONAL(FSMON_PLUGIN,    [test "x$with_fsmon"    != "xno"])
+AM_CONDITIONAL(MEMINFO_PLUGIN,  [test "x$with_meminfo"  != "xno"])
+AM_CONDITIONAL(GENERIC_PLUGIN,  [test "x$with_generic"  != "xno"])
 AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 
 # Expand $sbindir early, into $SBINDIR, for systemd unit file
@@ -159,6 +168,7 @@ cat <<EOF
   generic script (sec): $with_generic
   loadavg poll (sec)..: $with_loadavg
   filenr poll (sec)...: $with_filenr
+  fsmon poll (sec)....: $with_fsmon
   meminfo poll (sec)..: $with_meminfo
 
 ------------- Compiler version --------------

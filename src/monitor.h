@@ -19,6 +19,8 @@
 #define WDOG_MONITOR_H_
 
 int filenr_init  (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+int fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+int fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 int loadavg_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 int meminfo_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 
