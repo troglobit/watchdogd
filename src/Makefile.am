@@ -8,19 +8,20 @@ watchdogd_SOURCES   = watchdogd.c	private.h	\
 		      finit.c		finit.h		\
 		      rrfile.c		rr.h		\
 		      script.c		script.h	\
-		      supervisor.c	supervisor.h
+		      supervisor.c	supervisor.h	\
+					monitor.h
 
 if FILENR_PLUGIN
-watchdogd_SOURCES  += filenr.c		filenr.h
+watchdogd_SOURCES  += filenr.c
 endif
 if LOADAVG_PLUGIN
-watchdogd_SOURCES  += loadavg.c		loadavg.h
+watchdogd_SOURCES  += loadavg.c
 endif
 if MEMINFO_PLUGIN
-watchdogd_SOURCES  += meminfo.c		meminfo.h
+watchdogd_SOURCES  += meminfo.c
 endif
 if GENERIC_PLUGIN
-watchdogd_SOURCES  += generic.c		generic.h
+watchdogd_SOURCES  += generic.c
 endif
 
 watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE

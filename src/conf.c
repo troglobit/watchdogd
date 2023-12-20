@@ -22,11 +22,8 @@
 #include "wdt.h"
 #include "rr.h"
 #include "script.h"
-#include "filenr.h"
-#include "loadavg.h"
-#include "meminfo.h"
+#include "monitor.h"
 #include "supervisor.h"
-#include "generic.h"
 
 static char *fn;
 
