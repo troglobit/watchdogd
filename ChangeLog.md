@@ -4,13 +4,12 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[3.6][] - 2023-12-17
+[3.6][] - 2023-12-20
 --------------------
 
 ### Changes
-- Replace Finit compile-time detection with runtime check, this allows
-  using `watchdogd` and Finit on Buildroot system, issue #30
 - Documentation of the libwdog supervisor API by Andreas Helbech Kleist
+- API docs at <https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html>
 - State file location changed from `/var/lib/` to `/var/lib/misc/`.
   This is the recommended location in the Linux FHS, and what most
   systems use.  Both the default `watchdogd.conf` and documentation has
@@ -18,14 +17,20 @@ All notable changes to the project are documented in this file.
   automatically relocate to the new location at runtime.  If the new
   directory does not exist, the daemon will fall back to use the old
   path, if it exists, issue #36
+- Simplify README by splitting it into multiple files, some text even
+  moved entirely to man pages instead.
 
 ### Fixes
 - Fix #28: `watchdogd` crash in case "Label" or "Reset date" field in
   reset reason is empty.  Found and fixed by Christian Theiss
+- Fix #30: replace Finit compile-time detection with runtime check, this
+  allows synchronized reboot using `watchdogd` with Finit in Buildroot
 - Fix #39: generic monitoring script with runtime > 1 second cause
   system to reboot.  Found and fixed by Senthil Nathan Thangaraj
 - Fix #41: calling custom supervisor script cause `watchdogd` to disable
   monitoring, regardless of script exit code.
+- Fix #43: `watchdogctl clear`, and `wdog_reset_reason_clr()` API, does
+  not work.  Regression introduced in v3.4.
 
 
 [3.5][] - 2021-12-02
