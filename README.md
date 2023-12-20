@@ -9,7 +9,6 @@ Table of Contents
 -----------------
 
 * [Introduction](#introduction)
-* [Usage](#usage)
 * [Features](doc/features.md)
   - [Delegating Reboot](doc/features.md#delegating-reboot)
   - [Built-in Monitors](doc/features.md#built-in-monitors)
@@ -163,7 +162,6 @@ the `watchdogd` project, copyright © [Ron Leishman][].
 [Coverity Scan]:     https://scan.coverity.com/projects/6458
 [Coverity Status]:   https://scan.coverity.com/projects/6458/badge.svg
 [GitHub]:            http://github.com/troglobit/watchdogd
-[ex1]:               https://github.com/troglobit/watchdogd/blob/master/examples/ex1.c
 [LICENSE]:           https://github.com/troglobit/watchdogd/blob/master/LICENSE
 [contrib]:           https://github.com/troglobit/watchdogd/blob/master/.github/CONTRIBUTING.md
 [Joachim Wiberg]:    http://troglobit.com
