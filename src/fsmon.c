@@ -45,8 +45,8 @@ static void cb(uev_t *w, void *arg, int events)
 	fused  = f.f_files - f.f_ffree;
 	flevel = (double)(fused) / (double)(f.f_files);
 
-	LOG("Fsmon %s: blocks %.0f%%, inodes %.0f%%, warning: %.0f%%, critical: %.0f%%",
-	    fsname, blevel * 100, flevel * 100, warning * 100, critical * 100);
+//	LOG("Fsmon %s: blocks %.0f%%, inodes %.0f%%, warning: %.0f%%, critical: %.0f%%",
+//	    fsname, blevel * 100, flevel * 100, warning * 100, critical * 100);
 	if (logmark) {
 		const char *ro = "(read-only";
 
