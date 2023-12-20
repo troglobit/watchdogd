@@ -145,26 +145,19 @@ int generic_init(uev_ctx_t *ctx, int T, int timeout, char *monitor, int warn, in
 	cleanup(gs);
 
 	if (!T) {
-		INFO("Generic script monitor disabled.");
 		gs = NULL;
 		return 0;
 	}
-
-	if (!monitor) {
-		ERROR("Generic script monitor not started, please provide script-monitor.");
-		gs = NULL;
-		return 1;
-	}
-
-	INFO("Generic script monitor, period %d sec, max timeout: %d, "
-	     "monitor script: %s, warning level: %d, critical level: %d",
-	     T, timeout, monitor, warn, crit);
 
 	gs = calloc(1, sizeof(generic_t));
 	if (!gs) {
 		PERROR("Failed initializing generic plugin");
 		return 1;
 	}
+
+	INFO("Generic script monitor, period %d sec, max timeout: %d, "
+	     "monitor script: %s, warning level: %d, critical level: %d",
+	     T, timeout, monitor, warn, crit);
 
 	gs->is_running = 0;
 	gs->pid = -1;

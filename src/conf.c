@@ -66,7 +66,7 @@ static int generic_plugin_checker(uev_ctx_t *ctx, cfg_t *cfg)
 
 	sec = cfg_getnsec(cfg, "generic", 0);
 	if (!sec || !cfg_getbool(sec, "enabled")) {
-		INFO("Generic plugin config section not found, or disabled");
+		generic_init(ctx, 0, 0, 0, 0, 0, NULL);
 		return 0;
 
 	}

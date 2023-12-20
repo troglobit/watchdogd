@@ -31,6 +31,8 @@ All notable changes to the project are documented in this file.
   monitoring, regardless of script exit code.
 - Fix #43: `watchdogctl clear`, and `wdog_reset_reason_clr()` API, does
   not work.  Regression introduced in v3.4.
+- The generic script plugin can now be disabled at runtime.  Prior to
+  this release, it was not possible when once enabled.
 
 
 [3.5][] - 2021-12-02
