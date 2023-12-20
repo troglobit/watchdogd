@@ -13,7 +13,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd Apr 19, 2021
+.Dd Dec 20, 2023
 .Dt WATCHDOGD 8 SMM
 .Os
 .Sh NAME
@@ -34,17 +34,40 @@ for embedded Linux and server systems.  It can monitor critical system
 resources, supervise the heartbeat of processes and record deadline
 transgressions, and initiate a controlled reset if needed.
 .Pp
-When a system starts up,
+Available system monitors, see
+.Xr watchdogd.conf 5
+for details:
+.Pp
+.Bl -bullet -width 1n -compact
+.It
+Load average
+.It
+Memory leaks
+.It
+File descriptor leaks
+.It
+Process live locks
+.It
+Reset counter
+.It
+Generic script
+.El
+.Pp
+When the system starts up,
 .Nm
 determines the
 .Em reset cause
-by querying the kernel.  I case of system reset, and not power loss, the
+by querying the kernel.  In case of system reset, and not power loss,
+the
 .Em reset reason
 is available already in a file, stored by
 .Nm
 before the reset.  This reset reason can be then be used by an operator
 or network management system (NMS) to put the system in an operational
-safe state, or non-operational safe state.
+safe state, or non-operational safe state.  Use
+.Xr watchdogctl 1
+to query status and control
+.Nm .
 .Sh WATCHDOG
 A watchdog timer (WDT) is something most motherboards of laptops and
 servers, and virtually all embedded systems, today are equipped with.
@@ -64,14 +87,19 @@ expires by "kicking" it periodically.  In case of system overload, when
 there is no more CPU time for the process to run, it fails to "kick" the
 kernel WDT driver, which in turn causes the WDT to reset the system.
 .Sh OPTIONS
-Earlier versions of
+.Pp
+Without any arguments,
 .Nm
-supported more command line options, from v3.0
+opens the
+.Pa /dev/watchdog
+WDT device node, forks to the background, tries to set a 20 sec WDT
+timeout, and then kicks the WDT every 10 sec.  See
+.Sx OPERATION
+for more information.
+.Pp
 .Nm
-has been greatly simplified.  Use
-.Xr watchdogctl 1
-to query status and control
-.Nm .
+follows the usual UNIX command line syntax, with long options starting
+with two dashes (`-').  The options are as follows:
 .Bl -tag -width Ds
 .It Fl f, -config Ar FILE
 Use FILE for daemon configuration.  Default:
@@ -104,6 +132,37 @@ Not supported in all WDT drivers due to HW limitations.  Some drivers
 emulate support by keeping an in-kernel thread to continue kicking the
 WDT.  Make sure to try it first, or verify the WDT driver source code.
 .El
+.Ss Example
+.Bd -literal -offset indent
+watchdogd -T 120 -t 30 /dev/watchdog2
+.Ed
+.Sh OPERATION
+By default,
+.Nm
+forks off a daemon in the background, opens the
+.Pa /dev/watchdog
+device, attempts to set the default WDT timeout to 20 seconds, and then
+enters its main loop where it kicks the watchdog every 10 seconds.
+.Pp
+If a WDT device driver does not support setting the timeout,
+.Nm
+attempts to query the actual (possibly hard coded) watchdog timeout and
+then uses half that time as the kick interval.
+.Pp
+When
+.Nm
+backgrounds itself, syslog is implicitly used for all informational and
+debug messages.  If a user requests to run the daemon in the foreground
+.Nm
+will also log to STDERR, unless the user gives the
+.Fl -syslog
+option to force use of syslog.
+.Pp
+Use
+.Xr watchdogd.conf 5
+and the command line tool
+.Xr watchdogctl 1
+to enable more features, query status, and control operation.
 .Sh SIGNALS
 .Nm
 responds to the following signals:
