@@ -18,4 +18,3 @@ Add system health monitor with capabilities to monitor:
         fs-monitor /var { warning = 90%, critical 95% }
 
   Use the C library API statfs(2).
-* Custom script, run operator provided checker
