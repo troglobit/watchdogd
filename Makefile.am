@@ -4,10 +4,10 @@ DISTCHECK_CONFIGURE_FLAGS = --with-systemd=$$dc_install_base/$(systemd)
 
 confdir             = $(sysconfdir)
 conf_DATA           = watchdogd.conf
-doc_DATA            = README.md LICENSE
-EXTRA_DIST          = README.md LICENSE ChangeLog.md watchdogd.conf
-DIST_SUBDIRS        = src man examples
-SUBDIRS             = src man
+dist_doc_DATA       = README.md LICENSE
+EXTRA_DIST          = ChangeLog.md watchdogd.conf
+DIST_SUBDIRS        = doc src man examples
+SUBDIRS             = doc src man
 if ENABLE_EXAMPLES
 SUBDIRS            += examples
 endif

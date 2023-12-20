@@ -8,7 +8,13 @@ AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([src/watchdogd.c])
 AC_CONFIG_HEADER([config.h])
-AC_CONFIG_FILES([Makefile watchdogd.service src/libwdog.pc src/Makefile examples/Makefile man/Makefile])
+AC_CONFIG_FILES([Makefile
+	watchdogd.service
+	doc/Makefile
+	src/libwdog.pc
+	src/Makefile
+	examples/Makefile
+	man/Makefile])
 
 # Older versions of autoconf (<2.58) do not have AC_CONFIG_MACRO_DIR()
 #m4_include([m4/local-macros.m4])
