@@ -28,6 +28,8 @@ void fsmon_mark   (void);
 void fsmon_sweep  (void);
 
 int  generic_init (uev_ctx_t* ctx, const char *name, int T, int timeout, int warn, int crit, char* script);
+void generic_mark (void);
+void generic_sweep(void);
 
 #endif /* WDOG_MONITOR_H_ */
 

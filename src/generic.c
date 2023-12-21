@@ -21,8 +21,8 @@
 #include "wdt.h"
 #include "script.h"
 
-typedef struct {
-	uev_t  watcher;
+struct generic {
+	TAILQ_ENTRY(generic) link; /* BSD sys/queue.h linked list node. */
 
 	int    is_running;
 	int    warning;
@@ -34,104 +34,133 @@ typedef struct {
 	char  *script;
 	char  *exec;
 	pid_t  pid;
-} generic_t;
 
+	uev_t  watcher;
+	int    dirty;		/* for mark & sweep */
+};
+
+static TAILQ_HEAD(gshead, generic) gs = TAILQ_HEAD_INITIALIZER(gs);
 
 static void generic_cb(uev_t *w, void *arg, int events)
 {
-	generic_t *gs = (generic_t *)arg;
+	struct generic *g = (struct generic *)arg;
 	int status;
 
-	DEBUG("Verifying if monitor script PID %d is still running", gs->pid);
-	status = script_exit_status(gs->pid);
+	DEBUG("Verifying if monitor script PID %d is still running", g->pid);
+	status = script_exit_status(g->pid);
 	if (status >= 0) {
-		uev_timer_stop(&gs->script_watcher);
-		gs->is_running = 0;
+		uev_timer_stop(&g->script_watcher);
+		g->is_running = 0;
 
-		if (status >= gs->critical) {
+		if (status >= g->critical) {
 			EMERG("Monitor script returned critical: %d, rebooting system ...", status);
-			if (checker_exec(gs->exec, "generic", 1, status, gs->warning, gs->critical))
+			if (checker_exec(g->exec, "generic", 1, status, g->warning, g->critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
 
 			return;
 		}
 
-		if (status >= gs->warning) {
+		if (status >= g->warning) {
 			WARN("Monitor script returned warning: %d", status);
-			checker_exec(gs->exec, "generic", 0, status, gs->warning, gs->critical);
+			checker_exec(g->exec, "generic", 0, status, g->warning, g->critical);
 		}
 
 		return;
 	}
 
-	gs->script_runtime += 1000;
-	if (gs->script_runtime >= (gs->script_runtime_max * 1000)) {
-		ERROR("Monitor script PID %d still running after %d sec", gs->pid, gs->script_runtime_max);
-		if (checker_exec(gs->exec, "generic", 1, 255, gs->warning, gs->critical))
+	g->script_runtime += 1000;
+	if (g->script_runtime >= (g->script_runtime_max * 1000)) {
+		ERROR("Monitor script PID %d still running after %d sec", g->pid, g->script_runtime_max);
+		if (checker_exec(g->exec, "generic", 1, 255, g->warning, g->critical))
 			wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
 	}
 }
 
-static int runit(uev_t *w, generic_t *gs)
+static int runit(uev_t *w, struct generic *g)
 {
 	pid_t pid;
 
-	uev_timer_stop(&gs->script_watcher);
+	uev_timer_stop(&g->script_watcher);
 
-	pid = generic_exec(gs->script, gs->warning, gs->critical);
+	pid = generic_exec(g->script, g->warning, g->critical);
 	if (pid <= 0) {
-		ERROR("Could not start monitor script %s", gs->script);
+		ERROR("Could not start monitor script %s", g->script);
 		return -1;
 	}
 
-	gs->pid = pid;
-	gs->is_running = 1;
-	gs->script_runtime = 0;
+	g->pid = pid;
+	g->is_running = 1;
+	g->script_runtime = 0;
 
-	uev_timer_init(w->ctx, &gs->script_watcher, generic_cb, gs, 1000, 1000);
+	uev_timer_init(w->ctx, &g->script_watcher, generic_cb, g, 1000, 1000);
 
-	return gs->pid;
+	return g->pid;
 }
 
 static void cb(uev_t *w, void *arg, int events)
 {
-	generic_t *gs = (generic_t *)arg;
+	struct generic *g = (struct generic *)arg;
 
-	if (!gs)
+	if (!g)
 		return;
 
-	if (gs->is_running) {
-		EMERG("Timeout reached, script %s is still running, rebooting system ...", gs->script);
-		if (checker_exec(gs->exec, "generic", 1, 100, gs->warning, gs->critical))
+	if (g->is_running) {
+		EMERG("Timeout reached, script %s is still running, rebooting system ...", g->script);
+		if (checker_exec(g->exec, "generic", 1, 100, g->warning, g->critical))
 			wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
 		return;
 	}
 
-	if (runit(w, gs) <= 0) {
-		if (gs->critical > 0) {
-			EMERG("Could not start monitor script %s, rebooting system ...", gs->script);
-			if (checker_exec(gs->exec, "generic", 1, 100, gs->warning, gs->critical))
+	if (runit(w, g) <= 0) {
+		if (g->critical > 0) {
+			EMERG("Could not start monitor script %s, rebooting system ...", g->script);
+			if (checker_exec(g->exec, "generic", 1, 100, g->warning, g->critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":generic", 0);
 		} else {
-			WARN("Could not start monitor script %s, not critical.", gs->script);
+			WARN("Could not start monitor script %s, not critical.", g->script);
 		}
 	}
 }
 
-static void cleanup(generic_t *gs)
+static struct generic *find(const char *script)
 {
-	if (!gs)
-		return;
+	struct generic *g;
 
-	uev_timer_stop(&gs->script_watcher);
-	uev_timer_stop(&gs->watcher);
+	TAILQ_FOREACH(g, &gs, link) {
+		if (strcmp(g->script, script))
+			continue;
 
-	if (gs->exec)
-		free(gs->exec);
-	if (gs->script)
-		free(gs->script);
+		return g;
+	}
 
-	free(gs);
+	return NULL;
+}
+
+void generic_mark(void)
+{
+	struct generic *g;
+
+	TAILQ_FOREACH(g, &gs, link) {
+		g->dirty = 1;
+	}
+}
+
+void generic_sweep(void)
+{
+	struct generic *g, *tmp;
+
+	TAILQ_FOREACH_SAFE(g, &gs, link, tmp) {
+		if (!g->dirty)
+			continue;
+
+		TAILQ_REMOVE(&gs, g, link);
+		uev_timer_stop(&g->script_watcher);
+		uev_timer_stop(&g->watcher);
+		free(g->script);
+		if (g->exec)
+			free(g->exec);
+		free(g);
+	}
 }
 
 /*
@@ -140,36 +169,49 @@ static void cleanup(generic_t *gs)
  */
 int generic_init(uev_ctx_t *ctx, const char *monitor, int T, int timeout, int warn, int crit, char *script)
 {
-	static generic_t *gs = NULL;
+	struct generic *g;
 
-	cleanup(gs);
+	g = find(monitor);
+	if (!g) {
+		g = calloc(1, sizeof(*g));
+		if (!g) {
+		fail:
+			PERROR("Failed initializing generic plugin");
+			return 1;
+		}
 
-	if (!T) {
-		gs = NULL;
-		return 0;
-	}
-
-	gs = calloc(1, sizeof(generic_t));
-	if (!gs) {
-		PERROR("Failed initializing generic plugin");
-		return 1;
+		g->script = strdup(monitor);
+		if (!g->script) {
+			free(g);
+			goto fail;
+		}
+	} else {
+		g->dirty = 0;
+		if (!T) {
+			INFO("Generic script %s disabled.", g->script);
+			g->is_running = 0;
+			uev_timer_stop(&g->script_watcher);
+			return uev_timer_stop(&g->watcher);
+		}
 	}
 
 	INFO("Generic script monitor, period %d sec, max timeout: %d, "
 	     "monitor script: %s, warning level: %d, critical level: %d",
 	     T, timeout, monitor, warn, crit);
 
-	gs->is_running = 0;
-	gs->pid = -1;
-	gs->warning = warn;
-	gs->critical = crit;
-	gs->script_runtime_max = timeout;
-	gs->script = strdup(monitor);
-	gs->exec = NULL;
+	g->is_running = 0;
+	g->pid = -1;
+	g->warning = warn;
+	g->critical = crit;
+	g->script_runtime_max = timeout;
+	g->exec = NULL;
 	if (script)
-		gs->exec = strdup(script);
+		g->exec = strdup(script);
 
-	return uev_timer_init(ctx, &gs->watcher, cb, gs, T * 1000, T * 1000);
+	TAILQ_INSERT_TAIL(&gs, g, link);
+	uev_timer_stop(&g->watcher);
+
+	return uev_timer_init(ctx, &g->watcher, cb, g, T * 1000, T * 1000);
 }
 
 /**

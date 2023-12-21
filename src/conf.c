@@ -37,7 +37,7 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 	num = cfg_size(cfg, sect);
 	if (!num) {
 		/* Disable checker completely */
-		return init(ctx, NULL, 0, 0, 0.0, 0.0, NULL);
+		return 0;
 	}
 
 	for (i = 0; i < num; i++) {
@@ -69,33 +69,43 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 #if defined(GENERIC_PLUGIN)
 static int generic_checker(uev_ctx_t *ctx, cfg_t *cfg)
 {
-	int warn_level, crit_level;
-	int period, timeout;
-	const char *monitor;
-	char *script;
-	cfg_t *sec;
+	unsigned int i, num;
+	int rc = 0;
 
-	sec = cfg_getnsec(cfg, "generic", 0);
-	if (!sec || !cfg_getbool(sec, "enabled")) {
-		generic_init(ctx, 0, 0, 0, 0, 0, NULL);
+	num = cfg_size(cfg, "generic");
+	if (!num) {
+		/* Disable checker completely */
 		return 0;
-
 	}
 
-	period     = cfg_getint(sec, "interval");
-	timeout    = cfg_getint(sec, "timeout");
-	warn_level = cfg_getint(sec, "warning");
-	crit_level = cfg_getint(sec, "critical");
-	script     = cfg_getstr(sec, "script");
-	monitor    = cfg_title(sec);
-	if (!monitor)
-		monitor = cfg_getstr(sec, "monitor-script");
-	if (!monitor) {
-		ERROR("generic script, missing path argument.");
-		return 1;
+	for (i = 0; i < num; i++) {
+		cfg_t *sec = cfg_getnsec(cfg, "generic", i);
+		int enabled, period, timeout;
+		int warn_level, crit_level;
+		const char *monitor;
+		char *script;
+
+		if (!sec)
+			continue;
+
+		enabled    = cfg_getbool(sec, "enabled");
+		period     = cfg_getint(sec, "interval");
+		timeout    = cfg_getint(sec, "timeout");
+		warn_level = cfg_getint(sec, "warning");
+		crit_level = cfg_getint(sec, "critical");
+		script     = cfg_getstr(sec, "script");
+		monitor    = cfg_title(sec);
+		if (!monitor)
+			monitor = cfg_getstr(sec, "monitor-script");
+		if (!monitor) {
+			ERROR("generic script, missing monitor script path.");
+			continue;
+		}
+
+		rc += generic_init(ctx, monitor, enabled ? period : 0, timeout, warn_level, crit_level, script);
 	}
 
-	return generic_init(ctx, monitor, period, timeout, warn_level, crit_level, script);
+	return rc;
 }
 #endif
 
@@ -312,7 +322,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	checker(ctx, cfg, "meminfo", meminfo_init);
 #endif
 #ifdef GENERIC_PLUGIN
+	generic_mark();
 	generic_checker(ctx, cfg);
+	generic_sweep();
 #endif
 
 	return cfg_free(cfg);
