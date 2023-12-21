@@ -40,8 +40,10 @@
 
 #ifdef _LIBITE_LITE
 # include <libite/lite.h>
+# include <libite/queue.h>
 #else
 # include <lite/lite.h>
+# include <lite/queue.h>
 #endif
 #include <uev/uev.h>
 
