@@ -18,13 +18,16 @@
 #ifndef WDOG_MONITOR_H_
 #define WDOG_MONITOR_H_
 
-int filenr_init  (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
-int fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
-int fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
-int loadavg_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
-int meminfo_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+int  filenr_init  (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+int  fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+int  loadavg_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+int  meminfo_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 
-int generic_init (uev_ctx_t* ctx, const char *name, int T, int timeout, int warn, int crit, char* script);
+int  fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+void fsmon_mark   (void);
+void fsmon_sweep  (void);
+
+int  generic_init (uev_ctx_t* ctx, const char *name, int T, int timeout, int warn, int crit, char* script);
 
 #endif /* WDOG_MONITOR_H_ */
 

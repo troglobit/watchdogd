@@ -31,25 +31,35 @@ static char *fn;
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 		   int (*init)(uev_ctx_t *, const char *, int, int, float, float, char *))
 {
-	cfg_t *sec;
-	int rc;
+	unsigned int i, num;
+	int rc = 0;
 
-	sec = cfg_getnsec(cfg, sect, 0);
-	if (sec && cfg_getbool(sec, "enabled")) {
-		int period, logmark;
+	num = cfg_size(cfg, sect);
+	if (!num) {
+		/* Disable checker completely */
+		return init(ctx, NULL, 0, 0, 0.0, 0.0, NULL);
+	}
+
+	for (i = 0; i < num; i++) {
+		cfg_t *sec = cfg_getnsec(cfg, sect, i);
+		int enabled, period, logmark;
 		const char *name;
 		float warn, crit;
 		char *script;
 
+		if (!sec)
+			continue;
+
+		enabled = cfg_getbool(sec, "enabled");
 		name    = cfg_title(sec);
 		period  = cfg_getint(sec, "interval");
 		logmark = cfg_getbool(sec, "logmark");
 		warn    = cfg_getfloat(sec, "warning");
 		crit    = cfg_getfloat(sec, "critical");
 		script  = cfg_getstr(sec, "script");
-		rc = init(ctx, name, period, logmark, warn, crit, script);
-	} else {
-		rc = init(ctx, NULL, 0, 0, 0.0, 0.0, NULL);
+		LOG("Found %s name %s, interval %d", cfg_name(sec), name, period);
+
+		rc += init(ctx, name, enabled ? period : 0, logmark, warn, crit, script);
 	}
 
 	return rc;
@@ -291,7 +301,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	checker(ctx, cfg, "filenr", filenr_init);
 #endif
 #ifdef FSMON_PLUGIN
+	fsmon_mark();
 	checker(ctx, cfg, "fsmon", fsmon_init);
+	fsmon_sweep();
 #endif
 #ifdef LOADAVG_PLUGIN
 	checker(ctx, cfg, "loadavg", loadavg_init);

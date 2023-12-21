@@ -102,7 +102,7 @@ The syslog output looks like this:
 
 ### File System Usage
 
-Currently only a single file system can be monitored, in this example we
+Any number of file systems can be monitored, in this example we
 monitor `/var` every five minutes.
 
 ```

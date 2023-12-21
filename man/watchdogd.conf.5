@@ -183,10 +183,12 @@ script, same arguments.
 .Ss File System Monitor
 .Bl -tag -width TERM
 .It Cm fsmon Ar /mounpoint {}
-Monitors file the given path
+Monitors a file system using the given path
 .Ar /mountpoint
 for block and inode usage.  If either exceeds the configured watermarks
-action is taken.
+action is taken.  Multple file systems can be monitored using, see the
+.Sx EXAMPLE
+section below.
 .Pp
 The script is called with the
 .Cm fsmon
@@ -363,6 +365,28 @@ filenr {
     logmark  = false
     warning  = 0.9
     critical = 0.95
+#    script = "/path/to/alt-reboot-action.sh"
+}
+
+# Monitors a file system, blocks and inode usage against watermarks
+# The script is called with fsmon as the first argument and there
+# are two environment variables FSMON_NAME, for the monitored path,
+# and FSMON_TYPE indicating either 'blocks' or 'inodes'.
+fsmon /var {
+    enabled = true
+    interval = 60
+    logmark  = true
+    warning  = 0.95
+    critical = 1.0
+#    script = "/path/to/alt-reboot-action.sh"
+}
+
+fsmon /tmp {
+    enabled = true
+    interval = 300
+    logmark  = false
+    warning  = 0.95
+    critical = 1.0
 #    script = "/path/to/alt-reboot-action.sh"
 }
 

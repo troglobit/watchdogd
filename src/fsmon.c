@@ -19,24 +19,31 @@
 #include "wdt.h"
 #include "script.h"
 
-static const char *fsname = NULL;
-static char *exec = NULL;
-static int logmark = 0;
-static uev_t watcher;
+struct fsmon {
+	TAILQ_ENTRY(fsmon) link; /* BSD sys/queue.h linked list node. */
 
-/* Default: disabled -- recommended 0.95, 1.0 */
-static double warning  = 0.0;
-static double critical = 0.0;
+	char  *name;
+	char  *exec;
+	int    logmark;
 
+	double warning;
+	double critical;
+
+	uev_t  watcher;
+	int    dirty;		/* for mark & sweep */
+};
+
+static TAILQ_HEAD(fshead, fsmon) fs = TAILQ_HEAD_INITIALIZER(fs);
 
 static void cb(uev_t *w, void *arg, int events)
 {
+	struct fsmon *fs = (struct fsmon *)arg;
 	long unsigned int bused, fused;
 	double blevel, flevel;
 	struct statvfs f;
 
-	if (statvfs(fsname, &f)) {
-		PERROR("Failed statfs(%s)", fsname);
+	if (statvfs(fs->name, &f)) {
+		PERROR("Failed statfs(%s)", fs->name);
 		return;
 	}
 
@@ -47,16 +54,16 @@ static void cb(uev_t *w, void *arg, int events)
 
 //	LOG("Fsmon %s: blocks %.0f%%, inodes %.0f%%, warning: %.0f%%, critical: %.0f%%",
 //	    fsname, blevel * 100, flevel * 100, warning * 100, critical * 100);
-	if (logmark) {
+	if (fs->logmark) {
 		const char *ro = "(read-only";
 
-		LOG("Fsmon %s: blocks %lu/%lu inodes %lu/%lu %s", fsname,
+		LOG("Fsmon %s: blocks %lu/%lu inodes %lu/%lu %s", fs->name,
 		    bused, f.f_bavail,
 		    fused, f.f_ffree,
 		    (f.f_flag & ST_RDONLY) ? ro : "");
 	}
 
-	if (blevel > warning || flevel > warning) {
+	if (blevel > fs->warning || flevel > fs->warning) {
 		double level = blevel;
 
 		if (flevel > blevel) {
@@ -64,17 +71,17 @@ static void cb(uev_t *w, void *arg, int events)
 			setenv("FSMON_TYPE", "inodes", 1);
 		} else
 			setenv("FSMON_TYPE", "blocks", 1);
-		setenv("FSMON_NAME", fsname, 1);
+		setenv("FSMON_NAME", fs->name, 1);
 
-		if (critical > 0.0 && (blevel > critical || flevel > warning)) {
+		if (fs->critical > 0.0 && level > fs->critical) {
 			EMERG("File system %s usage too high, blocks %.2f > %0.2f, or inodes %.2f > %0.2f, rebooting system ...",
-			      fsname, blevel, critical, flevel, critical);
-			if (checker_exec(exec, "fsmon", 1, level, warning, critical))
+			      fs->name, blevel, fs->critical, flevel, fs->critical);
+			if (checker_exec(fs->exec, "fsmon", 1, level, fs->warning, fs->critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":fsmon", 0);
 		} else {
 			WARN("File system %s use very high, blocks %.2f > %0.2f, inodes %.2f > %0.2f",
-			     fsname, blevel, warning, flevel, warning);
-			checker_exec(exec, "fsmon", 0, level, warning, critical);
+			     fs->name, blevel, fs->warning, flevel, fs->warning);
+			checker_exec(fs->exec, "fsmon", 0, level, fs->warning, fs->critical);
 		}
 
 		unsetenv("FSMON_TYPE");
@@ -82,34 +89,90 @@ static void cb(uev_t *w, void *arg, int events)
 	}
 }
 
+static struct fsmon *find(const char *name)
+{
+	struct fsmon *f;
+
+	TAILQ_FOREACH(f, &fs, link) {
+		if (strcmp(f->name, name))
+			continue;
+
+		return f;
+	}
+
+	return NULL;
+}
+
+void fsmon_mark(void)
+{
+	struct fsmon *f;
+
+	TAILQ_FOREACH(f, &fs, link)
+		f->dirty = 1;
+}
+
+void fsmon_sweep(void)
+{
+	struct fsmon *f, *tmp;
+
+	TAILQ_FOREACH_SAFE(f, &fs, link, tmp) {
+		if (!f->dirty)
+			continue;
+
+		TAILQ_REMOVE(&fs, f, link);
+		uev_timer_stop(&f->watcher);
+		free(f->name);
+		free(f);
+	}
+}
+
 int fsmon_init(uev_ctx_t *ctx, const char *name, int T, int mark,
 	       float warn, float crit, char *script)
 {
+	struct fsmon *f;
+
 	if (!name)
 		name = "/";
 
-	if (!T) {
-		INFO("File descriptor leak monitor disabled.");
-		return uev_timer_stop(&watcher);
+	f = find(name);
+	if (!f) {
+		f = calloc(1, sizeof(*f));
+		if (!f) {
+		fail:
+			PERROR("failed creating fsmon %s", name);
+			return 1;
+		}
+
+		f->name = strdup(name);
+		if (!f->name) {
+			free(f);
+			goto fail;
+		}
+	} else {
+		f->dirty = 0;
+		if (!T) {
+			INFO("File system monitor %s disabled.", f->name);
+			return uev_timer_stop(&f->watcher);
+		}
 	}
+
 
 	LOG("File system monitor: %s period %d sec, warning: %.2f%%, reboot: %.2f%%",
-	     name, T, warning * 100, critical * 100);
+	     name, T, warn * 100, crit * 100);
 
-	if (fsname)
-		free(fsname);
-	fsname = strdup(name);
-	logmark = mark;
-	warning = warn;
-	critical = crit;
+	f->logmark = mark;
+	f->warning = warn;
+	f->critical = crit;
 	if (script) {
-		if (exec)
-			free(exec);
-		exec = strdup(script);
+		if (f->exec)
+			free(f->exec);
+		f->exec = strdup(script);
 	}
 
-	uev_timer_stop(&watcher);
-	return uev_timer_init(ctx, &watcher, cb, NULL, 1000, T * 1000);
+	TAILQ_INSERT_TAIL(&fs, f, link);
+	uev_timer_stop(&f->watcher);
+
+	return uev_timer_init(ctx, &f->watcher, cb, f, 1000, T * 1000);
 }
 
 /**
