@@ -17,14 +17,14 @@ endif
 if FSMON_PLUGIN
 watchdogd_SOURCES  += fsmon.c
 endif
+if GENERIC_PLUGIN
+watchdogd_SOURCES  += generic.c
+endif
 if LOADAVG_PLUGIN
 watchdogd_SOURCES  += loadavg.c
 endif
 if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c
-endif
-if GENERIC_PLUGIN
-watchdogd_SOURCES  += generic.c
 endif
 
 watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE

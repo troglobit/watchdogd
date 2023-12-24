@@ -78,13 +78,13 @@ mode of operation.
 With a few lines in [watchdogd.conf(5)][], it can also monitor other
 aspects of the system, such as:
 
-- Load average
-- Memory leaks
 - File descriptor leaks
 - File system usage
+- Generic script
+- Load average
+- Memory leaks
 - Process live locks
 - Reset counter, e.g., for snmpEngineBoots (RFC 2574)
-- Generic script
 
 Read more about [Built-in Monitors](doc/features.md#built-in-monitors)
 in the extended documentation.

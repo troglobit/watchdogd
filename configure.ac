@@ -52,14 +52,6 @@ AC_ARG_ENABLE(test-mode,
 AC_ARG_ENABLE(builtin-tests,
         AS_HELP_STRING([--disable-builtin-tests], [Disable process supervisor built-in tests]))
 
-AC_ARG_WITH([generic],
-	[AS_HELP_STRING([--with-generic[=SEC]], [Enable generic script monitor, poll: 300 sec])],
-	[with_generic=$withval], [with_generic=no])
-
-AC_ARG_WITH([loadavg],
-        AS_HELP_STRING([--with-loadavg[=SEC]], [Enable CPU load average monitor, poll: 300 sec]),
-	[with_loadavg=$withval], [with_loadavg=no])
-
 AC_ARG_WITH([filenr],
 	AS_HELP_STRING([--with-filenr[=SEC]], [Enable file descriptor leak monitor, poll: 300 sec]),
 	[with_filenr=$withval], [with_filenr=no])
@@ -67,6 +59,14 @@ AC_ARG_WITH([filenr],
 AC_ARG_WITH([fsmon],
 	AS_HELP_STRING([--with-fsmon[=SEC]], [Enable file system monitor, poll: 300 sec]),
 	[with_fsmon=$withval], [with_fsmon=no])
+
+AC_ARG_WITH([generic],
+	[AS_HELP_STRING([--with-generic[=SEC]], [Enable generic script monitor, poll: 300 sec])],
+	[with_generic=$withval], [with_generic=no])
+
+AC_ARG_WITH([loadavg],
+        AS_HELP_STRING([--with-loadavg[=SEC]], [Enable CPU load average monitor, poll: 300 sec]),
+	[with_loadavg=$withval], [with_loadavg=no])
 
 AC_ARG_WITH([meminfo],
 	[AS_HELP_STRING([--with-meminfo[=SEC]], [Enable memory leak monitor, poll: 300 sec])],
@@ -117,12 +117,12 @@ AS_IF([test "x$with_systemd" != "xno"],
      [AC_SUBST([systemddir], [$with_systemd])])
 
 AM_CONDITIONAL([HAVE_SYSTEMD],  [test "x$with_systemd"  != "xno"])
-AM_CONDITIONAL(LOADAVG_PLUGIN,  [test "x$with_loadavg"  != "xno"])
+AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
 AM_CONDITIONAL(FILENR_PLUGIN,   [test "x$with_filenr"   != "xno"])
 AM_CONDITIONAL(FSMON_PLUGIN,    [test "x$with_fsmon"    != "xno"])
-AM_CONDITIONAL(MEMINFO_PLUGIN,  [test "x$with_meminfo"  != "xno"])
 AM_CONDITIONAL(GENERIC_PLUGIN,  [test "x$with_generic"  != "xno"])
-AM_CONDITIONAL(ENABLE_EXAMPLES, [test "$enable_examples" = yes])
+AM_CONDITIONAL(LOADAVG_PLUGIN,  [test "x$with_loadavg"  != "xno"])
+AM_CONDITIONAL(MEMINFO_PLUGIN,  [test "x$with_meminfo"  != "xno"])
 
 # Expand $sbindir early, into $SBINDIR, for systemd unit file
 # NOTE: This does *not* take prefix/exec_prefix override at "make
@@ -166,9 +166,9 @@ cat <<EOF
 
  Plugins:
   generic script (sec): $with_generic
-  loadavg poll (sec)..: $with_loadavg
   filenr poll (sec)...: $with_filenr
   fsmon poll (sec)....: $with_fsmon
+  loadavg poll (sec)..: $with_loadavg
   meminfo poll (sec)..: $with_meminfo
 
 ------------- Compiler version --------------

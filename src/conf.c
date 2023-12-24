@@ -27,7 +27,7 @@
 
 static char *fn;
 
-#if defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN)
+#if defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN) || defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN)
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 		   int (*init)(uev_ctx_t *, const char *, int, int, float, float, char *))
 {
@@ -244,9 +244,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_STR ("script",      NULL, CFGF_NONE),
 		CFG_SEC ("filenr",      checker_opts, CFGF_NONE),
 		CFG_SEC ("fsmon",       checker_opts, CFGF_MULTI | CFGF_TITLE),
+		CFG_SEC ("generic",     generic_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
-		CFG_SEC ("generic",     generic_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_END()
 	};
 	cfg_t *cfg, *opt;
@@ -315,16 +315,16 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	checker(ctx, cfg, "fsmon", fsmon_init);
 	fsmon_sweep();
 #endif
+#ifdef GENERIC_PLUGIN
+	generic_mark();
+	generic_checker(ctx, cfg);
+	generic_sweep();
+#endif
 #ifdef LOADAVG_PLUGIN
 	checker(ctx, cfg, "loadavg", loadavg_init);
 #endif
 #ifdef MEMINFO_PLUGIN
 	checker(ctx, cfg, "meminfo", meminfo_init);
-#endif
-#ifdef GENERIC_PLUGIN
-	generic_mark();
-	generic_checker(ctx, cfg);
-	generic_sweep();
 #endif
 
 	return cfg_free(cfg);

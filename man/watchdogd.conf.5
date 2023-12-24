@@ -35,12 +35,12 @@ File descriptor monitor, also covers sockets, and other descriptor based
 resources
 .It Cm fsmon
 File system monitor, checks both available blocks and inodes.
+.It Cm generic
+Generic script monitor
 .It Cm loadavg
 CPU load average monitor
 .It Cm meminfo
 Memory usage monitor
-.It Cm generic
-Generic script monitor
 .El
 .Sh SYNTAX
 This file is a standard UNIX .conf file with sub-sections and '=' for
@@ -223,6 +223,53 @@ action is used.  The script is called the same way as the global
 script, same arguments.
 .El
 .El
+.Ss Generic Script Monitor
+.Bl -tag -width TERM
+.It Cm generic Ar "/path/to/monitor-script.sh" {}
+Monitor status of a generic script.  Called every
+.Cm interval
+seconds, with a deadline of
+.Cm timeout
+seconds.  Trigger warning and critical actions are based on the exit
+code of the script.
+.Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable plugin, default: disabled
+.It Cm interval = Ar SEC
+How often to run the
+.Cm monitor-script ,
+default: 300 sec
+.It Cm timeout = Ar SEC
+Maximum runtime of script, in seconds, default: 300 sec
+.It Cm warning = Ar VAL
+High watermark level, alert sent to log if exit status from
+.Cm monitor-script
+is greater or equal to this value.
+.It Cm critical = Ar VAL
+Critical watermark level, alert sent to log, followed by reboot or
+.Cm script
+action if
+.Cm monitor-script
+exit status is greater or equal to this value.
+.It Cm monitor-script = Ar "/path/to/generic-script.sh" Sy (DEPRECATED)
+Monitor script to run every
+.Cm interval
+seconds.  This setting is deprecated in favor of the new syntax:
+.Bd -unfilled -offset indent
+generic /path/to/monitor-script.sh { ... }
+.Ed
+.Pp
+If the new syntax is not used,
+.Nm
+falls back to look for this setting.
+.It Cm script = Ar "/path/to/reboot-action.sh"
+Optional script to run instead of reboot if critical watermark level is
+reached.  If omitted the global
+.Ql script
+action is used.  The script is called the same way as the global
+script, same arguments.
+.El
+.El
 .Ss CPU Load Average Monitor
 .Bl -tag -width TERM
 .It Cm loadavg Ar {}
@@ -275,53 +322,6 @@ High watermark level, alert sent to log.
 .It Cm critical = Ar LEVEL
 Critical watermark level, alert sent to log, followed by reboot or
 script action.
-.It Cm script = Ar "/path/to/reboot-action.sh"
-Optional script to run instead of reboot if critical watermark level is
-reached.  If omitted the global
-.Ql script
-action is used.  The script is called the same way as the global
-script, same arguments.
-.El
-.El
-.Ss Generic Script Monitor
-.Bl -tag -width TERM
-.It Cm generic Ar "/path/to/monitor-script.sh" {}
-Monitor status of a generic script.  Called every
-.Cm interval
-seconds, with a deadline of
-.Cm timeout
-seconds.  Trigger warning and critical actions are based on the exit
-code of the script.
-.Bl -tag -width TERM
-.It Cm enabled = Ar true | false
-Enable or disable plugin, default: disabled
-.It Cm interval = Ar SEC
-How often to run the
-.Cm monitor-script ,
-default: 300 sec
-.It Cm timeout = Ar SEC
-Maximum runtime of script, in seconds, default: 300 sec
-.It Cm warning = Ar VAL
-High watermark level, alert sent to log if exit status from
-.Cm monitor-script
-is greater or equal to this value.
-.It Cm critical = Ar VAL
-Critical watermark level, alert sent to log, followed by reboot or
-.Cm script
-action if
-.Cm monitor-script
-exit status is greater or equal to this value.
-.It Cm monitor-script = Ar "/path/to/generic-script.sh" Sy (DEPRECATED)
-Monitor script to run every
-.Cm interval
-seconds.  This setting is deprecated in favor of the new syntax:
-.Bd -unfilled -offset indent
-generic /path/to/monitor-script.sh { ... }
-.Ed
-.Pp
-If the new syntax is not used,
-.Nm
-falls back to look for this setting.
 .It Cm script = Ar "/path/to/reboot-action.sh"
 Optional script to run instead of reboot if critical watermark level is
 reached.  If omitted the global
@@ -390,6 +390,16 @@ fsmon /tmp {
 #    script = "/path/to/alt-reboot-action.sh"
 }
 
+# Generic site-specific script
+generic /path/to/monitor-script.sh {
+    enabled  = true
+    interval = 60
+    timeout = 10
+    warning = 10
+    critical = 100
+#    script = "/path/to/alt-reboot-action.sh"
+}
+
 # Monitors load average based on sysinfo() from /proc/loadavg
 # The level is composed from the average of the 1 and 5 min marks.
 loadavg {
@@ -408,16 +418,6 @@ meminfo {
     logmark  = false
     warning  = 0.9
     critical = 0.95
-#    script = "/path/to/alt-reboot-action.sh"
-}
-
-# Generic site-specific script
-generic /path/to/monitor-script.sh {
-    enabled  = true
-    interval = 60
-    timeout = 10
-    warning = 10
-    critical = 100
 #    script = "/path/to/alt-reboot-action.sh"
 }
 .Ed
