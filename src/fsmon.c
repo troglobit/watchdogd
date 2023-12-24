@@ -55,7 +55,7 @@ static void cb(uev_t *w, void *arg, int events)
 //	LOG("Fsmon %s: blocks %.0f%%, inodes %.0f%%, warning: %.0f%%, critical: %.0f%%",
 //	    fsname, blevel * 100, flevel * 100, warning * 100, critical * 100);
 	if (fs->logmark) {
-		const char *ro = "(read-only";
+		const char *ro = "(read-only)";
 
 		LOG("Fsmon %s: blocks %lu/%lu inodes %lu/%lu %s", fs->name,
 		    bused, f.f_bavail,
