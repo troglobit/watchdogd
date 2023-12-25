@@ -148,6 +148,8 @@ int fsmon_init(uev_ctx_t *ctx, const char *name, int T, int mark,
 			free(f);
 			goto fail;
 		}
+
+		TAILQ_INSERT_TAIL(&fs, f, link);
 	} else {
 		f->dirty = 0;
 		if (!T) {
@@ -169,7 +171,6 @@ int fsmon_init(uev_ctx_t *ctx, const char *name, int T, int mark,
 		f->exec = strdup(script);
 	}
 
-	TAILQ_INSERT_TAIL(&fs, f, link);
 	uev_timer_stop(&f->watcher);
 
 	return uev_timer_init(ctx, &f->watcher, cb, f, 1000, T * 1000);

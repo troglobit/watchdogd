@@ -185,6 +185,8 @@ int generic_init(uev_ctx_t *ctx, const char *monitor, int T, int timeout, int wa
 			free(g);
 			goto fail;
 		}
+
+		TAILQ_INSERT_TAIL(&gs, g, link);
 	} else {
 		g->dirty = 0;
 		if (!T) {
@@ -208,7 +210,6 @@ int generic_init(uev_ctx_t *ctx, const char *monitor, int T, int timeout, int wa
 	if (script)
 		g->exec = strdup(script);
 
-	TAILQ_INSERT_TAIL(&gs, g, link);
 	uev_timer_stop(&g->watcher);
 
 	return uev_timer_init(ctx, &g->watcher, cb, g, T * 1000, T * 1000);
