@@ -57,7 +57,7 @@ static void cb(uev_t *w, void *arg, int events)
 	if (fs->logmark) {
 		const char *ro = "(read-only)";
 
-		LOG("Fsmon %s: blocks %lu/%lu inodes %lu/%lu %s", fs->name,
+		LOG("File system %s usage: blocks %lu/%lu inodes %lu/%lu %s", fs->name,
 		    bused, f.f_bavail,
 		    fused, f.f_ffree,
 		    (f.f_flag & ST_RDONLY) ? ro : "");
@@ -79,7 +79,7 @@ static void cb(uev_t *w, void *arg, int events)
 			if (checker_exec(fs->exec, "fsmon", 1, level, fs->warning, fs->critical))
 				wdt_forced_reset(w->ctx, getpid(), PACKAGE ":fsmon", 0);
 		} else {
-			WARN("File system %s use very high, blocks %.2f > %0.2f, inodes %.2f > %0.2f",
+			WARN("File system %s usage very high, blocks %.2f > %0.2f, inodes %.2f > %0.2f",
 			     fs->name, blevel, fs->warning, flevel, fs->warning);
 			checker_exec(fs->exec, "fsmon", 0, level, fs->warning, fs->critical);
 		}
@@ -153,13 +153,13 @@ int fsmon_init(uev_ctx_t *ctx, const char *name, int T, int mark,
 	} else {
 		f->dirty = 0;
 		if (!T) {
-			INFO("File system monitor %s disabled.", f->name);
+			INFO("File system %s monitor disabled.", f->name);
 			return uev_timer_stop(&f->watcher);
 		}
 	}
 
 
-	LOG("File system monitor: %s period %d sec, warning: %.2f%%, reboot: %.2f%%",
+	LOG("File system %s monitor, period %d sec, warning: %.2f%%, reboot: %.2f%%",
 	     name, T, warn * 100, crit * 100);
 
 	f->logmark = mark;

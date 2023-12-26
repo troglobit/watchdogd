@@ -98,7 +98,7 @@ static void cb(uev_t *w, void *arg, int events)
 //	    meminfo[MEMTOTAL].val, meminfo[MEMFREE].val, meminfo[MEMCACHED].val,
 //	    meminfo[SWAPTOTAL].val, meminfo[SWAPFREE].val, meminfo[SWAPCACHED].val);
 	if (logmark)
-		LOG("Meminfo: %u kB, cached: %u kB, total: %u kB",
+		LOG("Memory usage: %u kB, cached: %u kB, total: %u kB",
 		    meminfo[MEMFREE].val, meminfo[MEMCACHED].val, meminfo[MEMTOTAL].val);
 
 	/* Enable trigger warnings by default only on systems without swap */

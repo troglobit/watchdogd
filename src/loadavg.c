@@ -76,7 +76,7 @@ static void cb(uev_t *w, void *arg, int events)
 //	LOG("Load avg: %.2f, %.2f, %.2f (1, 5, 15 min) | Num CPU cores: %d",
 //	    load[0], load[1], load[2], (int)num);
 	if (logmark)
-		LOG("Loadavg: %.2f, %.2f, %.2f (1, 5, 15 min)", load[0], load[1], load[2]);
+		LOG("System load average: %.2f, %.2f, %.2f (1, 5, 15 min)", load[0], load[1], load[2]);
 
 #if 0
 	/* Compensate for number of CPU cores */
