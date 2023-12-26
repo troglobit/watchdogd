@@ -187,7 +187,7 @@ int checker_exec(char *exec, char *nm, int iscrit, double val, double warn, doub
 		PERROR("Cannot start script %s", exec);
 		return -1;
 	}
-	LOG("Started script %s, PID %d", exec, pid);
+	INFO("Started script %s, PID %d", exec, pid);
 
 	return 0;
 }
@@ -219,7 +219,7 @@ pid_t supervisor_exec(char *exec, int c, int p, char *label, void (*cb)(void *),
 		return -1;
 	}
 
-	LOG("Started script %s, PID %d", exec, pid);
+	INFO("Started script %s, PID %d", exec, pid);
 	add(pid, cb, arg);
 
 	return pid;
@@ -245,7 +245,7 @@ pid_t generic_exec(char *exec, int warn, int crit)
 	if (!pid)
 		_exit(execv(argv[0], argv));
 
-	LOG("Started script %s, PID %d", exec, pid);
+	INFO("Started script %s, PID %d", exec, pid);
 	add(pid, NULL, NULL);
 
 	return pid;
