@@ -27,7 +27,7 @@ health monitor plugin or the process supervisor is done using
 .Pa /etc/watchdogd.conf .
 .Pp
 Available monitor plugins are:
-.Bl -tag -width TERM
+.Bl -tag -width supervisor
 .It Cm supervisor
 Process supervisor, monitor the heartbeat of processes
 .It Cm filenr
@@ -41,6 +41,8 @@ Generic script monitor
 CPU load average monitor
 .It Cm meminfo
 Memory usage monitor
+.It Cm temp
+Temperature monitor
 .El
 .Sh SYNTAX
 This file is a standard UNIX .conf file with sub-sections and '=' for
@@ -330,6 +332,101 @@ action is used.  The script is called the same way as the global
 script, same arguments.
 .El
 .El
+.Ss Temperature Monitor
+Monitor one or more temperature sensors, both hwmon and thermal supported.
+The default warning level is 90% of the declared critical temperature, if
+a sensor does not have a declared critical temperature, 100°C is used.
+.Pp
+The monitor tracks the last 10 readings and uses the mean temperature in
+comparisons with the warning and critical watermarks.  The
+.Cm logmark
+setting control if this is logged or not, when enabled, logs are emitted
+every 10th interval (T x 10).
+.Pp
+.Sy ¡¡Note:
+the
+.Cm critical
+watermark is
+.Em disabled by default,
+i.e., no action!!
+.Bl -tag -width TERM
+.It Cm temp Pa /path/to/sys/class/sensor {}
+Monitors a given temperature sensor, either a
+.Bl -tag -width _thermal__
+.It Ql hwmon ,
+e.g.,
+.Pa /sys/class/hwmon/hwmon1/temp1_input
+or
+.It Ql thermal ,
+e.g.,
+.Pa /sys/class/thermal/thermal_zone1/temp
+.El
+.Pp
+If the mean temperature over 10 x interval readings exceed any of the
+configured watermarks, action is taken.  You likely want to use the
+custom
+.Cm script
+to, e.g., check a fan controller, or even
+.Xr poweroff 8
+the system, unless of course you have firmware that handles this.
+.Bl -tag -width TERM
+.It Cm enabled = Ar true | false
+Enable or disable plugin, default: disabled
+.It Cm interval = Ar SEC
+Sensor poll interval.  The monitor uses the mean value over the latest
+10 readings, so a lower poll interval is better (and a cheap operation).
+E.g., poll every 30 sec, log every 300 seconds, continuously evaluate
+against watermarks.
+.Pp
+.Sy Default:
+.Cm 300
+sec.  Strongly recommended to change this!
+.It Cm logmark = Ar true | false
+Log measurements every
+.Cm 10 x interval
+seconds.
+.Pp
+.Sy Default:
+disabled.
+.It Cm warning = Ar LEVEL
+High watermark level, used as percentage of the declared critical
+temperature.  E.g., say the sensors critical (or max) value is 128°C and
+you set
+.Cm warning
+to 0.8 (80%), the trip point is calculated as:
+.Cm 0.8 x 128.0 = 102.4 .
+.Pp
+When the watermark is reached and alert is logged and the local, or
+global, script is called.
+.Pp
+.Sy Default:
+.Cm 0.9 ,
+90% of declared critical temperature.
+.It Cm critical = Ar LEVEL
+Critical watermark level, works like
+.Cm warning ,
+except for the action.  An emergency alert is logged, followed by reboot
+or script action.
+.Pp
+.Sy Default:
+.Cm 0.0 ,
+meaning no action is taken!  I.e., it is up to the operator to define
+the level at which to take action.  (Some systems have firmware that
+automatically power-off to self-protect.)
+.It Cm script = Ar "/path/to/script.sh"
+Optional script to run instead of reboot if critical watermark level is
+reached.  If omitted the global
+.Ql script
+action is used.  The script is called the same way as the global
+script, same arguments.
+.El
+.El
+.Pp
+The tempearture data for all sensors is cached to a JSON file that is
+updated atomically every five seconds, when at least one temp monitor is
+active.  The format is not guaranteed to be stable between releases, but
+will most likely be anyway.  See
+.Ql /run/watchdogd/temp.json .
 .Sh EXAMPLE
 .Bd -unfilled -offset indent
 ### /etc/watchdogd.conf
@@ -419,6 +516,23 @@ meminfo {
     warning  = 0.9
     critical = 0.95
 #    script = "/path/to/alt-reboot-action.sh"
+}
+
+# Monitor temperature.  The critical value is unset by default, so no
+# action is taken at that watermark (by default).  Both the critical and
+# warning watermarks are relative to the trip/critical/max value from
+# sysfs.  The warning is default 0.9, i.e., 90% of critical.  Use script
+# to to reset the fan controller or poweroff(8) the system.
+#
+# Each temp monitor caches the last 10 values, calculates the mean, and
+# compares that to the warning and critical levels.  Logging is only
+# done every 10 x interval (if enabled).
+temp /sys/class/hwmon/hwmon1/temp1_input {
+    enabled  = true
+    interval = 30
+#    warning  = 0.9
+    logmark  = true
+#    script   = "/script/to/log/and/poweroff.sh"
 }
 .Ed
 .Sh SEE ALSO

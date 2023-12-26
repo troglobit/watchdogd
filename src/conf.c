@@ -27,7 +27,7 @@
 
 static char *fn;
 
-#if defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN) || defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN)
+#if defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN) || defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(TEMP_PLUGIN)
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 		   int (*init)(uev_ctx_t *, const char *, int, int, float, float, char *))
 {
@@ -42,8 +42,9 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 
 	for (i = 0; i < num; i++) {
 		cfg_t *sec = cfg_getnsec(cfg, sect, i);
+		const char *name = cfg_title(sec);
+		char arg[(name ? strlen(name) : 0) + 2];
 		int enabled, period, logmark;
-		const char *name;
 		float warn, crit;
 		char *script;
 
@@ -51,13 +52,16 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 			continue;
 
 		enabled = cfg_getbool(sec, "enabled");
-		name    = cfg_title(sec);
 		period  = cfg_getint(sec, "interval");
 		logmark = cfg_getbool(sec, "logmark");
 		warn    = cfg_getfloat(sec, "warning");
 		crit    = cfg_getfloat(sec, "critical");
 		script  = cfg_getstr(sec, "script");
-		LOG("Found %s name %s, interval %d", cfg_name(sec), name, period);
+
+		if (name)
+			snprintf(arg, sizeof(arg), " %s", name);
+		else
+			arg[0] = 0;
 
 		rc += init(ctx, name, enabled ? period : 0, logmark, warn, crit, script);
 	}
@@ -247,6 +251,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("generic",     generic_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
+		CFG_SEC ("temp",        checker_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_END()
 	};
 	cfg_t *cfg, *opt;
@@ -325,6 +330,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 #endif
 #ifdef MEMINFO_PLUGIN
 	checker(ctx, cfg, "meminfo", meminfo_init);
+#endif
+#ifdef TEMP_PLUGIN
+	checker(ctx, cfg, "temp", temp_init);
 #endif
 
 	return cfg_free(cfg);

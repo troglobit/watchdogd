@@ -26,6 +26,9 @@ endif
 if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c
 endif
+if TEMP_PLUGIN
+watchdogd_SOURCES  += temp.c
+endif
 
 watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE
 watchdogd_CPPFLAGS += -DSYSCONFDIR=\"@sysconfdir@\"

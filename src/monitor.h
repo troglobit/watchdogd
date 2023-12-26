@@ -22,6 +22,7 @@ int  filenr_init  (uev_ctx_t *ctx, const char *name, int T, int mark, float warn
 int  fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 int  loadavg_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 int  meminfo_init (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
+int  temp_init    (uev_ctx_t *ctx, const char *path, int T, int mark, float warn, float crit, char *script);
 
 int  fsmon_init   (uev_ctx_t *ctx, const char *name, int T, int mark, float warn, float crit, char *script);
 void fsmon_mark   (void);

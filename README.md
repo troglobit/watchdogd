@@ -85,6 +85,7 @@ aspects of the system, such as:
 - Memory leaks
 - Process live locks
 - Reset counter, e.g., for snmpEngineBoots (RFC 2574)
+- Temperature
 
 Read more about [Built-in Monitors](doc/features.md#built-in-monitors)
 in the extended documentation.
