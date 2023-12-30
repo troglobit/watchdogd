@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <libgen.h>
 #include <sys/statvfs.h>
 #include "wdt.h"
 #include "script.h"
@@ -26,8 +27,8 @@
 #define HWMON_TALT    "temp%d_max"
 #define THERMAL_PATH  "/sys/class/thermal/"
 #define THERMAL_TRIP  "trip_point_0_temp"
-#define TEMP_NEXTFILE "/run/watchdogd/.temp.next"
-#define TEMP_DUMPFILE "/run/watchdogd/temp.json"
+#define TEMP_NEXTFILE "/run/watchdogd/.tempmon.next"
+#define TEMP_DUMPFILE "/run/watchdogd/tempmon.json"
 
 struct temp {
 	TAILQ_ENTRY(temp) link; /* BSD sys/queue.h linked list node. */
@@ -93,11 +94,20 @@ static void write_file(uev_t *w, void *arg, int events)
 	fp = fopen(fn, "w");
 	if (!fp) {
 		if (errno == ENOENT) {
-			mkpath(fn, 0755);
+			char *tmp = strdup(fn);
+
+			if (!tmp)
+				goto err;
+
+			mkpath(dirname(tmp), 0755);
+			free(tmp);
+
 			fp = fopen(fn, "w");
 			if (fp)
 				goto cont;
 		}
+
+	err:
 		PERROR("Failed writing to %s", fn);
 		return;
 	}
@@ -315,7 +325,7 @@ static struct temp *find(const char *name)
 	return NULL;
 }
 
-void temp_mark(void)
+void tempmon_mark(void)
 {
 	struct temp *sensor;
 
@@ -324,7 +334,7 @@ void temp_mark(void)
 	}
 }
 
-void temp_sweep(void)
+void tempmon_sweep(void)
 {
 	struct temp *sensor, *tmp;
 
@@ -344,7 +354,7 @@ void temp_sweep(void)
 		uev_timer_start(&filer);
 }
 
-int temp_init(uev_ctx_t *ctx, const char *path, int T, int mark,
+int tempmon_init(uev_ctx_t *ctx, const char *path, int T, int mark,
 	       float warn, float crit, char *script)
 {
 	struct temp *sensor;

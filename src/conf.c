@@ -332,7 +332,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	checker(ctx, cfg, "meminfo", meminfo_init);
 #endif
 #ifdef TEMPMON_PLUGIN
-	checker(ctx, cfg, "temp", temp_init);
+	tempmon_mark();
+	checker(ctx, cfg, "temp", tempmon_init);
+	tempmon_sweep();
 #endif
 
 	return cfg_free(cfg);
