@@ -4,7 +4,7 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[3.6][] - 2023-12-31
+[4.0][] - 2024-01-01
 --------------------
 
 > **Breaking change:** the `generic` script monitor has new syntax!
@@ -27,8 +27,18 @@ All notable changes to the project are documented in this file.
   automatically relocate to the new location at runtime.  If the new
   directory does not exist, the daemon will fall back to use the old
   path, if it exists, issue #36
-- Simplify README by splitting it into multiple files, some text even
-  moved entirely to man pages instead.
+- The default `watchdogd.conf` now enables reset reason by default.
+  This is a strong recommendation since it is then possible to trace
+  the reset cause also for system monitors
+- Simplified README by splitting it into multiple files, some text even
+  moved entirely to man pages instead
+- The status files cluttering up `/run` have been moved to their own
+  subdirectory, `/run/watchdogd`.  This includes the PID file, last boot
+  status, and the socket for `watchdogctl`.  The latter remains the
+  recommended tool to query status and interact with the daemon
+- The configure script flags for enabling system monitors have been
+  simplified.  None of the monitors take an argument (poll seconds),
+  this because that is configured in `watchdogd.conf`
 
 ### Fixes
 - Fix #28: `watchdogd` crash in case "Label" or "Reset date" field in
@@ -43,6 +53,9 @@ All notable changes to the project are documented in this file.
   not work.  Regression introduced in v3.4.
 - The generic script plugin can now be disabled at runtime.  Prior to
   this release, it was not possible when once enabled.
+- The label (cause) of the system monitor forcing a reset is now saved in
+  the reset reason file.  Previously only "forced reset" was the only
+  message, which without persistent logs did not say much.
 
 
 [3.5][] - 2021-12-02
@@ -278,7 +291,7 @@ support for process monitoring with an instrumentation API.
 
 
 [UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.5..HEAD
-[3.6]:        https://github.com/troglobit/watchdogd/compare/3.5...3.6
+[4.0]:        https://github.com/troglobit/watchdogd/compare/3.5...4.0
 [3.5]:        https://github.com/troglobit/watchdogd/compare/3.4...3.5
 [3.4]:        https://github.com/troglobit/watchdogd/compare/3.3...3.4
 [3.3]:        https://github.com/troglobit/watchdogd/compare/3.2...3.3
