@@ -7,7 +7,7 @@ LT_INIT
 AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([src/watchdogd.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile
 	watchdogd.service
 	doc/Makefile
@@ -29,7 +29,7 @@ AC_PROG_LN_S
 AC_PROG_INSTALL
 
 # Check for header files
-AC_HEADER_STDC
+AC_CHECK_HEADERS([sys/ioctl.h uev/uev.h libite/lite.h lite/lite.h])
 
 # Check for required library versions
 PKG_PROG_PKG_CONFIG
