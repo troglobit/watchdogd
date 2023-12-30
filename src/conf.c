@@ -73,16 +73,10 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 #if defined(GENERIC_PLUGIN)
 static int generic_checker(uev_ctx_t *ctx, cfg_t *cfg)
 {
-	unsigned int i, num;
+	unsigned int i;
 	int rc = 0;
 
-	num = cfg_size(cfg, "generic");
-	if (!num) {
-		/* Disable checker completely */
-		return 0;
-	}
-
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < cfg_size(cfg, "generic"); i++) {
 		cfg_t *sec = cfg_getnsec(cfg, "generic", i);
 		int enabled, period, timeout;
 		int warn_level, crit_level;
