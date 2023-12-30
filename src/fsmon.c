@@ -124,6 +124,10 @@ void fsmon_sweep(void)
 		free(f->name);
 		free(f);
 	}
+
+	if (TAILQ_EMPTY(&fs)) {
+		INFO("File system monitor disabled.");
+	}
 }
 
 int fsmon_init(uev_ctx_t *ctx, const char *name, int T, int mark,
@@ -159,7 +163,7 @@ int fsmon_init(uev_ctx_t *ctx, const char *name, int T, int mark,
 	}
 
 
-	LOG("File system %s monitor, period %d sec, warning: %.2f%%, reboot: %.2f%%",
+	INFO("File system %s monitor, period %d sec, warning: %.1f%%, reboot: %.1f%%",
 	     name, T, warn * 100, crit * 100);
 
 	f->logmark = mark;

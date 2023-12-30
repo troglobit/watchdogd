@@ -348,9 +348,10 @@ void tempmon_sweep(void)
 		free(sensor);
 	}
 
-	if (TAILQ_EMPTY(&sensors))
+	if (TAILQ_EMPTY(&sensors)) {
+		INFO("Temperature monitor disabled.");
 		uev_timer_stop(&filer);
-	else
+	} else
 		uev_timer_start(&filer);
 }
 
@@ -401,7 +402,7 @@ int tempmon_init(uev_ctx_t *ctx, const char *path, int T, int mark,
 		}
 	}
 
-	LOG("Sensor monitor: %s period %d sec, warning: %.2f%%, reboot: %.2f%%",
+	INFO("Sensor monitor: %s period %d sec, warning: %.1f%%, reboot: %.1f%%",
 	     path, T, warn * 100, crit * 100);
 
 	sensor->logmark = mark;

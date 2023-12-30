@@ -92,7 +92,7 @@ int filenr_init(uev_ctx_t *ctx, const char *name, int T, int mark,
 		return uev_timer_stop(&watcher);
 	}
 
-	INFO("File descriptor leak monitor, period %d sec, warning: %.2f%%, reboot: %.2f%%",
+	INFO("File descriptor leak monitor, period %d sec, warning: %.1f%%, reboot: %.1f%%",
 	     T, warning * 100, critical * 100);
 	logmark = mark;
 	warning = warn;
