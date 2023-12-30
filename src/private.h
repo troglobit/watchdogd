@@ -27,16 +27,23 @@
 
 #define WDOG_RESET_STR_DEFAULT      "*RESET*"
 
-#define WDOG_SOCKNAME               "watchdogd.sock"
-#define WDOG_SUPERVISOR_PATH        _PATH_VARRUN   WDOG_SOCKNAME
-#define WDOG_SUPERVISOR_TEST        _PATH_TMP      WDOG_SOCKNAME
-#define WDOG_STATENAME              "watchdogd.state"
 #define WDOG_STATEDIR               _PATH_PRESERVE "/misc/"
+#define WDOG_STATUSDIR              _PATH_VARRUN   "watchdogd/"
+#define WDOG_TESTDIR                _PATH_TMP      "watchdogd/"
+
+#define WDOG_SOCKNAME               "sock"
+#define WDOG_SUPERVISOR_PATH        WDOG_STATUSDIR WDOG_SOCKNAME
+#define WDOG_SUPERVISOR_TEST        WDOG_TESTDIR   WDOG_SOCKNAME
+
+#define WDOG_STATENAME              "watchdogd.state"
 #define WDOG_STATE                  WDOG_STATEDIR  WDOG_STATENAME
-#define WDOG_STATE_TEST             _PATH_TMP      WDOG_STATENAME
-#define WDOG_STATUSNAME             "watchdogd.status"
-#define WDOG_STATUS                 _PATH_VARRUN   WDOG_STATUSNAME
-#define WDOG_STATUS_TEST            _PATH_TMP      WDOG_STATUSNAME
+#define WDOG_STATE_TEST             WDOG_TESTDIR   WDOG_STATENAME
+
+#define WDOG_STATUSNAME             "status"
+#define WDOG_STATUS                 WDOG_STATUSDIR WDOG_STATUSNAME
+#define WDOG_STATUS_TEST            WDOG_TESTDIR   WDOG_STATUSNAME
+
+#define WDOG_PIDFILE                WDOG_STATUSDIR "pid"
 
 #define WDOG_SUBSCRIBE_CMD          1
 #define WDOG_UNSUBSCRIBE_CMD        2

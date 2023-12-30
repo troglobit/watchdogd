@@ -26,8 +26,8 @@
 #define HWMON_TRIP    "temp%d_crit"
 #define THERMAL_PATH  "/sys/class/thermal/"
 #define THERMAL_TRIP  "trip_point_0_temp"
-#define TEMP_NEXTFILE "/run/watchdogd/.tempmon.next"
-#define TEMP_DUMPFILE "/run/watchdogd/tempmon.json"
+#define TEMP_NEXTFILE WDOG_STATUSDIR ".tempmon.next"
+#define TEMP_DUMPFILE WDOG_STATUSDIR "tempmon.json"
 
 struct temp {
 	TAILQ_ENTRY(temp) link; /* BSD sys/queue.h linked list node. */
@@ -92,21 +92,6 @@ static void write_file(uev_t *w, void *arg, int events)
 
 	fp = fopen(fn, "w");
 	if (!fp) {
-		if (errno == ENOENT) {
-			char *tmp = strdup(fn);
-
-			if (!tmp)
-				goto err;
-
-			mkpath(dirname(tmp), 0755);
-			free(tmp);
-
-			fp = fopen(fn, "w");
-			if (fp)
-				goto cont;
-		}
-
-	err:
 		PERROR("Failed writing to %s", fn);
 		return;
 	}

@@ -54,7 +54,7 @@ static uev_t sigusr2_watcher;
 
 static void pidfile_touch(void)
 {
-	if (pidfile(prognm) && !wdt_testmode())
+	if (pidfile(WDOG_PIDFILE) && !wdt_testmode())
 		PERROR("Cannot create pidfile");
 }
 
@@ -320,6 +320,10 @@ int main(int argc, char *argv[])
 
 	/* Hello world ... */
 	LOG("%s v%s %s ...", prognm, PACKAGE_VERSION, wdt_testmode() ? "test mode" : "starting");
+	if (wdt_testmode())
+		mkpath(WDOG_TESTDIR, 0755);
+	else
+		mkpath(WDOG_STATUSDIR, 0755);
 
 	/* Read /etc/watchdogd.conf if it exists */
 	conf_parse_file(&ctx, opt_config);
