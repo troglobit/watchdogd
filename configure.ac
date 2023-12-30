@@ -53,27 +53,27 @@ AC_ARG_ENABLE(builtin-tests,
         AS_HELP_STRING([--disable-builtin-tests], [Disable process supervisor built-in tests]))
 
 AC_ARG_WITH([filenr],
-	AS_HELP_STRING([--with-filenr[=SEC]], [Enable file descriptor leak monitor, poll: 300 sec]),
+	AS_HELP_STRING([--with-filenr], [Enable file descriptor leak monitor]),
 	[with_filenr=$withval], [with_filenr=no])
 
 AC_ARG_WITH([fsmon],
-	AS_HELP_STRING([--with-fsmon[=SEC]], [Enable file system monitor, poll: 300 sec]),
+	AS_HELP_STRING([--with-fsmon], [Enable file system monitor]),
 	[with_fsmon=$withval], [with_fsmon=no])
 
 AC_ARG_WITH([generic],
-	[AS_HELP_STRING([--with-generic[=SEC]], [Enable generic script monitor, poll: 300 sec])],
+	[AS_HELP_STRING([--with-generic], [Enable generic script monitor])],
 	[with_generic=$withval], [with_generic=no])
 
 AC_ARG_WITH([loadavg],
-        AS_HELP_STRING([--with-loadavg[=SEC]], [Enable CPU load average monitor, poll: 300 sec]),
+        AS_HELP_STRING([--with-loadavg], [Enable CPU load average monitor]),
 	[with_loadavg=$withval], [with_loadavg=no])
 
 AC_ARG_WITH([meminfo],
-	[AS_HELP_STRING([--with-meminfo[=SEC]], [Enable memory leak monitor, poll: 300 sec])],
+	[AS_HELP_STRING([--with-meminfo], [Enable memory leak monitor])],
 	[with_meminfo=$withval], [with_meminfo=no])
 
 AC_ARG_WITH([tempmon],
-	[AS_HELP_STRING([--with-tempmon[=SEC]], [Enable temperature monitor, poll: 300 sec])],
+	[AS_HELP_STRING([--with-tempmon], [Enable temperature monitor])],
 	[with_tempmon=$withval], [with_tempmon=no])
 
 AC_ARG_WITH([systemd],
@@ -84,27 +84,27 @@ AS_IF([test "x$enable_compat" = "xyes"], [
 	AC_DEFINE(COMPAT_SUPERVISOR,  1, [Enable compat /run/supervisor.status and signals])])
 
 AS_IF([test "x$with_loadavg" != "xno"], [
-	AS_IF([test "x$with_loadavg" = "xyes"], [with_loadavg=300])
+	with_loadavg=yes
 	AC_DEFINE_UNQUOTED(LOADAVG_PLUGIN, $with_loadavg, [Enable CPU load average monitor])])
 
 AS_IF([test "x$with_filenr" != "xno"], [
-	AS_IF([test "x$with_filenr" = "xyes"], [with_filenr=300])
+	with_filenr=yes
 	AC_DEFINE_UNQUOTED(FILENR_PLUGIN, $with_filenr, [Enable file descriptor leak monitor])])
 
 AS_IF([test "x$with_fsmon" != "xno"], [
-	AS_IF([test "x$with_fsmon" = "xyes"], [with_fsmon=300])
+	with_fsmon=yes
 	AC_DEFINE_UNQUOTED(FSMON_PLUGIN, $with_fsmon, [Enable file system monitor])])
 
 AS_IF([test "x$with_meminfo" != "xno"], [
-	AS_IF([test "x$with_meminfo" = "xyes"], [with_meminfo=300])
+	with_meminfo=yes
 	AC_DEFINE_UNQUOTED(MEMINFO_PLUGIN, $with_meminfo, [Enable memory leak monitor])])
 
 AS_IF([test "x$with_tempmon" != "xno"], [
-	AS_IF([test "x$with_tempmon" = "xyes"], [with_tempmon=300])
+	with_tempmon=yes
 	AC_DEFINE_UNQUOTED(TEMPMON_PLUGIN, $with_tempmon, [Enable memory leak monitor])])
 
 AS_IF([test "x$with_generic" != "xno"], [
-	AS_IF([test "x$with_generic" = "xyes"], [with_generic=300])
+	with_generic=yes
 	AC_DEFINE_UNQUOTED(GENERIC_PLUGIN, $with_generic, [Enable generic script monitor])])
 
 AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
@@ -173,13 +173,13 @@ cat <<EOF
   built-in tests......: $enable_builtin_tests
   systemd.............: $with_systemd
 
- Plugins:
-  generic script (sec): $with_generic
-  filenr poll (sec)...: $with_filenr
-  fsmon poll (sec)....: $with_fsmon
-  loadavg poll (sec)..: $with_loadavg
-  meminfo poll (sec)..: $with_meminfo
-  tempmon poll (sec)..: $with_tempmon
+ System monitors:
+  generic script .....: $with_generic
+  file descriptor ....: $with_filenr
+  file system ........: $with_fsmon
+  load average .......: $with_loadavg
+  memory leak ........: $with_meminfo
+  temperature ........: $with_tempmon
 
 ------------- Compiler version --------------
 $($CC --version || true)
