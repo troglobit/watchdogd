@@ -209,12 +209,15 @@ static void cb(uev_t *w, void *arg, int events)
 
 }
 
-static int sanity_check(const char *path)
+static int sanity_check(const char *path, float *temp)
 {
-	float temp = read_temp(path);
+	float tmp = read_temp(path);
 
-	if (temp == 0.0 ||  temp < -150.0 || temp > 150.0)
+	if (tmp == 0.0 || tmp < -150.0 || tmp > 150.0)
 		return 1;
+
+	if (temp)
+		*temp = tmp;
 
 	return 0;
 }
@@ -230,7 +233,7 @@ static char *sensor_hwmon(struct temp *sensor, const char *temp, char *path, siz
 	}
 
 	DEBUG("Got ID %d", sensor->id);
-	if (sanity_check(temp)) {
+	if (sanity_check(temp, NULL)) {
 		INFO("Improbable value detected, skipping %s", temp);
 		goto fail;
 	}
@@ -242,8 +245,9 @@ static char *sensor_hwmon(struct temp *sensor, const char *temp, char *path, siz
 	snprintf(file, sizeof(file), HWMON_TRIP, sensor->id);
 	if (fexist(paste(path, len, file, offset)))
 		sensor->crit = path;
-fail:
-	if (!sensor->crit || sanity_check(sensor->crit)) {
+
+	if (!sensor->crit || sanity_check(sensor->crit, &sensor->tcrit)) {
+	fail:
 		sensor->tcrit = 100.0;
 		sensor->crit = NULL;
 		free(path);
@@ -258,16 +262,22 @@ static char *sensor_thermal(struct temp *sensor, const char *temp, char *path, s
 
 	if (sscanf(temp, THERMAL_PATH "thermal_zone%d/temp", &sensor->id) != 1) {
 		INFO("Failed reading ID from %s", temp);
-		return NULL;
+		goto fail;
 	}
 
 	DEBUG("Got ID %d", sensor->id);
+	if (sanity_check(temp, NULL)) {
+		INFO("Improbable value detected, skipping %s", temp);
+		goto fail;
+	}
+
 	read_file(paste(path, len, "type", offset), sensor->name, sizeof(sensor->name));
 
 	if (fexist(paste(path, len, THERMAL_TRIP, offset)))
 		sensor->crit = path;
 
-	if (!sensor->crit || sanity_check(sensor->crit)) {
+	if (!sensor->crit || sanity_check(sensor->crit, &sensor->tcrit)) {
+	fail:
 		sensor->tcrit = 100.0;
 		sensor->crit = NULL;
 		free(path);
