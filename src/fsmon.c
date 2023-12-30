@@ -26,8 +26,8 @@ struct fsmon {
 	char  *exec;
 	int    logmark;
 
-	double warning;
-	double critical;
+	float  warning;
+	float  critical;
 
 	uev_t  watcher;
 	int    dirty;		/* for mark & sweep */
@@ -39,7 +39,7 @@ static void cb(uev_t *w, void *arg, int events)
 {
 	struct fsmon *fs = (struct fsmon *)arg;
 	long long unsigned int bused, fused;
-	double blevel, flevel;
+	float blevel, flevel;
 	struct statvfs f;
 
 	if (statvfs(fs->name, &f)) {
@@ -48,9 +48,9 @@ static void cb(uev_t *w, void *arg, int events)
 	}
 
 	bused  = f.f_blocks - f.f_bavail;
-	blevel = (double)(bused) / (double)(f.f_blocks);
+	blevel = (float)bused / f.f_blocks;
 	fused  = f.f_files - f.f_ffree;
-	flevel = (double)(fused) / (double)(f.f_files);
+	flevel = (float)(fused) / f.f_files;
 
 //	LOG("Fsmon %s: blocks %.0f%%, inodes %.0f%%, warning: %.0f%%, critical: %.0f%%",
 //	    fsname, blevel * 100, flevel * 100, warning * 100, critical * 100);
@@ -64,7 +64,7 @@ static void cb(uev_t *w, void *arg, int events)
 	}
 
 	if (blevel > fs->warning || flevel > fs->warning) {
-		double level = blevel;
+		float level = blevel;
 
 		if (flevel > blevel) {
 			level = flevel;
