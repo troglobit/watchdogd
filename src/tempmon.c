@@ -24,7 +24,6 @@
 #define HWMON_NAME    "temp%d_label"
 #define HWMON_TEMP    "temp%d_input"
 #define HWMON_TRIP    "temp%d_crit"
-#define HWMON_TALT    "temp%d_max"
 #define THERMAL_PATH  "/sys/class/thermal/"
 #define THERMAL_TRIP  "trip_point_0_temp"
 #define TEMP_NEXTFILE "/run/watchdogd/.tempmon.next"
@@ -239,10 +238,6 @@ static char *sensor_hwmon(struct temp *sensor, const char *temp, char *path, siz
 	snprintf(file, sizeof(file), HWMON_NAME, sensor->id);
 	if (!read_file(paste(path, len, file, offset), sensor->name, sizeof(sensor->name)))
 		read_file(paste(path, len, "name", offset), sensor->name, sizeof(sensor->name));
-
-	snprintf(file, sizeof(file), HWMON_TALT, sensor->id);
-	if (fexist(paste(path, len, file, offset)))
-		sensor->crit = path;
 
 	snprintf(file, sizeof(file), HWMON_TRIP, sensor->id);
 	if (fexist(paste(path, len, file, offset)))
