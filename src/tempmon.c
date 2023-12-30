@@ -199,13 +199,13 @@ static void cb(uev_t *w, void *arg, int events)
 			EMERG("%s: temperature critical, %.1f >= %.1f!", nm, mean, crit);
 
 			snprintf(label, sizeof(label), "%s:%s", PACKAGE, nm);
-			if (checker_exec(sensor->exec, "temp", 1, mean, trip, crit))
+			if (checker_exec(sensor->exec, "tempmon", 1, mean, trip, crit))
 				wdt_forced_reset(w->ctx, getpid(), label, 0);
 			return;
 		}
 
 		WARN("%s: temperature warning, %.1f > %0.1f!", nm, mean, trip);
-		checker_exec(sensor->exec, "temp", 0, mean, trip, crit);
+		checker_exec(sensor->exec, "tempmon", 0, mean, trip, crit);
 	}
 
 }

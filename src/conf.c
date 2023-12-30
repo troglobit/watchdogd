@@ -251,7 +251,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("generic",     generic_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
-		CFG_SEC ("temp",        checker_opts, CFGF_MULTI | CFGF_TITLE),
+		CFG_SEC ("tempmon",     checker_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_END()
 	};
 	cfg_t *cfg, *opt;
@@ -333,7 +333,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 #endif
 #ifdef TEMPMON_PLUGIN
 	tempmon_mark();
-	checker(ctx, cfg, "temp", tempmon_init);
+	checker(ctx, cfg, "tempmon", tempmon_init);
 	tempmon_sweep();
 #endif
 

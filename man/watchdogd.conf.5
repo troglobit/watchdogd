@@ -41,7 +41,7 @@ Generic script monitor
 CPU load average monitor
 .It Cm meminfo
 Memory usage monitor
-.It Cm temp
+.It Cm tempmon
 Temperature monitor
 .El
 .Sh SYNTAX
@@ -350,7 +350,7 @@ watermark is
 .Em disabled by default,
 i.e., no action!!
 .Bl -tag -width TERM
-.It Cm temp Pa /path/to/sys/class/sensor {}
+.It Cm tempmon Pa /path/to/sys/class/sensor {}
 Monitors a given temperature sensor, either a
 .Bl -tag -width _thermal__
 .It Ql hwmon ,
@@ -384,7 +384,8 @@ sec.  Strongly recommended to change this!
 .It Cm logmark = Ar true | false
 Log measurements every
 .Cm 10 x interval
-seconds.
+seconds.  However, if the mean value rises above a threshold a warning
+is logged every interval.
 .Pp
 .Sy Default:
 disabled.
@@ -426,7 +427,7 @@ The tempearture data for all sensors is cached to a JSON file that is
 updated atomically every five seconds, when at least one temp monitor is
 active.  The format is not guaranteed to be stable between releases, but
 will most likely be anyway.  See
-.Ql /run/watchdogd/temp.json .
+.Ql /run/watchdogd/tempmon.json .
 .Sh EXAMPLE
 .Bd -unfilled -offset indent
 ### /etc/watchdogd.conf
@@ -525,9 +526,10 @@ meminfo {
 # to to reset the fan controller or poweroff(8) the system.
 #
 # Each temp monitor caches the last 10 values, calculates the mean, and
-# compares that to the warning and critical levels.  Logging is only
-# done every 10 x interval (if enabled).
-temp /sys/class/hwmon/hwmon1/temp1_input {
+# compares that to the warning and critical levels.  Logging of stats,
+# the logmark setting, is only done every 10 x interval (if enabled),
+# while warnings and critical messages are logged every interval.
+tempmon /sys/class/hwmon/hwmon1/temp1_input {
     enabled  = true
     interval = 30
 #    warning  = 0.9
