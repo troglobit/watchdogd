@@ -26,8 +26,8 @@ endif
 if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c
 endif
-if TEMP_PLUGIN
-watchdogd_SOURCES  += temp.c
+if TEMPMON_PLUGIN
+watchdogd_SOURCES  += tempmon.c
 endif
 
 watchdogd_CPPFLAGS  = -D_GNU_SOURCE -D_BSD_SOURCE -D_DEFAULT_SOURCE -D_XOPEN_SOURCE

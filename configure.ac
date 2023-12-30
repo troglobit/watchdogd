@@ -72,9 +72,9 @@ AC_ARG_WITH([meminfo],
 	[AS_HELP_STRING([--with-meminfo[=SEC]], [Enable memory leak monitor, poll: 300 sec])],
 	[with_meminfo=$withval], [with_meminfo=no])
 
-AC_ARG_WITH([temp],
-	[AS_HELP_STRING([--with-temp[=SEC]], [Enable temperature monitor, poll: 300 sec])],
-	[with_temp=$withval], [with_temp=no])
+AC_ARG_WITH([tempmon],
+	[AS_HELP_STRING([--with-tempmon[=SEC]], [Enable temperature monitor, poll: 300 sec])],
+	[with_tempmon=$withval], [with_tempmon=no])
 
 AC_ARG_WITH([systemd],
 	[AS_HELP_STRING([--with-systemd=DIR], [Directory for systemd service files, default: auto])],,
@@ -99,9 +99,9 @@ AS_IF([test "x$with_meminfo" != "xno"], [
 	AS_IF([test "x$with_meminfo" = "xyes"], [with_meminfo=300])
 	AC_DEFINE_UNQUOTED(MEMINFO_PLUGIN, $with_meminfo, [Enable memory leak monitor])])
 
-AS_IF([test "x$with_temp" != "xno"], [
-	AS_IF([test "x$with_temp" = "xyes"], [with_temp=300])
-	AC_DEFINE_UNQUOTED(TEMP_PLUGIN, $with_temp, [Enable memory leak monitor])])
+AS_IF([test "x$with_tempmon" != "xno"], [
+	AS_IF([test "x$with_tempmon" = "xyes"], [with_tempmon=300])
+	AC_DEFINE_UNQUOTED(TEMPMON_PLUGIN, $with_tempmon, [Enable memory leak monitor])])
 
 AS_IF([test "x$with_generic" != "xno"], [
 	AS_IF([test "x$with_generic" = "xyes"], [with_generic=300])
@@ -131,7 +131,7 @@ AM_CONDITIONAL(FSMON_PLUGIN,    [test "x$with_fsmon"    != "xno"])
 AM_CONDITIONAL(GENERIC_PLUGIN,  [test "x$with_generic"  != "xno"])
 AM_CONDITIONAL(LOADAVG_PLUGIN,  [test "x$with_loadavg"  != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN,  [test "x$with_meminfo"  != "xno"])
-AM_CONDITIONAL(TEMP_PLUGIN,     [test "x$with_temp"  != "xno"])
+AM_CONDITIONAL(TEMPMON_PLUGIN,  [test "x$with_tempmon"  != "xno"])
 
 # Expand $sbindir early, into $SBINDIR, for systemd unit file
 # NOTE: This does *not* take prefix/exec_prefix override at "make
@@ -179,7 +179,7 @@ cat <<EOF
   fsmon poll (sec)....: $with_fsmon
   loadavg poll (sec)..: $with_loadavg
   meminfo poll (sec)..: $with_meminfo
-  temp poll (sec).....: $with_temp
+  tempmon poll (sec)..: $with_tempmon
 
 ------------- Compiler version --------------
 $($CC --version || true)

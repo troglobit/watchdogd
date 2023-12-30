@@ -27,7 +27,7 @@
 
 static char *fn;
 
-#if defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN) || defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(TEMP_PLUGIN)
+#if defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN) || defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(TEMPMON_PLUGIN)
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 		   int (*init)(uev_ctx_t *, const char *, int, int, float, float, char *))
 {
@@ -331,7 +331,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 #ifdef MEMINFO_PLUGIN
 	checker(ctx, cfg, "meminfo", meminfo_init);
 #endif
-#ifdef TEMP_PLUGIN
+#ifdef TEMPMON_PLUGIN
 	checker(ctx, cfg, "temp", temp_init);
 #endif
 
