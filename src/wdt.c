@@ -292,18 +292,22 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid)
 		fprintf(fp, WDT_RESET_DATE ": %s\n", buf);
 	}
 	fprintf(fp, WDT_REASON_STR ": %d - %s\n", r->code, wdog_reset_reason_str(r));
+	if (pid)
+		fprintf(fp, WDT_REASON_PID ": %d\n", pid);
+
 	switch (r->code) {
 	case WDOG_FAILED_SUBSCRIPTION:
 	case WDOG_FAILED_KICK:
 	case WDOG_FAILED_UNSUBSCRIPTION:
 	case WDOG_FAILED_TO_MEET_DEADLINE:
-		fprintf(fp, WDT_REASON_PID ": %d\n", pid);
 		fprintf(fp, WDT_REASON_WID ": %ui\n", r->wid);
-		fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
 		break;
 	default:
 		break;
 	}
+
+	if (r->label[0])
+		fprintf(fp, WDT_REASON_LBL ": %s\n", r->label);
 
 	return fclose(fp);
 }
