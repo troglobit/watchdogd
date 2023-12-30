@@ -37,7 +37,7 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 	num = cfg_size(cfg, sect);
 	if (!num) {
 		/* Disable checker completely */
-		return 0;
+		return init(ctx, NULL, 0, 0, 0.0, 0.0, NULL);
 	}
 
 	for (i = 0; i < num; i++) {
