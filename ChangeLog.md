@@ -4,14 +4,16 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[3.6][] - 2023-12-21
+[3.6][] - 2023-12-31
 --------------------
+
+> **Breaking change:** the `generic` script monitor has new syntax!
 
 ### Changes
 - A new file system monitor has been added: `fsmon /var { ... }`,
   multiple `fsmon /path` monitors are possible
-- The syntax for the generic monitor script has changed, `watchdogd`,
-  however, remains backwards compatible.  New syntax:
+- The syntax for the generic monitor script has changed.  This is a
+  breaking change, everyone must update.  New syntax:
 
         generic /path/to/montor-script.sh { ... }
 
