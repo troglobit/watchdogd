@@ -43,8 +43,8 @@ struct temp {
 
 	char  *exec;
 	int    logmark;
-	double warning;
-	double critical;
+	float  warning;
+	float  critical;
 
 	uev_t  watcher;
 	int    interval;
@@ -184,6 +184,11 @@ static void cb(uev_t *w, void *arg, int events)
 	trip = sensor->tcrit * sensor->warning;
 	crit = sensor->tcrit * sensor->critical;
 	mean = calc_mean(sensor);
+
+	DEBUG("temp %.2f mean %.2f warning %.1f%% critical %.1f%% "
+	      "tcrit %.2f trip %.2f crit %.2f",  temp, mean,
+	      sensor->warning * 100, sensor->critical * 100,
+	      sensor->tcrit, trip, crit);
 
 	if (sensor->tdpos == NELEMS(sensor->tdata)) {
 		sensor->tdpos = 0;
