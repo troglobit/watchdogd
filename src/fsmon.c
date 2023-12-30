@@ -38,7 +38,7 @@ static TAILQ_HEAD(fshead, fsmon) fs = TAILQ_HEAD_INITIALIZER(fs);
 static void cb(uev_t *w, void *arg, int events)
 {
 	struct fsmon *fs = (struct fsmon *)arg;
-	long unsigned int bused, fused;
+	long long unsigned int bused, fused;
 	double blevel, flevel;
 	struct statvfs f;
 
@@ -57,9 +57,9 @@ static void cb(uev_t *w, void *arg, int events)
 	if (fs->logmark) {
 		const char *ro = "(read-only)";
 
-		LOG("File system %s usage: blocks %lu/%lu inodes %lu/%lu %s", fs->name,
-		    bused, f.f_bavail,
-		    fused, f.f_ffree,
+		LOG("File system %s usage: blocks %llu/%llu inodes %llu/%llu %s",
+		    fs->name, bused, (long long unsigned int)f.f_bavail,
+		    fused, (long long unsigned int)f.f_ffree,
 		    (f.f_flag & ST_RDONLY) ? ro : "");
 	}
 
