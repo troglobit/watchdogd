@@ -135,8 +135,11 @@ int fsmon_init(uev_ctx_t *ctx, const char *name, int T, int mark,
 {
 	struct fsmon *f;
 
-	if (!name)
-		name = "/";
+	if (!name) {
+		if (T)
+			ERROR("File system monitor missing path argument");
+		return 1;
+	}
 
 	f = find(name);
 	if (!f) {
