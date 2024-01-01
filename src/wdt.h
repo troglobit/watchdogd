@@ -134,7 +134,7 @@ int  wdt_get_timeout    (struct wdt *dev);
 int  wdt_reset          (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
 int  wdt_forced_reset   (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 
-int  wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid);
+int  wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid, int compat);
 int  wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid, int compat);
 
 static inline unsigned int wdt_reset_counter(void)

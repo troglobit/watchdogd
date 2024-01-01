@@ -332,50 +332,91 @@ static int reset_was_powerloss(void)
 	return 0;
 }
 
-int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid)
+#define TOKEN(s) (ptr = strstr(buf, s)) && (ptr = strchr(ptr, ':')) && (ptr += 2)
+static char *unquote(char *str)
 {
+	char *ptr;
+
+	ptr = strchr(str, '"');
+	if (ptr) {
+		str = &ptr[1];
+		ptr = strchr(str, '"');
+		if (ptr)
+			*ptr = 0;
+	}
+
+	return str;
+}
+
+int wdt_fload_reason(FILE *fp, wdog_reason_t *r, pid_t *pid, int compat)
+{
+	int supervisor = 0;
 	char *ptr, buf[80];
 	pid_t dummy;
 
+	memset(r, 0, sizeof(*r));
 	if (!pid)
 		pid = &dummy;
 
 	while ((ptr = fgets(buf, sizeof(buf), fp))) {
 		chomp(buf);
 
-		if (sscanf(buf, WDT_RESETCOUNT ": %u", &r->counter) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_PID ": %d", pid) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_WID ": %u", &r->wid) == 1)
-			continue;
-		if (sscanf(buf, WDT_REASON_STR ": %d", (int *)&r->code) == 1)
-			continue;
+		if (compat) {
+			if (sscanf(buf, WDT_RESETCOUNT ": %u", &r->counter) == 1)
+				continue;
+			if (sscanf(buf, WDT_REASON_PID ": %d", pid) == 1)
+				continue;
+			if (sscanf(buf, WDT_REASON_WID ": %u", &r->wid) == 1)
+				continue;
+			if (sscanf(buf, WDT_REASON_STR ": %d", (int *)&r->code) == 1)
+				continue;
 
-		if (string_match(buf, WDT_REASON_LBL)) {
-			ptr = strchr(buf, ':');
-			if (ptr) {
-				if (strlen(ptr) > 2) {
-					ptr += 2;
-					strlcpy(r->label, ptr, sizeof(r->label));
+			if (string_match(buf, WDT_REASON_LBL)) {
+				ptr = strchr(buf, ':');
+				if (ptr) {
+					if (strlen(ptr) > 2) {
+						ptr += 2;
+						strlcpy(r->label, ptr, sizeof(r->label));
+					}
 				}
+				continue;
 			}
-			continue;
-		}
 
-		if (string_match(buf, WDT_RESET_DATE)) {
-			ptr = strchr(buf, ':');
-			if (ptr) {
-				if (strlen(ptr) > 2) {
-					ptr += 2;
-					strptime(ptr, "%FT%TZ", &r->date);
+			if (string_match(buf, WDT_RESET_DATE)) {
+				ptr = strchr(buf, ':');
+				if (ptr) {
+					if (strlen(ptr) > 2) {
+						ptr += 2;
+						strptime(ptr, "%FT%TZ", &r->date);
+					}
 				}
+				continue;
 			}
-			continue;
+		} else {
+			if (!supervisor) {
+				if (TOKEN("supervisor-reset"))
+					supervisor = 1;
+				continue;
+			}
+
+			if (TOKEN("count"))
+				sscanf(ptr, "%d", &r->counter);
+			if (TOKEN("pid"))
+				sscanf(ptr, "%d,", pid);
+			if (TOKEN("watchdog-id"))
+				sscanf(ptr, "%d", &r->wid);
+			if (TOKEN("code"))
+				sscanf(ptr, "%d,", (int *)&r->code);
+			if (TOKEN("label"))
+				strlcpy(r->label, unquote(ptr), sizeof(r->label));
+			if (TOKEN("date")) {
+				ptr = unquote(ptr);
+				strptime(ptr, "%FT%TZ", &r->date);
+			}
 		}
 	}
 
-	return fclose(fp);
+	return 0;
 }
 
 int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid, int compat)
@@ -426,7 +467,7 @@ int wdt_fstore_reason(FILE *fp, wdog_reason_t *r, pid_t pid, int compat)
 		if (pid)
 			fprintf(fp, "    \"pid\": %d,\n", pid);
 		if (r->label[0])
-			fprintf(fp, "    \"label\": %s,\n", r->label);
+			fprintf(fp, "    \"label\": \"%s\",\n", r->label);
 		fprintf(fp,
 			"    \"date\": \"%s\",\n"
 			"    \"count\": %d\n  }\n}\n",
@@ -495,23 +536,28 @@ static int create_bootstatus(char *fn, wdog_reason_t *r, pid_t pid)
 
 static int save_bootstatus(void)
 {
-	wdog_reason_t reason;
+	wdog_reason_t reason = { 0 };
 	pid_t pid = 0;
-	char *status;
+	FILE *fp;
+	char *fn;
 
 	if (wdt_testmode())
-		status = WDOG_STATUS_TEST;
+		fn = WDOG_STATUS_TEST;
 	else
-		status = WDOG_STATUS;
+		fn = WDOG_STATUS;
 
 	/*
 	 * In case we're restarted at runtime this prevents us from
 	 * recreating the status file(s).
 	 */
-	if (fexist(status))
-		return 0;
+	fp = fopen(fn, "r");
+	if (fp) {
+		wdt_fload_reason(fp, &reason, &pid, 0);
+		fclose(fp);
 
-	memset(&reason, 0, sizeof(reason));
+		return create_bootstatus(fn, &reason, pid);
+	}
+
 	if (!reset_reason_get(&reason, &pid)) {
 		reset_code    = reason.code;
 		reset_counter = reason.counter;
@@ -527,7 +573,7 @@ static int save_bootstatus(void)
 		pid = 0;
 	}
 
-	if (!create_bootstatus(status, &reason, pid))
+	if (!create_bootstatus(fn, &reason, pid))
 		memcpy(&reset_reason, &reason, sizeof(reset_reason));
 
 	/*

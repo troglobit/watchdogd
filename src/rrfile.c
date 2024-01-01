@@ -91,6 +91,7 @@ int reset_reason_get(wdog_reason_t *reason, pid_t *pid)
 {
 	const char *state;
 	FILE *fp;
+	int rc;
 
 	if (!reason)
 		return errno = EINVAL;
@@ -117,7 +118,10 @@ int reset_reason_get(wdog_reason_t *reason, pid_t *pid)
 		return 0;
 	}
 
-	return wdt_fload_reason(fp, reason, pid);
+	rc = wdt_fload_reason(fp, reason, pid, 1);
+	fclose(fp);
+
+	return rc;
 }
 
 /*
