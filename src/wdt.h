@@ -87,7 +87,7 @@ struct wdt {
 	int   dirty;		/* for mark & sweep */
 
 	struct watchdog_info info;
-	int   reset_cause;
+	unsigned int reset_cause;
 };
 
 /* Command line options */
@@ -135,7 +135,7 @@ int  wdt_reset          (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int t
 int  wdt_forced_reset   (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 
 int  wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid);
-int  wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid);
+int  wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid, int compat);
 
 static inline unsigned int wdt_reset_counter(void)
 {
@@ -150,32 +150,6 @@ static inline int wdt_testmode(void)
 	return 0;
 #endif
 }
-
-static inline const char *wdt_cause_str(int cause)
-{
-	const char *str = NULL;
-
-	if (cause & WDIOF_CARDRESET)
-		str = "WDIOF_CARDRESET";
-	if (cause & WDIOF_EXTERN1)
-		str = "WDIOF_EXTERN1";
-	if (cause & WDIOF_EXTERN2)
-		str = "WDIOF_EXTERN2";
-	if (cause & WDIOF_POWERUNDER)
-		str = "WDIOF_POWERUNDER";
-	if (cause & WDIOF_POWEROVER)
-		str = "WDIOF_POWEROVER";
-	if (cause & WDIOF_FANFAULT)
-		str = "WDIOF_FANFAULT";
-	if (cause & WDIOF_OVERHEAT)
-		str = "WDIOF_OVERHEAT";
-
-	if (!str)
-		str = "WDIOF_UNKNOWN";
-
-	return str;
-}
-
 
 #endif /* WDT_H_ */
 
