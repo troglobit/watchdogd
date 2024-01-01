@@ -227,11 +227,11 @@ int wdt_close(struct wdt *dev)
 {
 	if (dev->fd != -1) {
 		if (dev->magic) {
-			INFO("%s: disarming watchdog timer before (safe) exit.", dev->name);
+			INFO("%s: disarming watchdog timer before closing device.", dev->name);
 			if (-1 == write(dev->fd, "V", 1))
 				PERROR("%s: failed disarming watchdog, system will likely reboot now ...", dev->name);
 		} else {
-			LOG("Exiting, watchdog %s still active.  Expect reboot!", dev->name);
+			LOG("%s: safe-exit not enabled, watchdog still active.  Expect reboot!", dev->name);
 			/* Be nice, sync any buffered data to disk first. */
 			sync();
 		}
@@ -263,12 +263,12 @@ int wdt_kick(struct wdt *dev, const char *msg)
 		return 0;
 
 	if (dev->fd == -1) {
-		DEBUG("No kick, currently disabled.");
+		DEBUG("%s: no kick, currently disabled.", dev->name);
 		return 0;
 	}
 
 	if (!wdt_capability(dev, WDIOF_CARDRESET))
-		INFO("Kicking WDT %s", dev->name);
+		INFO("%s: kicking WDT", dev->name);
 
 	return ioctl(dev->fd, WDIOC_KEEPALIVE, &dummy);
 }
@@ -282,16 +282,16 @@ int wdt_set_timeout(struct wdt *dev, int count)
 		return 0;
 
 	if (dev->fd == -1) {
-		DEBUG("Cannot set timeout, currently disabled.");
+		DEBUG("%s: cannot set timeout, currently disabled.", dev->name);
 		return 0;
 	}
 
 	if (!wdt_capability(dev, WDIOF_SETTIMEOUT)) {
-		WARN("WDT %s does not support setting timeout.", dev->name);
+		WARN("%s: driver does not support setting timeout.", dev->name);
 		return 1;
 	}
 
-	DEBUG("Setting watchdog timeout to %d sec.", count);
+	DEBUG("%s: setting timeout to %d sec.", dev->name, count);
 	if (ioctl(dev->fd, WDIOC_SETTIMEOUT, &arg))
 		return 1;
 
@@ -622,21 +622,21 @@ int wdt_init(uev_ctx_t *ctx, const char *devnode)
 
 		/* Set requested WDT timeout right before we enter the event loop. */
 		if (wdt_set_timeout(dev, dev->timeout))
-			PERROR("Failed setting watchdog %s timeout: %d", dev->name, dev->timeout);
+			PERROR("%s: failed setting timeout: %d", dev->name, dev->timeout);
 
 		/* Sanity check with driver that setting actually took. */
 		tmo = wdt_get_timeout(dev);
 		if (tmo < 0) {
 			dev->timeout = WDT_TIMEOUT_DEFAULT;
-			PERROR("Failed checking watchdog %s timeout, guessing default %d", dev->name, dev->timeout);
+			PERROR("%s: failed checking driver timeout, guessing default %d", dev->name, dev->timeout);
 		} else {
 			if (tmo != dev->timeout) {
-				ERROR("Watchdog %s timeout is %d, adjusting your setting.", dev->name, tmo);
+				ERROR("%s: timeout from driver %d, adjusting your setting.", dev->name, tmo);
 				dev->timeout = tmo;
 			}
 
 			if (tmo <= dev->interval) {
-				ERROR("Warning, watchdog %s timeout <= kick interval: %d <= %d", dev->name,
+				ERROR("%s: warning, timeout <= kick interval! (%d <= %d)", dev->name,
 				      tmo, dev->interval);
 			}
 		}
@@ -650,7 +650,7 @@ int wdt_init(uev_ctx_t *ctx, const char *devnode)
 
 		/* Calculate period (T) in milliseconds for libuEv */
 		T = dev->interval * 1000;
-		DEBUG("Watchdog device %s kick interval set to %d sec.", dev->name, dev->interval);
+		DEBUG("%s: kick interval set to %d sec.", dev->name, dev->interval);
 
 		/*
 		 * On SIGHUP this stops the current kick before re-init.
