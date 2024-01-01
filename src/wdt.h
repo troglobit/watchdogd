@@ -72,6 +72,24 @@
 #define INFO(fmt, args...)   syslog(LOG_INFO,    fmt, ##args)
 #define WARN(fmt, args...)   syslog(LOG_WARNING, fmt, ##args)
 
+struct wdt {
+	TAILQ_ENTRY(wdt) link;	/* BSD sys/queue.h linked list node. */
+
+	char *name;
+	int   fd;
+
+	int   timeout;
+	int   interval;
+	int   magic;
+
+	uev_ctx_t *ctx;
+	uev_t watcher;
+	int   dirty;		/* for mark & sweep */
+
+	struct watchdog_info info;
+	int   reset_cause;
+};
+
 /* Command line options */
 extern char *opt_config;
 extern int   opt_safe;
@@ -93,29 +111,31 @@ extern int   __wdt_testmode;
 extern unsigned int reset_counter;
 extern wdog_reason_t reset_reason;
 
-int wdt_init           (uev_ctx_t *ctx, const char *dev);
-int wdt_exit           (uev_ctx_t *ctx);
+void wdt_mark           (void);
+void wdt_sweep          (void);
+int  wdt_add            (const char *name, int interval, int timeout, int magic, int permanent);
 
-int wdt_open           (const char *dev);
-int wdt_close          (uev_ctx_t *ctx);
+int  wdt_init           (uev_ctx_t *ctx, const char *dev);
+int  wdt_exit           (uev_ctx_t *ctx);
+int  wdt_reboot         (uev_ctx_t *ctx);
 
-int wdt_capability     (uint32_t flag);
+int  wdt_open           (struct wdt *dev);
+int  wdt_close          (struct wdt *dev);
 
-int wdt_enable         (int enable);
-int wdt_debug          (int enable);
+int  wdt_capability     (struct wdt *dev, uint32_t flag);
 
-int wdt_kick           (const char *msg);
-int wdt_set_timeout    (int count);
-int wdt_get_timeout    (void);
+int  wdt_enable         (int enable);
+int  wdt_debug          (int enable);
 
-int wdt_reset          (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
-int wdt_forced_reset   (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
+int  wdt_kick           (struct wdt *dev, const char *msg);
+int  wdt_set_timeout    (struct wdt *dev, int count);
+int  wdt_get_timeout    (struct wdt *dev);
 
-int wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid);
-int wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid);
+int  wdt_reset          (uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout);
+int  wdt_forced_reset   (uev_ctx_t *ctx, pid_t pid, char *label, int timeout);
 
-int wdt_set_bootstatus (int timeout, int interval);
-int wdt_get_bootstatus (void);
+int  wdt_fload_reason   (FILE *fp, wdog_reason_t *r, pid_t *pid);
+int  wdt_fstore_reason  (FILE *fp, wdog_reason_t *r, pid_t  pid);
 
 static inline unsigned int wdt_reset_counter(void)
 {
@@ -130,6 +150,32 @@ static inline int wdt_testmode(void)
 	return 0;
 #endif
 }
+
+static inline const char *wdt_cause_str(int cause)
+{
+	const char *str = NULL;
+
+	if (cause & WDIOF_CARDRESET)
+		str = "WDIOF_CARDRESET";
+	if (cause & WDIOF_EXTERN1)
+		str = "WDIOF_EXTERN1";
+	if (cause & WDIOF_EXTERN2)
+		str = "WDIOF_EXTERN2";
+	if (cause & WDIOF_POWERUNDER)
+		str = "WDIOF_POWERUNDER";
+	if (cause & WDIOF_POWEROVER)
+		str = "WDIOF_POWEROVER";
+	if (cause & WDIOF_FANFAULT)
+		str = "WDIOF_FANFAULT";
+	if (cause & WDIOF_OVERHEAT)
+		str = "WDIOF_OVERHEAT";
+
+	if (!str)
+		str = "WDIOF_UNKNOWN";
+
+	return str;
+}
+
 
 #endif /* WDT_H_ */
 

@@ -62,11 +62,11 @@ static void exit_cb(uev_t *w, void *arg, int events)
 {
 	DEBUG("Got signal %d, rebooting:%d ...", w->signo, rebooting);
 	if (rebooting) {
-		wdt_exit(w->ctx);
+		wdt_reboot(w->ctx);
 		return;
 	}
 
-	wdt_close(w->ctx);
+	wdt_exit(w->ctx);
 }
 
 static void reboot_cb(uev_t *w, void *arg, int events)
@@ -75,7 +75,7 @@ static void reboot_cb(uev_t *w, void *arg, int events)
 
 	DEBUG("Got signal %d, rebooting:%d ...", w->signo, rebooting);
 	if (rebooting) {
-		wdt_exit(w->ctx);
+		wdt_reboot(w->ctx);
 		return;
 	}
 

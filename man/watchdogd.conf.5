@@ -23,10 +23,11 @@
 The default
 .Xr watchdogd 8
 use-case does not require a configuration file.  However, enabling a
-health monitor plugin or the process supervisor is done using
+health monitor plugin, the process supervisor, or multiple watchdog
+device nodes, is done using
 .Pa /etc/watchdogd.conf .
 .Pp
-Available monitor plugins are:
+Available health monitor plugins:
 .Bl -tag -width supervisor
 .It Cm supervisor
 Process supervisor, monitor the heartbeat of processes
@@ -78,6 +79,24 @@ script.sh {filenr, loadavg, meminfo} {crit, warn} VALUE
 .Ed
 .Pp
 Health monitor plugins also have their own local script setting.
+.It Cm device Ar /path/to/device Ar {}
+.Nm watchdogd
+supports kicking multiple watchdog devices.  By default, and with no
+command line arguemts,
+.Pa /dev/watchdog
+is used.  If that is your system, this section is not necessary.  This
+section is only useful if you want everything in the configuration file
+or have multiple watchdog devices.  See
+.Sx EXAMPLE
+section below.
+.Bl -tag -width TERM
+.It Cm timeout = Ar SEC
+Same as global option.
+.It Cm interval = Ar SEC
+Same as global option.
+.It Cm safe-exit = Ar true | false
+Same as global option.
+.El
 .It Cm reset-reason Ar {}
 This section controls the reset reason, including the reset counter.  By
 default this is disabled, since not all systems allow writing to disk,
@@ -429,17 +448,36 @@ active.  The format is not guaranteed to be stable between releases, but
 will most likely be anyway.  See
 .Ql /run/watchdogd/tempmon.json .
 .Sh EXAMPLE
-.Bd -unfilled -offset indent
+.Bd -unfilled
 ### /etc/watchdogd.conf
+
+### Watchdogs ##########################################################
+# Global settings that can be overridden per watchdog
 timeout   = 20
 interval  = 10
 safe-exit = false
 
+# Multiple watchdogs can be kicked, the default, even if no .conf file
+# is found or device node given on the command line, is /dev/watchdog
+device /dev/watchdog {
+    timeout    = 20
+    interval   = 10
+    safe-exit  = false
+}
+
+#device /dev/watchdog2 {
+#    timeout    = 20
+#    interval   = 10
+#    safe-exit  = false
+#}
+
+### Process Supervisor #################################################
 supervisor {
     enabled  = true
     priority = 98
 }
 
+### Reset Reason #######################################################
 reset-reason {
     enabled = true
     file    = "/var/lib/misc/watchdogd.state"

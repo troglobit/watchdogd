@@ -95,6 +95,26 @@ static int generic_checker(uev_ctx_t *ctx, cfg_t *cfg)
 }
 #endif
 
+static int wdt_checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect)
+{
+	unsigned int i;
+	int rc = 0;
+
+	for (i = 0; i < cfg_size(cfg, sect); i++) {
+		cfg_t *sec = cfg_getnsec(cfg, sect, i);
+		const char *name = cfg_title(sec);
+		int interval, timeout, safe;
+
+		interval = cfg_getint(sec, "interval");
+		timeout  = cfg_getint(sec, "timeout");
+		safe     = cfg_getbool(sec, "safe-exit");
+
+		rc += wdt_add(name, interval, timeout, safe, 0);
+	}
+
+	return rc;
+}
+
 static int validate_reset_reason(uev_ctx_t *ctx, cfg_t *cfg)
 {
 	if (!cfg)
@@ -189,6 +209,12 @@ static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 
 int conf_parse_file(uev_ctx_t *ctx, char *file)
 {
+	cfg_opt_t device_opts[] =  {
+		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
+		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
+		CFG_BOOL("safe-exit",   cfg_false, CFGF_NONE),
+		CFG_END()
+	};
 	cfg_opt_t supervisor_opts[] =  {
 		CFG_BOOL("enabled",  cfg_false, CFGF_NONE),
 		CFG_INT ("priority", 0, CFGF_NONE),
@@ -224,6 +250,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
 		CFG_BOOL("safe-exit",   cfg_false, CFGF_NONE),
+		CFG_SEC ("device",      device_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("supervisor",  supervisor_opts, CFGF_NONE),
 		CFG_SEC ("reset-cause", reset_reason_opts, CFGF_NONE), /* Compat only */
 		CFG_SEC ("reset-reason", reset_reason_opts, CFGF_NONE),
@@ -293,6 +320,10 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	if (!opt)
 		opt = cfg_getnsec(cfg, "reset-cause", 0); /* Compat only */
 	validate_reset_reason(ctx, opt);
+
+	wdt_mark();
+	wdt_checker(ctx, cfg, "device");
+	wdt_sweep();
 
 #ifdef FILENR_PLUGIN
 	checker(ctx, cfg, "filenr", filenr_init);
