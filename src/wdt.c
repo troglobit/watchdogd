@@ -107,10 +107,8 @@ void wdt_sweep(void)
 	struct wdt *dev, *tmp;
 
 	TAILQ_FOREACH_SAFE(dev, &devices, link, tmp) {
-		if (!dev->dirty)
+		if (dev->dirty != 1)
 			continue;
-		if (dev->dirty == -1)
-			continue; /* command line arg. */
 
 		TAILQ_REMOVE(&devices, dev, link);
 		wdt_close(dev);
