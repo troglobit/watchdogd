@@ -96,7 +96,6 @@ static void write_file(uev_t *w, void *arg, int events)
 		return;
 	}
 
-cont:
 	fprintf(fp, "[\n");
 	TAILQ_FOREACH(s, &sensors, link) {
 		fprintf(fp, "  {\n");
