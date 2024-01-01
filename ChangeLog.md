@@ -7,11 +7,23 @@ All notable changes to the project are documented in this file.
 [4.0][] - 2024-01-01
 --------------------
 
-> **Breaking change:** the `generic` script monitor has new syntax!
+> **Breaking change:** the `generic` script monitor has new syntax, the
+> status files have moved, and the format has changed.  Also, the
+> default value for `safe-exit` has been changed to `true`.
 
 ### Changes
-- A new file system monitor has been added: `fsmon /var { ... }`,
-  multiple `fsmon /path` monitors are possible
+- Support for multiple watchdog devices added, issue #26
+- The format of `watchdogctl status` and `/run/watchdogd/status` has
+  been changed to JSON and includes more information about the currently
+  running daemon and the capabilities of watchdog devices in use
+- The `configure --with-$MONITOR=SEC` flag has been changed to not
+  take an argument (this was never used).  To change the poll interval
+  of a system monitor, use the configuration file
+- A new file system monitor: `fsmon /var { ... }`, multiple monitors,
+  `fsmon /path`, are supported
+- A new temperature monitor: `tempmon /path/to/sensor {...}`.  It
+  supports multiple sensors, both thermal and hwmon type.  See the
+  documentation for details
 - The syntax for the generic monitor script has changed.  This is a
   breaking change, everyone must update.  New syntax:
 
