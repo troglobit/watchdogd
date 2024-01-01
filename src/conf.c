@@ -212,7 +212,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	cfg_opt_t device_opts[] =  {
 		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
-		CFG_BOOL("safe-exit",   cfg_false, CFGF_NONE),
+		CFG_BOOL("safe-exit",   cfg_true, CFGF_NONE),
 		CFG_END()
 	};
 	cfg_opt_t supervisor_opts[] =  {
@@ -249,7 +249,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 	cfg_opt_t opts[] = {
 		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
-		CFG_BOOL("safe-exit",   cfg_false, CFGF_NONE),
+		CFG_BOOL("safe-exit",   cfg_true, CFGF_NONE),
 		CFG_SEC ("device",      device_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("supervisor",  supervisor_opts, CFGF_NONE),
 		CFG_SEC ("reset-cause", reset_reason_opts, CFGF_NONE), /* Compat only */
