@@ -519,6 +519,7 @@ static int create_bootstatus(char *fn, wdog_reason_t *r, pid_t pid)
 		fprintf(fp, "      \"fw-version\": %u,\n", dev->info.firmware_version);
 		fprintf(fp, "      \"timeout\": %d,\n", dev->timeout);
 		fprintf(fp, "      \"interval\": %d,\n", dev->interval);
+		fprintf(fp, "      \"safe-exit\": %s,\n", (dev->safe-exit != 0) ? "true" : "false");
 		fprintf(fp, "      \"capabilities\": {\n");
 		fprintf(fp, "        \"mask\":\"0x%04x\",\n", dev->info.options);
 		fprintf(fp, "        \"flags\": [ %s ]\n", wdt_flags(dev->info.options, 1));
