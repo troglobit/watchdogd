@@ -22,8 +22,6 @@
 #include "rr.h"
 #include "supervisor.h"
 
-static uev_t timeout_watcher;
-
 /* Watchdogd reset reason as read at boot */
 wdog_reason_t reset_reason;
 wdog_code_t   reset_code    = WDOG_SYSTEM_OK;
@@ -734,6 +732,7 @@ static void reboot_timeout_cb(uev_t *w, void *arg, int events)
  */
 int wdt_reset(uev_ctx_t *ctx, pid_t pid, wdog_reason_t *reason, int timeout)
 {
+	static uev_t timeout_watcher;
 	static int in_progress = 0;
 
 	if (in_progress && is_finit_system()) {
