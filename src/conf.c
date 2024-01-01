@@ -43,13 +43,9 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 	for (i = 0; i < num; i++) {
 		cfg_t *sec = cfg_getnsec(cfg, sect, i);
 		const char *name = cfg_title(sec);
-		char arg[(name ? strlen(name) : 0) + 2];
 		int enabled, period, logmark;
 		float warn, crit;
 		char *script;
-
-		if (!sec)
-			continue;
 
 		enabled = cfg_getbool(sec, "enabled");
 		period  = cfg_getint(sec, "interval");
@@ -57,11 +53,6 @@ static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 		warn    = cfg_getfloat(sec, "warning");
 		crit    = cfg_getfloat(sec, "critical");
 		script  = cfg_getstr(sec, "script");
-
-		if (name)
-			snprintf(arg, sizeof(arg), " %s", name);
-		else
-			arg[0] = 0;
 
 		rc += init(ctx, name, enabled ? period : 0, logmark, warn, crit, script);
 	}
@@ -82,9 +73,6 @@ static int generic_checker(uev_ctx_t *ctx, cfg_t *cfg)
 		int warn_level, crit_level;
 		const char *monitor;
 		char *script;
-
-		if (!sec)
-			continue;
 
 		enabled    = cfg_getbool(sec, "enabled");
 		period     = cfg_getint(sec, "interval");
