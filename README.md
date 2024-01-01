@@ -39,6 +39,8 @@ operator or network management system (NMS).  This information can in
 turn can be used to put the system in an operational safe state, or
 non-operational safe state.
 
+> **News:** as of v4.0, multiple watchdog devices are supported.
+
 
 ### What is a watchdog timer?
 

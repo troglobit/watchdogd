@@ -31,8 +31,9 @@
 .Nm
 is an advanced system and process supervisor daemon, primarily intended
 for embedded Linux and server systems.  It can monitor critical system
-resources, supervise the heartbeat of processes and record deadline
-transgressions, and initiate a controlled reset if needed.
+resources, supervise the heartbeat of processes, record any deadline
+transgressions, and initiate a controlled reset if needed.  All while
+taking care of "kicking" one or more watchdog device nodes.
 .Pp
 Available system monitors, see
 .Xr watchdogd.conf 5
@@ -162,9 +163,9 @@ will also log to stderr, unless the user gives the
 .Fl -syslog
 option to force use of syslog.
 .Pp
-Use
+See
 .Xr watchdogd.conf 5
-and the command line tool
+for all available settings, and the command line tool
 .Xr watchdogctl 1
 to enable more features, query status, and control operation.
 .Sh SIGNALS
@@ -201,24 +202,29 @@ State pre boot, lists coming (re)boot reason.  Do not rely on the
 contents of this file, it is used by
 .Nm
 to maintain state across boots.  If you want the status and reset
-reason, read
-.Pa /run/watchdogd.status
-instead.
-.It Pa /run/watchdogd.pid
+reason of the last boot, read
+.Pa /run/watchdogd/status
+instead, or preferbly, use
+.Xr watchdogctl 1 .
+.It Pa /run/watchdogd/pid
 For convenience to other processes when sending signals.  Also a useful
 synchronization point, because the PID file is only created when
 .Nm
 is ready to receive signals and register processes with the process
-supervisor API
-.It Pa /run/watchdogd.status
-Current status, contains kernel WDT
+supervisor API.  Touched as a response to SIGHUP or
+.Cm reload
+command.
+.It Pa /run/watchdogd/status
+Current status, in JSON format, contains kernel WDT
 .Em reset cause ,
 .Nm
 timeout and period, and the
 .Em reset reason
 .Nm
-determined from this boot.
-.It Pa /run/watchdogd.sock
+determined from this boot.  Please note, output format has changed to
+JSON since v4.0.  It now shows all configured devices and their status,
+including capability flags.
+.It Pa /run/watchdogd/sock
 UNIX domain socket used by libwdog and
 .Nm watchdogctl
 to connect to

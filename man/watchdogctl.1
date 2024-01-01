@@ -127,7 +127,9 @@ argument does not have the same effect as in the
 .Cm reset
 command.
 .It Cm status
-Query status of daemon and show last reset reason, default command.
+Show daemon status and reason of last reset, default command.  Please
+note, output format has changed to JSON since v4.0.  It now shows all
+configured devices and their status, including capability flags.
 .It Cm test Op TEST
 Run built-in tests of process supervisor functionality in daemon.  These
 tests can be disabled at build time, so they may not be available in the
@@ -158,14 +160,18 @@ Verify unsubscribe with invalid ACK (reset)
 Show program version.
 .El
 .Sh FILES
-.Bl -tag -width /run/watchdogd.status -compact
+.Bl -tag -width /run/watchdogd/status -compact
 .It Pa /etc/watchdogd.conf
 Daemon configuration file. Read once when starting up and on SIGHUP or
 .Cm reload
 command.
-.It Pa /run/watchdogd.status
+.It Pa /run/watchdogd/pid
+Process ID.  Touched as a response to SIGHUP or
+.Cm reload
+command.
+.It Pa /run/watchdogd/status
 Read to present WDT status and reset reason
-.It Pa /run/watchdogd.sock
+.It Pa /run/watchdogd/sock
 Used to connect to
 .Nm watchdogd
 .El
