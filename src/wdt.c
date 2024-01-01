@@ -177,8 +177,10 @@ int wdt_add(const char *name, int interval, int timeout, int magic, int permanen
  */
 int wdt_open(struct wdt *dev)
 {
-	if (dev->fd >= 0)
-		return 0;
+	if (dev->fd >= 0) {
+		errno = EALREADY;
+		return 1;
+	}
 
 	dev->fd = open(dev->name, O_WRONLY);
 	if (dev->fd == -1) {
@@ -609,10 +611,10 @@ int wdt_init(uev_ctx_t *ctx, const char *devnode)
 	}
 
 	TAILQ_FOREACH(dev, &devices, link) {
-		int T, err, tmo;
+		int T, rc, tmo;
 
-		err = wdt_open(dev);
-		if (err)
+		rc = wdt_open(dev);
+		if (rc)
 			continue;
 
 		if (ctx)
