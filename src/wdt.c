@@ -593,18 +593,20 @@ static int save_bootstatus(void)
 
 int wdt_enable(int enable)
 {
+	const char *action = enable ? "Enabling" : "Disabling";
 	int result = 0;
 
 	if (enabled == enable)
 		return 0;	/* Hello?  Yes, this is dog */
 
 	/* Stop/Start process supervisor */
-	DEBUG("%sabling supervisor ...", enable ? "En" : "Dis");
-	result += supervisor_enable(enable);
-	if (!result)
+	DEBUG("%s supervisor ...", action);
+	if (supervisor_enable(enable))
+		result++;
+	else
 		enabled = enable;
 
-	DEBUG("%sabling watchdogd ...", enable ? "En" : "Dis");
+	DEBUG("%s watchdogd ...", action);
 	if (!enable) {
 		struct wdt *dev;
 
@@ -614,13 +616,16 @@ int wdt_enable(int enable)
 				continue;
 
 			if (!wdt_capability(dev, WDIOF_MAGICCLOSE)) {
-				INFO("WDT cannot be disabled, continuing ...");
+				LOG("%s: cannot be disabled, continuing ...", dev->name);
 				continue;
 			}
 
-			INFO("Attempting to disable HW watchdog timer.");
-			if (-1 == write(dev->fd, "V", 1))
-				PERROR("Failed disabling HW watchdog, system will likely reboot now ...");
+			LOG("%s: attempting to disable HW watchdog timer.", dev->name);
+			if (-1 == write(dev->fd, "V", 1)) {
+				PERROR("%s: failed disabling, attempting to recover ...", dev->name);
+				result++;
+				continue;
+			}
 
 			close(dev->fd);
 			dev->fd = -1;
