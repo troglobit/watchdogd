@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 
 		case 't':	/* Watchdog kick interval */
 			if (!optarg) {
-				ERROR("Missing interval argument.");
+				fprintf(stderr, "Missing interval argument.\n");
 				return usage(1);
 			}
 			opt_interval = atoi(optarg);
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 
 		case 'T':	/* Watchdog timeout */
 			if (!optarg) {
-				ERROR("Missing timeout argument.");
+				fprintf(stderr, "Missing timeout argument.\n");
 				return usage(1);
 			}
 			opt_timeout = atoi(optarg);
@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
 			break;
 
 		default:
-			ERROR("Unrecognized option '-%c'.\n", optopt);
+			fprintf(stderr, "Unrecognized option '-%c'.\n", optopt);
 			return usage(1);
 		}
 	}
