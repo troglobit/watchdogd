@@ -657,8 +657,11 @@ int wdt_init(uev_ctx_t *ctx, const char *name)
 
 	if (name) {
 		/* Check if already in .conf file */
-		if (!find(name))
+		if (!find(name)) {
+			DEBUG("Adding command line device %s, interval %d, timeout %d, safe-exit %d",
+			      name, period, timeout, magic);
 			wdt_add(name, period, timeout, magic, 1);
+		}
 	}
 
 	TAILQ_FOREACH(dev, &devices, link) {
@@ -694,6 +697,7 @@ int wdt_init(uev_ctx_t *ctx, const char *name)
 
 		/* If user did not provide '-t' interval, set to half WDT timeout */
 		if (!dev->interval) {
+			DEBUG("Missing interval, calculating: %d / 2", dev->timeout);
 			dev->interval = dev->timeout / 2;
 			if (!dev->interval)
 				dev->interval = 1;
