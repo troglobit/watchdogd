@@ -656,18 +656,9 @@ int wdt_init(uev_ctx_t *ctx, const char *name)
 		return 0;
 
 	if (name) {
-		char devnode[256];
-
-		/* Sanity check device name */
-		strlcpy(devnode, name, sizeof(devnode));
-		if (strncmp(devnode, _PATH_DEV, strlen(_PATH_DEV)) || strstr(devnode, ".."))
-			goto skip;
-
 		/* Check if already in .conf file */
-		dev = find(devnode);
-		if (!dev)
-			wdt_add(devnode, period, timeout, magic, 1);
-	skip:
+		if (!find(name))
+			wdt_add(name, period, timeout, magic, 1);
 	}
 
 	TAILQ_FOREACH(dev, &devices, link) {

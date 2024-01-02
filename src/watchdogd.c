@@ -192,11 +192,7 @@ extern int __wdog_loglevel(char *level);
 
 int main(int argc, char *argv[])
 {
-	int background = 1;
-	int use_syslog = 1;
-	int c, status;
 	int log_opts = LOG_NDELAY | LOG_NOWAIT | LOG_PID;
-	char *dev = NULL;
 	struct option long_options[] = {
 		{"config",        1, 0, 'f'},
 		{"foreground",    0, 0, 'n'},
@@ -212,6 +208,11 @@ int main(int argc, char *argv[])
 		{"timeout",       1, 0, 'T'},
 		{NULL, 0, 0, 0}
 	};
+	int background = 1;
+	int use_syslog = 1;
+	char devnode[256];
+	char *dev = NULL;
+	int c, status;
 	uev_ctx_t ctx;
 
 	prognm = progname(argv[0]);
@@ -280,8 +281,21 @@ int main(int argc, char *argv[])
 	uev_init(&ctx);
 
 	/* BusyBox watchdogd compat. */
-	if (optind < argc)
-		dev = argv[optind];
+	if (optind < argc) {
+		strlcpy(devnode, argv[optind], sizeof(devnode));
+
+		/* Sanity check device name */
+		if (strncmp(devnode, _PATH_DEV, strlen(_PATH_DEV)) || strstr(devnode, "..")) {
+			fprintf(stderr, "Invalid watchdog device: %s\n", devnode);
+			return 1;
+		}
+		if (!fexist(devnode)) {
+			fprintf(stderr, "Cannot find watchdog device: %s\n", devnode);
+			return 1;
+		}
+
+		dev = devnode;
+	}
 
 	/* Check for command line options */
 	if (!opt_config) {
