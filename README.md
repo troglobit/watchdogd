@@ -71,11 +71,11 @@ monitor other aspects of the system ...
 
 ### What can watchdogd do?
 
-Without arguments `watchdogd` runs in the background, monitoring the
-CPU, and as long as there is CPU time it "kicks" the WDT chip (via the
-driver).  If `watchdogd` is stopped, or does not get enough CPU time to
-run, the WDT will detect this and reboot the system.  This is the normal
-mode of operation.
+Without arguments `watchdogd` runs in the background, monitoring the CPU
+and as long as there is CPU time it "kicks" `/dev/watchdog` every 10
+seconds.  If the daemon is stopped, or does not get enough CPU time to
+run, the underlying WDT hardware will detect this and reboot the system.
+This is the normal mode of operation.
 
 With a few lines in [watchdogd.conf(5)][], it can also monitor other
 aspects of the system, such as:
