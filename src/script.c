@@ -1,6 +1,6 @@
 /* Run script as monitor plugin callback
  *
- * Copyright (c) 2017-2023  Joachim Wiberg <troglobit@gmail.com>
+ * Copyright (c) 2017-2024  Joachim Wiberg <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

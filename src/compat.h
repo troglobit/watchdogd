@@ -1,6 +1,6 @@
 /* Customer compatibility wrapper API
  *
- * Copyright (c) 2016-2023  Joachim Wiberg <joachim.nilsson@westermo.se>
+ * Copyright (c) 2016-2024  Joachim Wiberg <joachim.nilsson@westermo.se>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
