@@ -4,12 +4,12 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[4.0][] - 2024-01-01
+[4.0][] - 2024-01-04
 --------------------
 
-> **Breaking change:** the `generic` script monitor has new syntax, the
+> **Breaking changes:** the `generic` script monitor has new syntax, the
 > status files have moved, and the format has changed.  Also, the
-> default value for `safe-exit` has been changed to `true`.
+> default value for `safe-exit` in the .conf file has been changed.
 
 ### Changes
 - Support for multiple watchdog devices added, issue #26
@@ -302,7 +302,7 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/3.5..HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/4.0..HEAD
 [4.0]:        https://github.com/troglobit/watchdogd/compare/3.5...4.0
 [3.5]:        https://github.com/troglobit/watchdogd/compare/3.4...3.5
 [3.4]:        https://github.com/troglobit/watchdogd/compare/3.3...3.4
