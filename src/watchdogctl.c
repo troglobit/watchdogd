@@ -92,6 +92,11 @@ static int do_enable(char *arg)
 	return result;
 }
 
+static int do_list_clients(char *arg)
+{
+	return wdog_list_clients();
+}
+
 static int parse_code(char *arg)
 {
 	const char *errstr;
@@ -403,6 +408,7 @@ static int usage(int code)
 		"\n"
 	       "  disable              Disable watchdog\n"
 	       "  enable               Re-enable watchdog\n"
+	       "  list-clients         List subscribed clients\n"
 		"\n"
 #ifdef TEST_MODE
 	       "  test    [TEST]       Run process supervisor built-in test, see below\n"
@@ -449,6 +455,7 @@ int main(int argc, char *argv[])
 		{ "counter",           do_counter,   NULL },
 		{ "disable",           do_enable,    "0"  },
 		{ "enable",            do_enable,    "1"  },
+		{ "list-clients",      do_list_clients, NULL},
 		{ "help",              show_usage,   NULL },
 		{ "debug",             do_debug,     NULL },
 		{ "loglevel",          set_loglevel, NULL },

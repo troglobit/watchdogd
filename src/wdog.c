@@ -218,6 +218,11 @@ int wdog_kick2(int id, unsigned int *ack)
 	return doit(WDOG_KICK_CMD, id, NULL, 0, ack);
 }
 
+int wdog_list_clients(void)
+{
+	return doit(WDOG_LIST_SUPV_CLIENTS_CMD, 0, NULL, 0, NULL);
+}
+
 int wdog_unsubscribe(int id, unsigned int ack)
 {
 	return doit(WDOG_UNSUBSCRIBE_CMD, id, NULL, 0, &ack);
