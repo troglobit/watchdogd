@@ -35,7 +35,7 @@ deadline transgressions, and initiates a controlled reset if needed.
 When a system starts up, `watchdogd` determines the reset cause by
 querying the kernel.  In case of system reset, and not power loss, the
 reset reason is available already in a file for later analysis by an
-operator or network management system (NMS).  This information can in
+operator or network management system (NMS).  This information in
 turn can be used to put the system in an operational safe state, or
 non-operational safe state.
 
