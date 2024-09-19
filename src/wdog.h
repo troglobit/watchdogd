@@ -234,6 +234,15 @@ int wdog_extend_kick(int id, unsigned int timeout, unsigned int *ack);
  */
 int wdog_kick2(int id, unsigned int *ack);
 
+/**
+ * List currently subscribed clients
+ *
+ * Output will be shown in the logs.
+ *
+ * @return 0 on success, negative on error (also sets @p errno)
+ */
+int wdog_list_clients(void);
+
 /*
  * Compatibility wrapper layer
  */

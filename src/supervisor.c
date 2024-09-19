@@ -16,6 +16,7 @@
  */
 
 #include <sched.h>
+#include <sys/timerfd.h>
 #include "wdt.h"
 #include "private.h"
 #include "rr.h"
@@ -294,6 +295,7 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 {
 	struct supervisor *p;
 	wdog_reason_t *reason;
+	size_t i;
 
 	if (!supervisor_enabled)
 		return 1;
@@ -397,6 +399,24 @@ int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)
 		if (reset_reason_clear(NULL)) {
 			req->cmd   = WDOG_CMD_ERROR;
 			req->error = errno;
+		}
+		break;
+
+	case WDOG_LIST_SUPV_CLIENTS_CMD:
+		LOG("Subscribed clients:");
+		for (i = 0; i < NELEMS(process); i++) {
+			if (process[i].id != -1) {
+				struct itimerspec time_left;
+				int ret = timerfd_gettime(process[i].watcher.fd, &time_left);
+				LOG("process: %d, id: %d, pid: %d, label: %s, timeout: %dms, time-left: %lldms", 
+					i,
+					process[i].id, 
+					process[i].pid,
+					process[i].label,
+					process[i].timeout,
+					ret ? 0 : 
+					(time_left.it_value.tv_sec * 1000 + time_left.it_value.tv_nsec / 1000000));
+			}
 		}
 		break;
 
