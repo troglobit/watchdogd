@@ -16,6 +16,7 @@
  */
 
 #include <errno.h>
+#include <stdbool.h>		/* bool type (before C23) */
 #include <stdlib.h>		/* setenv() */
 #include <sys/wait.h>		/* waitpid() */
 #include <unistd.h>		/* execv(), _exit() */
@@ -28,6 +29,7 @@
 struct exec_info {
 	pid_t   pid;
 	int     exit_status;
+	bool    exited;
 	void  (*cb)(void *arg);
 	void   *arg;
 	LIST_ENTRY(exec_info) entry;
@@ -64,6 +66,8 @@ static void add(pid_t pid, void (*cb)(void *), void *arg)
 	}
 
 	info->pid = pid;
+	info->exit_status = 0;
+	info->exited = false;
 	info->cb  = cb;
 	info->arg = arg;
 	LIST_INSERT_HEAD(&exec_info_head, info, entry);
@@ -78,6 +82,7 @@ static int exec(pid_t pid, int status)
 			continue;
 
 		info->exit_status = status;
+		info->exited = true;
 		if (info->cb)
 			info->cb(info->arg);
 
@@ -96,9 +101,11 @@ int script_exit_status(pid_t pid)
 		if (info->pid != pid)
 			continue;
 
-		status = info->exit_status;
-		LIST_REMOVE(info, entry);
-		free(info);
+		if (info->exited) {
+			status = info->exit_status;
+			LIST_REMOVE(info, entry);
+			free(info);
+		}
 		break;
 	}
 
