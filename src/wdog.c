@@ -37,12 +37,12 @@ static int api_init(void)
 	sun.sun_family = AF_UNIX;
 	snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_SUPERVISOR_PATH);
 	if (access(sun.sun_path, F_OK)) {
-#ifdef TESTMODE_DISABLED
-		return -1;
-#else
+#ifdef TEST_MODE
 		snprintf(sun.sun_path, sizeof(sun.sun_path), "%s", WDOG_SUPERVISOR_TEST);
 		if (access(sun.sun_path, F_OK))
 			return -1;
+#else
+		return -1;
 #endif
 	}
 

@@ -39,7 +39,7 @@ int rebooting = 0;
 int wait_reboot = 0;
 char  *prognm = NULL;
 
-#ifndef TESTMODE_DISABLED
+#ifdef TEST_MODE
 int __wdt_testmode = 0;
 #endif
 
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 		{"loglevel",      1, 0, 'l'},
 		{"safe-exit",     0, 0, 'x'},
 		{"syslog",        0, 0, 's'},
-#ifndef TESTMODE_DISABLED
+#ifdef TEST_MODE
 		{"test-mode",     0, 0, 'S'}, /* Hidden test mode, not for public use. */
 #endif
 		{"version",       0, 0, 'V'},
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 			use_syslog++;
 			break;
 
-#ifndef TESTMODE_DISABLED
+#ifdef TEST_MODE
 		case 'S':	/* Simulate: no interaction with kernel, for testing supervisor */
 			__wdt_testmode = 1;
 			break;

@@ -105,7 +105,7 @@ extern int   timeout;
 extern int   rebooting;
 extern int   wait_reboot;
 extern char *__progname;
-#ifndef TESTMODE_DISABLED
+#ifdef TEST_MODE
 extern int   __wdt_testmode;
 #endif
 extern unsigned int reset_counter;
@@ -144,7 +144,7 @@ static inline unsigned int wdt_reset_counter(void)
 
 static inline int wdt_testmode(void)
 {
-#ifndef TESTMODE_DISABLED
+#ifdef TEST_MODE
 	return __wdt_testmode;
 #else
 	return 0;

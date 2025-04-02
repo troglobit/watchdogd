@@ -48,7 +48,7 @@ static wdog_code_t code = WDOG_FAILED_TO_MEET_DEADLINE;
 static pid_t pid = 0;
 static int verbose = 0;
 
-#ifndef SUPERVISOR_TESTS_DISABLED
+#ifdef TEST_MODE
 static int count = 1;
 static int tmo   = 2000;	/* At least 2 sec timeout! */
 static int false_ack = 0;
@@ -57,7 +57,7 @@ static int disable_enable = 0;
 static int no_kick = 0;
 static int failed_kick = 0;
 static int premature = 0;
-#endif /* SUPERVISOR_TESTS_DISABLED */
+#endif
 
 
 static int do_clear(char *arg)
@@ -222,7 +222,7 @@ static int show_version(char *arg)
 	return 0;
 }
 
-#ifndef SUPERVISOR_TESTS_DISABLED
+#ifdef TEST_MODE
 static int testit(void)
 {
 	int id;
@@ -369,7 +369,7 @@ static int run_test(char *arg)
 
 	return -1;
 }
-#endif /* SUPERVISOR_TESTS_DISABLED */
+#endif
 
 static int usage(int code)
 {
@@ -404,7 +404,7 @@ static int usage(int code)
 	       "  disable              Disable watchdog\n"
 	       "  enable               Re-enable watchdog\n"
 		"\n"
-#ifndef SUPERVISOR_TESTS_DISABLED
+#ifdef TEST_MODE
 	       "  test    [TEST]       Run process supervisor built-in test, see below\n"
 	       "\n"
 	       "Tests:\n"
@@ -418,7 +418,7 @@ static int usage(int code)
 #endif
 	       "____\n"
 	       "*  default log level\n"
-#ifndef SUPERVISOR_TESTS_DISABLED
+#ifdef TEST_MODE
 	       "** default test\n"
 #endif
 	       "\n", __progname);
@@ -458,7 +458,7 @@ int main(int argc, char *argv[])
 		{ "force-reset",       do_reset,     NULL },
 		{ "reload",            do_reload,    NULL },
 		{ "status",            show_status,  NULL },
-#ifndef SUPERVISOR_TESTS_DISABLED
+#ifdef TEST_MODE
 		{ "test",              run_test,     NULL },
 #endif
 		{ "version",           show_version, NULL },
