@@ -32,7 +32,6 @@
 .Op reset Oo MSEC Oc Oo MSG Oc
 .Op fail Oo MSEC Oc Oo MSG Oc
 .Op status
-.Op test Op TEST
 .Sh DESCRIPTION
 .Nm
 provides a safe way of querying status and controlling 
@@ -130,32 +129,6 @@ command.
 Show daemon status and reason of last reset, default command.  Please
 note, output format has changed to JSON since v4.0.  It now shows all
 configured devices and their status, including capability flags.
-.It Cm test Op TEST
-Run built-in tests of process supervisor functionality in daemon.  These
-tests can be disabled at build time, so they may not be available in the
-installed
-.Nm .
-The default test, if none is selected, runs the complete cycle.  You may
-want to run these tests with the
-.Fl -verbose
-option to enable output.
-.Pp
-.Bl -tag -width false-unsubscribe -compact -offset indent
-.It Cm complete-cycle
-Verify subscribe, kick, and unsubscribe (no reset)
-.It Cm disable-enable
-Verify WDT disable, and re-enable (no reset)
-.It Cm premature-trigger
-Verify no premature trigger before unsubscribe (no reset)
-.It Cm no-kick
-Verify reset on missing first kick (reset)
-.It Cm false-ack
-Verify reset on invalid ACK in first kick (reset)
-.It Cm failed-kick
-Verify reset on invalid ACK in second kick (reset)
-.It Cm false-unsubscribe
-Verify unsubscribe with invalid ACK (reset)
-.El
 .It Cm version
 Show program version.
 .El

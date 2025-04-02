@@ -46,12 +46,6 @@ AC_ARG_ENABLE([examples],
 	[AS_HELP_STRING([--enable-examples], [Build process supervisor client examples])],,
 	[enable_examples=no])
 
-AC_ARG_ENABLE(test-mode,
-        AS_HELP_STRING([--disable-test-mode], [Disable test mode]))
-
-AC_ARG_ENABLE(builtin-tests,
-        AS_HELP_STRING([--disable-builtin-tests], [Disable process supervisor built-in tests]))
-
 AC_ARG_WITH([filenr],
 	AS_HELP_STRING([--with-filenr], [Enable file descriptor leak monitor]),
 	[with_filenr=$withval], [with_filenr=no])
@@ -106,12 +100,6 @@ AS_IF([test "x$with_tempmon" != "xno"], [
 AS_IF([test "x$with_generic" != "xno"], [
 	with_generic=yes
 	AC_DEFINE_UNQUOTED(GENERIC_PLUGIN, $with_generic, [Enable generic script monitor])])
-
-AS_IF([test "x$enable_test_mode" != "xno"], enable_test_mode="yes",[
-	AC_DEFINE(TESTMODE_DISABLED,  1, [Disable test mode])])
-
-AS_IF([test "x$enable_builtin_tests" != "xno"], enable_builtin_tests="yes",[
-	AC_DEFINE(SUPERVISOR_TESTS_DISABLED,  1, [Disable process supervisor tests in watchdogctl])])
 
 # Check where to install the systemd .service file
 AS_IF([test "x$with_systemd" = "xyes" -o "x$with_systemd" = "xauto"], [
@@ -169,8 +157,6 @@ cat <<EOF
  Optional features:
   compat mode.........: $enable_compat
   client examples.....: $enable_examples
-  test mode...........: $enable_test_mode
-  built-in tests......: $enable_builtin_tests
   systemd.............: $with_systemd
 
  System monitors:
