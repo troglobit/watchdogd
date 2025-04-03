@@ -104,6 +104,7 @@ static void cmd(uev_t *w, void *arg, int events)
 	case WDOG_RESET_REASON_RAW_CMD:
 	case WDOG_CLEAR_REASON_CMD:
 	case WDOG_FAILED_SYSTEMOK_CMD...WDOG_FAILED_OVERLOAD_CMD:
+	case WDOG_LIST_SUPV_CLIENTS_CMD:
 		DEBUG("Delegating %d to supervisor", req.cmd);
 		if (supervisor_cmd(w->ctx, &req)) {
 			req.cmd = WDOG_CMD_ERROR;
