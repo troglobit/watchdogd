@@ -23,6 +23,7 @@ jobs:
     env:
       MAKEFLAGS: -j3
       CC: ${{ matrix.compiler }}
+      CPPFLAGS: -DTEST_MODE
     steps:
       - name: Install dependencies
         run: |
@@ -36,7 +37,8 @@ jobs:
         # root dropped and wants to write .trs and .log files.
         run: |
           ./autogen.sh
-          ./configure --prefix=/tmp/wdog --sysconfdir=/etc --localstatedir=/var --enable-examples
+          ./configure --prefix=/tmp/wdog --sysconfdir=/etc \
+                      --localstatedir=/var --enable-examples
       - name: Build
         run: |
           make V=1 distcheck
