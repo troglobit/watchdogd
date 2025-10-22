@@ -339,6 +339,8 @@ void tempmon_sweep(void)
 		TAILQ_REMOVE(&sensors, sensor, link);
 		uev_timer_stop(&sensor->watcher);
 		free(sensor->temp);
+		if (sensor->exec)
+			free(sensor->exec);
 		free(sensor);
 	}
 

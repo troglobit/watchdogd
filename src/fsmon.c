@@ -122,6 +122,8 @@ void fsmon_sweep(void)
 		TAILQ_REMOVE(&fs, f, link);
 		uev_timer_stop(&f->watcher);
 		free(f->name);
+		if (f->exec)
+			free(f->exec);
 		free(f);
 	}
 
