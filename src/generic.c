@@ -210,6 +210,7 @@ int generic_init(uev_ctx_t *ctx, const char *monitor, int T, int timeout, int wa
 	if (script)
 		g->exec = strdup(script);
 
+	uev_timer_stop(&g->script_watcher);
 	uev_timer_stop(&g->watcher);
 
 	return uev_timer_init(ctx, &g->watcher, cb, g, T * 1000, T * 1000);
