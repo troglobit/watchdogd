@@ -220,7 +220,57 @@ int wdog_kick2(int id, unsigned int *ack)
 
 int wdog_list_clients(void)
 {
-	return doit(WDOG_LIST_SUPV_CLIENTS_CMD, 0, NULL, 0, NULL);
+	wdog_t req = {
+		.cmd = WDOG_LIST_SUPV_CLIENTS_CMD,
+		.pid = getpid(),
+	};
+	int sd, count = 0;
+
+	sd = api_init();
+	if (-1 == sd) {
+		if (errno == ENOENT)
+			errno = EAGAIN;
+		return -errno;
+	}
+
+	/* Send request */
+	if (api_poll(sd, POLLOUT)) {
+		if (write(sd, &req, sizeof(req)) != sizeof(req))
+			goto error;
+	} else
+		goto error;
+
+	/* Read and print multiple responses */
+	while (1) {
+		ssize_t bytes;
+
+		if (!api_poll(sd, POLLIN))
+			break;
+
+		bytes = read(sd, &req, sizeof(req));
+		if (bytes <= 0)
+			break;
+
+		if (bytes != sizeof(req))
+			goto error;
+
+		if (req.cmd == WDOG_CMD_ERROR) {
+			errno = req.error;
+			goto error;
+		}
+
+		/* Print client info to stdout */
+		printf("id: %-3d pid: %-6d timeout: %-6ums time-left: %-6ums  %s\n",
+		       req.id, req.pid, req.timeout, req.next_ack, req.label);
+		count++;
+	}
+
+	close(sd);
+	return count;
+
+error:
+	close(sd);
+	return -errno;
 }
 
 int wdog_unsubscribe(int id, unsigned int ack)

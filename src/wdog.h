@@ -237,9 +237,10 @@ int wdog_kick2(int id, unsigned int *ack);
 /**
  * List currently subscribed clients
  *
- * Output will be shown in the logs.
+ * Prints one line per subscribed client to stdout, showing the client's
+ * ID, PID, timeout, time remaining, and label.
  *
- * @return 0 on success, negative on error (also sets @p errno)
+ * @return Number of clients listed on success, negative on error (also sets @p errno)
  */
 int wdog_list_clients(void);
 

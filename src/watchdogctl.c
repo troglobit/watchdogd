@@ -94,7 +94,18 @@ static int do_enable(char *arg)
 
 static int do_list_clients(char *arg)
 {
-	return wdog_list_clients();
+	int count;
+
+	count = wdog_list_clients();
+	if (count < 0) {
+		perror("Failed to list clients");
+		return 1;
+	}
+
+	if (count == 0)
+		printf("No subscribed clients.\n");
+
+	return 0;
 }
 
 static int parse_code(char *arg)
