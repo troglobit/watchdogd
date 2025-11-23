@@ -16,6 +16,7 @@
  */
 
 #include <sched.h>
+#include <sys/timerfd.h>
 #include "wdt.h"
 #include "private.h"
 #include "rr.h"
@@ -288,6 +289,53 @@ static void timeout_cb(uev_t *w, void *arg, int events)
 	struct supervisor *p = (struct supervisor *)arg;
 
 	action(w->ctx, p, WDOG_FAILED_TO_MEET_DEADLINE, 0);
+}
+
+/*
+ * Send list of subscribed clients via socket
+ *
+ * Sends one wdog_t struct per subscribed client. The client reads
+ * multiple responses until the connection closes.
+ *
+ * Returns: 0 on success, -1 on error
+ */
+int supervisor_list_clients(int sd)
+{
+	wdog_t resp;
+	size_t i;
+	int count = 0;
+
+	if (!supervisor_enabled)
+		return -1;
+
+	for (i = 0; i < NELEMS(process); i++) {
+		if (process[i].id == -1)
+			continue;
+
+		memset(&resp, 0, sizeof(resp));
+		resp.cmd = WDOG_LIST_SUPV_CLIENTS_CMD;
+		resp.id = process[i].id;
+		resp.pid = process[i].pid;
+		resp.timeout = process[i].timeout;
+		strlcpy(resp.label, process[i].label, sizeof(resp.label));
+
+		/* Get time left from timerfd */
+		struct itimerspec time_left;
+		if (timerfd_gettime(process[i].watcher.fd, &time_left) == 0) {
+			long long ms = time_left.it_value.tv_sec * 1000 +
+				       time_left.it_value.tv_nsec / 1000000;
+			resp.next_ack = (unsigned int)ms;
+		} else {
+			resp.next_ack = 0;
+		}
+
+		if (write(sd, &resp, sizeof(resp)) != sizeof(resp))
+			return -1;
+
+		count++;
+	}
+
+	return count;
 }
 
 int supervisor_cmd(uev_ctx_t *ctx, wdog_t *req)

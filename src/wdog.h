@@ -68,6 +68,16 @@ typedef struct
 	struct tm     date;      /**< Recorded time of reset */
 } wdog_reason_t;
 
+/** Subscribed client data */
+typedef struct
+{
+	int           id;        /**< Client ID */
+	pid_t         pid;       /**< Process ID */
+	char          label[48]; /**< Process name or label */
+	unsigned int  timeout;   /**< Timeout in milliseconds */
+	unsigned int  time_left; /**< Time left until timeout in milliseconds */
+} wdog_client_t;
+
 /** @privatesection */
 
 /*
@@ -233,6 +243,36 @@ int wdog_extend_kick(int id, unsigned int timeout, unsigned int *ack);
  * @return 0 on success, negative on error (also sets @p errno)
  */
 int wdog_kick2(int id, unsigned int *ack);
+
+/**
+ * Get list of currently subscribed clients
+ *
+ * Returns an array of subscribed clients. The caller must free the returned
+ * array using free() when done.
+ *
+ * Example usage:
+ * @code
+ *   wdog_client_t *clients = NULL;
+ *   int count = wdog_clients(&clients);
+ *
+ *   if (count < 0) {
+ *       perror("Failed to get clients");
+ *       return -1;
+ *   }
+ *
+ *   for (int i = 0; i < count; i++) {
+ *       printf("Client %d: %s (PID %d)\n",
+ *              clients[i].id, clients[i].label, clients[i].pid);
+ *   }
+ *
+ *   free(clients);
+ * @endcode
+ *
+ * @param clients  Pointer to receive allocated array of client data
+ *
+ * @return Number of clients on success, negative on error (also sets @p errno)
+ */
+int wdog_clients(wdog_client_t **clients);
 
 /*
  * Compatibility wrapper layer

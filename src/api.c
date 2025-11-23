@@ -20,6 +20,7 @@
 #include <sys/un.h>
 #include "wdt.h"
 #include "conf.h"
+#include "supervisor.h"
 
 static int     sd = -1;
 static uev_t   watcher;
@@ -55,6 +56,19 @@ static void cmd(uev_t *w, void *arg, int events)
 	/* Make sure to terminate string, needed below. */
 	req.label[sizeof(req.label) - 1] = 0;
 	DEBUG("cmd %d", req.cmd);
+
+	/* Special handling for list clients - sends multiple responses */
+	if (req.cmd == WDOG_LIST_SUPV_CLIENTS_CMD) {
+		if (supervisor_list_clients(sd) < 0) {
+			req.cmd = WDOG_CMD_ERROR;
+			req.error = EOPNOTSUPP;
+			if (write(sd, &req, sizeof(req)) != sizeof(req))
+				WARN("Failed sending error reply");
+		}
+		shutdown(sd, SHUT_RDWR);
+		close(sd);
+		return;
+	}
 
 	switch (req.cmd) {
 	case WDOG_ENABLE_CMD:

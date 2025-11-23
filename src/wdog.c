@@ -218,6 +218,85 @@ int wdog_kick2(int id, unsigned int *ack)
 	return doit(WDOG_KICK_CMD, id, NULL, 0, ack);
 }
 
+int wdog_clients(wdog_client_t **clients)
+{
+	wdog_t req = {
+		.cmd = WDOG_LIST_SUPV_CLIENTS_CMD,
+		.pid = getpid(),
+	};
+	wdog_client_t *list = NULL;
+	size_t capacity = 0;
+	int sd, count = 0;
+
+	if (!clients) {
+		errno = EINVAL;
+		return -errno;
+	}
+
+	*clients = NULL;
+
+	sd = api_init();
+	if (-1 == sd) {
+		if (errno == ENOENT)
+			errno = EAGAIN;
+		return -errno;
+	}
+
+	/* Send request */
+	if (api_poll(sd, POLLOUT)) {
+		if (write(sd, &req, sizeof(req)) != sizeof(req))
+			goto error;
+	} else
+		goto error;
+
+	/* Read and collect multiple responses */
+	while (1) {
+		ssize_t bytes;
+
+		if (!api_poll(sd, POLLIN))
+			break;
+
+		bytes = read(sd, &req, sizeof(req));
+		if (bytes <= 0)
+			break;
+
+		if (bytes != sizeof(req))
+			goto error;
+
+		if (req.cmd == WDOG_CMD_ERROR) {
+			errno = req.error;
+			goto error;
+		}
+
+		/* Expand array if needed */
+		if ((size_t)count >= capacity) {
+			size_t new_capacity = capacity == 0 ? 4 : capacity * 2;
+			wdog_client_t *new_list = realloc(list, new_capacity * sizeof(wdog_client_t));
+			if (!new_list)
+				goto error;
+			list = new_list;
+			capacity = new_capacity;
+		}
+
+		/* Store client data */
+		list[count].id = req.id;
+		list[count].pid = req.pid;
+		list[count].timeout = req.timeout;
+		list[count].time_left = req.next_ack;
+		strlcpy(list[count].label, req.label, sizeof(list[count].label));
+		count++;
+	}
+
+	close(sd);
+	*clients = list;
+	return count;
+
+error:
+	close(sd);
+	free(list);
+	return -errno;
+}
+
 int wdog_unsubscribe(int id, unsigned int ack)
 {
 	return doit(WDOG_UNSUBSCRIBE_CMD, id, NULL, 0, &ack);

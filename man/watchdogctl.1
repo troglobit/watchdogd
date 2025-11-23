@@ -13,7 +13,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd Dec 20, 2023
+.Dd Nov 23, 2025
 .Dt WATCHDOGCTL 1 SMM
 .Os
 .Sh NAME
@@ -21,13 +21,14 @@
 .Nd Status and control tool for watchdogd
 .Sh SYNOPSIS
 .Nm
-.Op Fl hvV
+.Op Fl hjvV
 .Op Fl c Ar CODE
 .Op Fl p Ar PID
 .Op clear
 .Op disable | enable
 .Op debug
 .Op loglevel Ar LEVEL
+.Op list-clients
 .Op reload
 .Op reset Oo MSEC Oc Oo MSG Oc
 .Op fail Oo MSEC Oc Oo MSG Oc
@@ -68,6 +69,9 @@ Codes can also be listed at runtime with:
 .Fl c Ar help
 .It Fl h, -help
 Show help message.
+.It Fl j, -json
+Output in JSON format for supported commands.  Currently supported by
+.Cm list-clients .
 .It Fl p, -pid Ar PID
 PID to use for fail and reset command.
 .It Fl v, -verbose
@@ -94,6 +98,12 @@ Adjust daemon log level: none, err, warn,
 info, debug.
 .\" Change daemon log level, see also
 .\" .Cm debug .
+.It Cm list-clients
+List currently subscribed clients to the process supervisor.  Shows each
+client's ID, name (label), process ID, configured timeout, and time
+remaining until timeout.  Use the
+.Fl j, -json
+option for JSON output suitable for scripting and monitoring.
 .It Cm reload
 Reload daemon configuration file, like sending SIGHUP, but the command
 does not return until

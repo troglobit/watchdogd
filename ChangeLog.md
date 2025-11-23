@@ -4,6 +4,20 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
+[UNRELEASED][]
+--------------
+
+### Changes
+- Add `watchdogctl list-clients` command to display currently subscribed
+  clients to the process supervisor.  Outputs to stdout in either table
+  format (default) with colored headers, or JSON format with `-j/--json`
+- New global `-j, --json` option for machine-readable output, currently
+  supported by `list-clients` command
+- New API: `wdog_clients()` returns array of `wdog_client_t` structs for
+  programmatic access to subscribed clients.  See API documentation at
+  <https://codedocs.xyz/troglobit/watchdogd/wdog_8h.html>
+
+
 [4.0][] - 2024-01-04
 --------------------
 

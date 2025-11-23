@@ -47,6 +47,7 @@ extern char *__progname;
 static wdog_code_t code = WDOG_FAILED_TO_MEET_DEADLINE;
 static pid_t pid = 0;
 static int verbose = 0;
+static int json = 0;
 
 #ifdef TEST_MODE
 static int count = 1;
@@ -90,6 +91,58 @@ static int do_enable(char *arg)
 	}
 
 	return result;
+}
+
+static int do_list_clients(char *arg)
+{
+	wdog_client_t *clients = NULL;
+	int count, i;
+
+	(void)arg;  /* Unused */
+
+	count = wdog_clients(&clients);
+	if (count < 0) {
+		perror("Failed to get clients");
+		return 1;
+	}
+
+	/* Handle empty list */
+	if (count == 0) {
+		if (json)
+			printf("[]\n");
+		else
+			printf("No subscribed clients.\n");
+		return 0;
+	}
+
+	/* JSON format */
+	if (json) {
+		printf("[\n");
+		for (i = 0; i < count; i++) {
+			if (i > 0)
+				printf(",\n");
+			printf("  {\n");
+			printf("    \"id\": %d,\n", clients[i].id);
+			printf("    \"pid\": %d,\n", clients[i].pid);
+			printf("    \"label\": \"%s\",\n", clients[i].label);
+			printf("    \"timeout\": %u,\n", clients[i].timeout);
+			printf("    \"time_left\": %u\n", clients[i].time_left);
+			printf("  }");
+		}
+		printf("\n]\n");
+	}
+	/* Table format */
+	else {
+		printf("\033[7mID   NAME                   PID         TIMEOUT   TIME-LEFT\033[0m\n");
+		for (i = 0; i < count; i++) {
+			printf("%-4d %-20s %9d %8u ms %8u ms\n",
+			       clients[i].id, clients[i].label, clients[i].pid,
+			       clients[i].timeout, clients[i].time_left);
+		}
+	}
+
+	free(clients);
+	return 0;
 }
 
 static int parse_code(char *arg)
@@ -379,6 +432,7 @@ static int usage(int code)
 	       "Options:\n"
 	       "  -h, --help           Display this help text and exit\n"
 	       "  -c, --code=CODE      Reset reason code for fail command, -c help list codes\n"
+	       "  -j, --json           JSON output format for supported commands\n"
 	       "  -p, --pid=PID        PID to use for fail and reset command\n"
 	       "  -v, --verbose        Verbose output, otherwise commands are silent\n"
 	       "  -V, --version        Show program version\n"
@@ -403,6 +457,7 @@ static int usage(int code)
 		"\n"
 	       "  disable              Disable watchdog\n"
 	       "  enable               Re-enable watchdog\n"
+	       "  list-clients         List subscribed clients\n"
 		"\n"
 #ifdef TEST_MODE
 	       "  test    [TEST]       Run process supervisor built-in test, see below\n"
@@ -439,6 +494,7 @@ int main(int argc, char *argv[])
 		{ "cause",             1, 0, 1000 },
 		{ "code",              1, 0, 'c'  },
 		{ "help",              0, 0, 'h'  },
+		{ "json",              0, 0, 'j'  },
 		{ "pid",               1, 0, 'p'  },
 		{ "verbose",           0, 0, 'v'  },
 		{ "version",           0, 0, 'V'  },
@@ -449,6 +505,7 @@ int main(int argc, char *argv[])
 		{ "counter",           do_counter,   NULL },
 		{ "disable",           do_enable,    "0"  },
 		{ "enable",            do_enable,    "1"  },
+		{ "list-clients",      do_list_clients, NULL},
 		{ "help",              show_usage,   NULL },
 		{ "debug",             do_debug,     NULL },
 		{ "loglevel",          set_loglevel, NULL },
@@ -465,7 +522,7 @@ int main(int argc, char *argv[])
 		{ NULL,                NULL,         NULL }
 	};
 
-	while ((c = getopt_long(argc, argv, "c:hp:Vv" OPT_T, long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "c:hjp:Vv" OPT_T, long_options, NULL)) != EOF) {
 		switch (c) {
 		case 1000:
 			warnx("Deprecated option --cause, replaced with --code");
@@ -476,6 +533,10 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			return usage(0);
+
+		case 'j':
+			json = 1;
+			break;
 
 		case 'p':
 			pid = atoi(optarg);
