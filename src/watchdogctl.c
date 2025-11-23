@@ -247,20 +247,216 @@ static int set_loglevel(char *arg)
 	return result;
 }
 
+/* Simple helper to extract a string value from JSON */
+static char *extract_string(const char *haystack, const char *needle, char *buf, size_t len)
+{
+	char *start, *end;
+	size_t n;
+
+	start = strstr(haystack, needle);
+	if (!start)
+		return NULL;
+
+	/* Find the colon after the key */
+	start = strchr(start, ':');
+	if (!start)
+		return NULL;
+
+	/* Skip whitespace and find opening quote of value */
+	start++;
+	while (*start == ' ' || *start == '\t' || *start == '\n')
+		start++;
+
+	if (*start != '"')
+		return NULL;
+	start++; /* skip opening quote */
+
+	/* Find closing quote */
+	end = strchr(start, '"');
+	if (!end)
+		return NULL;
+
+	n = end - start;
+	if (n >= len)
+		n = len - 1;
+
+	memcpy(buf, start, n);
+	buf[n] = 0;
+
+	return buf;
+}
+
+/* Simple helper to extract an integer value from JSON */
+static int extract_int(const char *haystack, const char *needle, int *val)
+{
+	char *start;
+
+	start = strstr(haystack, needle);
+	if (!start)
+		return -1;
+
+	start = strchr(start, ':');
+	if (!start)
+		return -1;
+
+	if (sscanf(start + 1, "%d", val) != 1)
+		return -1;
+
+	return 0;
+}
+
+/* Simple helper to extract a boolean value from JSON */
+static int extract_bool(const char *haystack, const char *needle, int *val)
+{
+	char *start;
+
+	start = strstr(haystack, needle);
+	if (!start)
+		return -1;
+
+	start = strchr(start, ':');
+	if (!start)
+		return -1;
+
+	/* Skip whitespace */
+	start++;
+	while (*start == ' ' || *start == '\t')
+		start++;
+
+	if (strncmp(start, "true", 4) == 0)
+		*val = 1;
+	else if (strncmp(start, "false", 5) == 0)
+		*val = 0;
+	else
+		return -1;
+
+	return 0;
+}
+
 static int show_status(char *arg)
 {
 	FILE *fp;
+	char *content = NULL;
+	size_t size = 0;
+	ssize_t len;
+	const char *status_path;
 
-	fp = fopen(WDOG_STATUS, "r");
-	if (fp) {
-		char buf[80];
+#ifdef TEST_MODE
+	/* Try test path first, fall back to normal path */
+	status_path = WDOG_STATUS_TEST;
+	fp = fopen(status_path, "r");
+	if (!fp) {
+		status_path = WDOG_STATUS;
+		fp = fopen(status_path, "r");
+	}
+#else
+	status_path = WDOG_STATUS;
+	fp = fopen(status_path, "r");
+#endif
 
-		while (fgets(buf, sizeof(buf), fp))
-			fputs(buf, stdout);
+	if (!fp)
+		return 0;
 
+	/* Read entire file into memory for parsing */
+	fseek(fp, 0, SEEK_END);
+	size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+
+	content = malloc(size + 1);
+	if (!content) {
 		fclose(fp);
+		return 1;
 	}
 
+	len = fread(content, 1, size, fp);
+	fclose(fp);
+
+	if (len < 0) {
+		free(content);
+		return 1;
+	}
+	content[len] = 0;
+
+	/* If JSON mode, output raw content */
+	if (json) {
+		fputs(content, stdout);
+		free(content);
+		return 0;
+	}
+
+	/* Parse and format output */
+	char name[64] = "", identity[64] = "", reason[64] = "", label[64] = "", date[64] = "";
+	char cap_flags[256] = "", reset_flags[256] = "";
+	int timeout = 0, interval = 0, safe_exit = 0, reset_code = 0, reset_count = 0;
+	int pid = 0;
+
+	/* Extract device info */
+	extract_string(content, "\"name\"", name, sizeof(name));
+	extract_string(content, "\"identity\"", identity, sizeof(identity));
+	extract_int(content, "\"timeout\"", &timeout);
+	extract_int(content, "\"interval\"", &interval);
+	extract_bool(content, "\"safe-exit\"", &safe_exit);
+
+	/* Extract capability flags */
+	extract_string(content, "\"capabilities\"", cap_flags, sizeof(cap_flags));
+	if (cap_flags[0]) {
+		/* Find the flags array within capabilities */
+		char *flags_start = strstr(content, "\"capabilities\"");
+		if (flags_start) {
+			flags_start = strstr(flags_start, "\"flags\"");
+			if (flags_start) {
+				extract_string(flags_start, "\"flags\"", cap_flags, sizeof(cap_flags));
+			}
+		}
+	}
+
+	/* Extract reset-cause flags */
+	char *reset_cause_start = strstr(content, "\"reset-cause\"");
+	if (reset_cause_start) {
+		char *flags_start = strstr(reset_cause_start, "\"flags\"");
+		if (flags_start) {
+			extract_string(flags_start, "\"flags\"", reset_flags, sizeof(reset_flags));
+		}
+	}
+
+	/* Extract supervisor-reset info */
+	extract_int(content, "\"supervisor-reset\"", &reset_code); /* This won't work, need to find code inside */
+	char *supv = strstr(content, "\"supervisor-reset\"");
+	if (supv) {
+		extract_int(supv, "\"code\"", &reset_code);
+		extract_string(supv, "\"reason\"", reason, sizeof(reason));
+		extract_int(supv, "\"count\"", &reset_count);
+		extract_string(supv, "\"date\"", date, sizeof(date));
+		extract_int(supv, "\"pid\"", &pid); /* optional */
+		extract_string(supv, "\"label\"", label, sizeof(label)); /* optional */
+	}
+
+	/* Display formatted output */
+	printf("\033[7mWatchdog Status\033[0m\n");
+	printf("Device         : %s\n", name[0] ? name : "N/A");
+	printf("Identity       : %s\n", identity[0] ? identity : "N/A");
+	printf("Timeout        : %d sec\n", timeout);
+	printf("Interval       : %d sec\n", interval);
+	printf("Safe Exit      : %s\n", safe_exit ? "yes" : "no");
+
+	if (cap_flags[0] && cap_flags[0] != '{') {
+		printf("Capabilities   : %s\n", cap_flags);
+	}
+
+	printf("\n\033[7mLast Reset\033[0m\n");
+	printf("Reason         : %s\n", reason[0] ? reason : "None");
+	printf("Count          : %d\n", reset_count);
+	if (date[0])
+		printf("Date           : %s\n", date);
+	if (pid)
+		printf("Process ID     : %d\n", pid);
+	if (label[0])
+		printf("Process Label  : %s\n", label);
+	if (reset_flags[0] && reset_flags[0] != '{') {
+		printf("Reset Cause    : %s\n", reset_flags);
+	}
+
+	free(content);
 	return 0;
 }
 

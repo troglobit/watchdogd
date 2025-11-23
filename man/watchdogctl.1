@@ -71,7 +71,9 @@ Codes can also be listed at runtime with:
 Show help message.
 .It Fl j, -json
 Output in JSON format for supported commands.  Currently supported by
-.Cm list-clients .
+.Cm list-clients
+and
+.Cm status .
 .It Fl p, -pid Ar PID
 PID to use for fail and reset command.
 .It Fl v, -verbose
@@ -136,9 +138,12 @@ argument does not have the same effect as in the
 .Cm reset
 command.
 .It Cm status
-Show daemon status and reason of last reset, default command.  Please
-note, output format has changed to JSON since v4.0.  It now shows all
-configured devices and their status, including capability flags.
+Show daemon status and reason of last reset, default command.  Displays
+device information, capabilities, and reset history in a formatted table.
+Use the
+.Fl j, -json
+option to output raw JSON format.  The JSON output shows all configured
+devices and their status, including capability flags.
 .It Cm version
 Show program version.
 .El
