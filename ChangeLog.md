@@ -4,8 +4,8 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
-[4.1][UNRELEASED]
---------------
+[4.1][] - 2025-11-23
+--------------------
 
 ### Changes
 
@@ -20,6 +20,19 @@ All notable changes to the project are documented in this file.
 - Enhance `watchdogctl status` command to display formatted output by
   default, with device information, capabilities, and reset history in
   a human-readable table format.  Use `-j/--json` for JSON output
+
+### Fixes
+
+- Fix #48: generic scripts running more than 1 second would fail with
+  false "critical error" reports and cause unwanted system reboots due
+  to uninitialized exit status variable.  Found and fixed by Fiona Klute
+- Fix #55: `watchdogctl reload` with tempmon crashes watchdogd
+- Fix #56: issue causing unwanted reboot when `watchdogctl reload` was
+  called while a generic monitor script was running.  The script_watcher
+  timer was not stopped during reload, leading to an invalid PID (-1)
+  being used, which triggered a system reset
+- Fix memory leak in generic monitor with optional script path, would
+  be triggered on `watchdogctl reload`
 
 
 [4.0][] - 2024-01-04
@@ -320,7 +333,7 @@ base in preparation for the upcoming v2.0 release, which will add
 support for process monitoring with an instrumentation API.
 
 
-[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/4.0..HEAD
+[UNRELEASED]: https://github.com/troglobit/watchdogd/compare/4.1..HEAD
 [4.1]:        https://github.com/troglobit/watchdogd/compare/4.0...4.1
 [4.0]:        https://github.com/troglobit/watchdogd/compare/3.5...4.0
 [3.5]:        https://github.com/troglobit/watchdogd/compare/3.4...3.5
