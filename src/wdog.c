@@ -218,13 +218,22 @@ int wdog_kick2(int id, unsigned int *ack)
 	return doit(WDOG_KICK_CMD, id, NULL, 0, ack);
 }
 
-int wdog_list_clients(int json)
+int wdog_clients(wdog_client_t **clients)
 {
 	wdog_t req = {
 		.cmd = WDOG_LIST_SUPV_CLIENTS_CMD,
 		.pid = getpid(),
 	};
+	wdog_client_t *list = NULL;
+	size_t capacity = 0;
 	int sd, count = 0;
+
+	if (!clients) {
+		errno = EINVAL;
+		return -errno;
+	}
+
+	*clients = NULL;
 
 	sd = api_init();
 	if (-1 == sd) {
@@ -240,11 +249,7 @@ int wdog_list_clients(int json)
 	} else
 		goto error;
 
-	/* Print JSON array opening bracket */
-	if (json)
-		printf("[\n");
-
-	/* Read and print multiple responses */
+	/* Read and collect multiple responses */
 	while (1) {
 		ssize_t bytes;
 
@@ -263,38 +268,32 @@ int wdog_list_clients(int json)
 			goto error;
 		}
 
-		/* Print table header before first row */
-		if (!json && count == 0) {
-			printf("\033[7mID   NAME                   PID         TIMEOUT   TIME-LEFT\033[0m\n");
+		/* Expand array if needed */
+		if ((size_t)count >= capacity) {
+			size_t new_capacity = capacity == 0 ? 4 : capacity * 2;
+			wdog_client_t *new_list = realloc(list, new_capacity * sizeof(wdog_client_t));
+			if (!new_list)
+				goto error;
+			list = new_list;
+			capacity = new_capacity;
 		}
 
-		/* Print client info to stdout */
-		if (json) {
-			if (count > 0)
-				printf(",\n");
-			printf("  {\n");
-			printf("    \"id\": %d,\n", req.id);
-			printf("    \"pid\": %d,\n", req.pid);
-			printf("    \"label\": \"%s\",\n", req.label);
-			printf("    \"timeout\": %u,\n", req.timeout);
-			printf("    \"time_left\": %u\n", req.next_ack);
-			printf("  }");
-		} else {
-			printf("%-4d %-20s %9d %8u ms %8u ms\n",
-			       req.id, req.label, req.pid, req.timeout, req.next_ack);
-		}
+		/* Store client data */
+		list[count].id = req.id;
+		list[count].pid = req.pid;
+		list[count].timeout = req.timeout;
+		list[count].time_left = req.next_ack;
+		strlcpy(list[count].label, req.label, sizeof(list[count].label));
 		count++;
 	}
 
-	/* Print JSON array closing bracket */
-	if (json)
-		printf("\n]\n");
-
 	close(sd);
+	*clients = list;
 	return count;
 
 error:
 	close(sd);
+	free(list);
 	return -errno;
 }
 

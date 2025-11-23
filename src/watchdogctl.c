@@ -95,21 +95,53 @@ static int do_enable(char *arg)
 
 static int do_list_clients(char *arg)
 {
-	int count;
+	wdog_client_t *clients = NULL;
+	int count, i;
 
 	(void)arg;  /* Unused */
 
-	count = wdog_list_clients(json);
+	count = wdog_clients(&clients);
 	if (count < 0) {
-		perror("Failed to list clients");
+		perror("Failed to get clients");
 		return 1;
 	}
 
-	if (count == 0 && !json)
-		printf("No subscribed clients.\n");
-	else if (count == 0 && json)
-		printf("[]\n");
+	/* Handle empty list */
+	if (count == 0) {
+		if (json)
+			printf("[]\n");
+		else
+			printf("No subscribed clients.\n");
+		return 0;
+	}
 
+	/* JSON format */
+	if (json) {
+		printf("[\n");
+		for (i = 0; i < count; i++) {
+			if (i > 0)
+				printf(",\n");
+			printf("  {\n");
+			printf("    \"id\": %d,\n", clients[i].id);
+			printf("    \"pid\": %d,\n", clients[i].pid);
+			printf("    \"label\": \"%s\",\n", clients[i].label);
+			printf("    \"timeout\": %u,\n", clients[i].timeout);
+			printf("    \"time_left\": %u\n", clients[i].time_left);
+			printf("  }");
+		}
+		printf("\n]\n");
+	}
+	/* Table format */
+	else {
+		printf("\033[7mID   NAME                   PID         TIMEOUT   TIME-LEFT\033[0m\n");
+		for (i = 0; i < count; i++) {
+			printf("%-4d %-20s %9d %8u ms %8u ms\n",
+			       clients[i].id, clients[i].label, clients[i].pid,
+			       clients[i].timeout, clients[i].time_left);
+		}
+	}
+
+	free(clients);
 	return 0;
 }
 
