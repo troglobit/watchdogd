@@ -237,12 +237,15 @@ int wdog_kick2(int id, unsigned int *ack);
 /**
  * List currently subscribed clients
  *
- * Prints one line per subscribed client to stdout, showing the client's
- * ID, PID, timeout, time remaining, and label.
+ * Prints subscribed clients to stdout. Format can be either table (0) or JSON (1).
+ * Table format shows one line per client with ID, PID, timeout, time remaining, and label.
+ * JSON format outputs a JSON array of client objects.
+ *
+ * @param json  0 for table format, non-zero for JSON format
  *
  * @return Number of clients listed on success, negative on error (also sets @p errno)
  */
-int wdog_list_clients(void);
+int wdog_list_clients(int json);
 
 /*
  * Compatibility wrapper layer

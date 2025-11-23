@@ -218,7 +218,7 @@ int wdog_kick2(int id, unsigned int *ack)
 	return doit(WDOG_KICK_CMD, id, NULL, 0, ack);
 }
 
-int wdog_list_clients(void)
+int wdog_list_clients(int json)
 {
 	wdog_t req = {
 		.cmd = WDOG_LIST_SUPV_CLIENTS_CMD,
@@ -240,6 +240,10 @@ int wdog_list_clients(void)
 	} else
 		goto error;
 
+	/* Print JSON array opening bracket */
+	if (json)
+		printf("[\n");
+
 	/* Read and print multiple responses */
 	while (1) {
 		ssize_t bytes;
@@ -259,11 +263,32 @@ int wdog_list_clients(void)
 			goto error;
 		}
 
+		/* Print table header before first row */
+		if (!json && count == 0) {
+			printf("\033[7mID   NAME                   PID         TIMEOUT   TIME-LEFT\033[0m\n");
+		}
+
 		/* Print client info to stdout */
-		printf("id: %-3d pid: %-6d timeout: %-6ums time-left: %-6ums  %s\n",
-		       req.id, req.pid, req.timeout, req.next_ack, req.label);
+		if (json) {
+			if (count > 0)
+				printf(",\n");
+			printf("  {\n");
+			printf("    \"id\": %d,\n", req.id);
+			printf("    \"pid\": %d,\n", req.pid);
+			printf("    \"label\": \"%s\",\n", req.label);
+			printf("    \"timeout\": %u,\n", req.timeout);
+			printf("    \"time_left\": %u\n", req.next_ack);
+			printf("  }");
+		} else {
+			printf("%-4d %-20s %9d %8u ms %8u ms\n",
+			       req.id, req.label, req.pid, req.timeout, req.next_ack);
+		}
 		count++;
 	}
+
+	/* Print JSON array closing bracket */
+	if (json)
+		printf("\n]\n");
 
 	close(sd);
 	return count;

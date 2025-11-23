@@ -47,6 +47,7 @@ extern char *__progname;
 static wdog_code_t code = WDOG_FAILED_TO_MEET_DEADLINE;
 static pid_t pid = 0;
 static int verbose = 0;
+static int json = 0;
 
 #ifdef TEST_MODE
 static int count = 1;
@@ -96,14 +97,18 @@ static int do_list_clients(char *arg)
 {
 	int count;
 
-	count = wdog_list_clients();
+	(void)arg;  /* Unused */
+
+	count = wdog_list_clients(json);
 	if (count < 0) {
 		perror("Failed to list clients");
 		return 1;
 	}
 
-	if (count == 0)
+	if (count == 0 && !json)
 		printf("No subscribed clients.\n");
+	else if (count == 0 && json)
+		printf("[]\n");
 
 	return 0;
 }
@@ -395,6 +400,7 @@ static int usage(int code)
 	       "Options:\n"
 	       "  -h, --help           Display this help text and exit\n"
 	       "  -c, --code=CODE      Reset reason code for fail command, -c help list codes\n"
+	       "  -j, --json           JSON output format for supported commands\n"
 	       "  -p, --pid=PID        PID to use for fail and reset command\n"
 	       "  -v, --verbose        Verbose output, otherwise commands are silent\n"
 	       "  -V, --version        Show program version\n"
@@ -456,6 +462,7 @@ int main(int argc, char *argv[])
 		{ "cause",             1, 0, 1000 },
 		{ "code",              1, 0, 'c'  },
 		{ "help",              0, 0, 'h'  },
+		{ "json",              0, 0, 'j'  },
 		{ "pid",               1, 0, 'p'  },
 		{ "verbose",           0, 0, 'v'  },
 		{ "version",           0, 0, 'V'  },
@@ -483,7 +490,7 @@ int main(int argc, char *argv[])
 		{ NULL,                NULL,         NULL }
 	};
 
-	while ((c = getopt_long(argc, argv, "c:hp:Vv" OPT_T, long_options, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "c:hjp:Vv" OPT_T, long_options, NULL)) != EOF) {
 		switch (c) {
 		case 1000:
 			warnx("Deprecated option --cause, replaced with --code");
@@ -494,6 +501,10 @@ int main(int argc, char *argv[])
 
 		case 'h':
 			return usage(0);
+
+		case 'j':
+			json = 1;
+			break;
 
 		case 'p':
 			pid = atoi(optarg);
