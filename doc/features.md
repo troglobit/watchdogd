@@ -51,7 +51,7 @@ System load average that can be monitored with:
 loadavg {
     enabled  = true
     interval = 300       # Every 5 mins
-	logmark  = true
+    logmark  = true
     warning  = 1.5
     critical = 2.0
 }
@@ -71,7 +71,7 @@ The memory leak detector, a value of 1.0 means 100% memory use:
 meminfo {
     enabled  = true
     interval = 3600       # Every hour
-	logmark  = true
+    logmark  = true
     warning  = 0.9
     critical = 0.95
 }
@@ -89,7 +89,7 @@ File descriptor leak detector:
 filenr {
     enabled  = true
     interval = 3600       # Every hour
-	logmark  = true
+    logmark  = true
     warning  = 0.8
     critical = 0.95
 }
@@ -109,7 +109,7 @@ monitor `/var` every five minutes.
 fsmon /var {
     enabled  = true
     interval = 300       # Every five minutes
-	logmark  = true
+    logmark  = true
     warning  = 0.8
     critical = 0.95
 }
