@@ -32,7 +32,7 @@ static inline int wdog_debug(int enable)
 	return wdog_set_debug(enable);
 }
 
-static inline void wdog_forced_reset(char *label)
+static inline void wdog_forced_reset(const char *label)
 {
 	if (!label || !label[0])
 		label = "XBAD_LABEL";
@@ -74,7 +74,7 @@ static inline int wdog_pmon_ping(void)
 }
 
 /* Returns ID or -errno */
-static inline int wdog_pmon_subscribe(char *label, int timeout, int *ack)
+static inline int wdog_pmon_subscribe(const char *label, int timeout, int *ack)
 {
 	return wdog_subscribe(label, (unsigned int)timeout, (unsigned int *)ack);
 }

@@ -79,7 +79,7 @@ int wdog_ping        (void);
 /*
  * Register/unregister with process supervisor
  */
-int wdog_subscribe   (char *label, unsigned int timeout, unsigned int *ack);
+int wdog_subscribe   (const char *label, unsigned int timeout, unsigned int *ack);
 int wdog_unsubscribe (int id, unsigned int ack);
 int wdog_kick        (int id, unsigned int timeout, unsigned int ack, unsigned int *next_ack);
 int wdog_kick2       (int id, unsigned int *ack);

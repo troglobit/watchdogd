@@ -90,10 +90,10 @@ int   wdog_reload           (void);
 int   wdog_enable           (int enable);   /* Attempt to temp. disable */
 int   wdog_status           (int *status);  /* Check if enabled */
 
-int   wdog_failed           (wdog_code_t code, int pid, char *label, unsigned int timeout);
+int   wdog_failed           (wdog_code_t code, int pid, const char *label, unsigned int timeout);
 
-int   wdog_reset            (int pid, char *label);
-int   wdog_reset_timeout    (int pid, char *label, unsigned int timeout);
+int   wdog_reset            (int pid, const char *label);
+int   wdog_reset_timeout    (int pid, const char *label, unsigned int timeout);
 
 /** @publicsection */
 
@@ -116,7 +116,7 @@ int wdog_get_debug(int *status);
  * @param level one of: none, err, info, notice, debug
  * @return POSIX OK(0) on success, non-zero on error.
  */
-int wdog_set_loglevel(char *level);
+int wdog_set_loglevel(const char *level);
 
 /**
  * Get daemon log level.
@@ -190,7 +190,7 @@ int wdog_reset_reason_clr(void);
  * @param[out] next_ack out-parameter - the value must be passed to next API call
  * @return ID on success, negative on error (also sets @p errno)
  */
-int wdog_subscribe(char *label, unsigned int timeout, unsigned int *next_ack);
+int wdog_subscribe(const char *label, unsigned int timeout, unsigned int *next_ack);
 
 /**
  * Stop supervising a subscriber

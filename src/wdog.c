@@ -111,7 +111,7 @@ error:
 	return 1;
 }
 
-static int doit(int cmd, int id, char *label, unsigned int timeout, unsigned int *ack)
+static int doit(int cmd, int id, const char *label, unsigned int timeout, unsigned int *ack)
 {
 	wdog_t req = {
 		.cmd     = cmd,
@@ -192,7 +192,7 @@ error:
 	return -errno;
 }
 
-int wdog_subscribe(char *label, unsigned int timeout, unsigned int *ack)
+int wdog_subscribe(const char *label, unsigned int timeout, unsigned int *ack)
 {
 	return doit(WDOG_SUBSCRIBE_CMD, -1, label, timeout, ack);
 }
@@ -312,7 +312,7 @@ int wdog_get_debug(int *status)
 	return doit(WDOG_GET_DEBUG_CMD, 0, NULL, 0, (unsigned int *)status);
 }
 
-int __wdog_loglevel(char *level)
+int __wdog_loglevel(const char *level)
 {
 	for (int i = 0; prioritynames[i].c_name; i++) {
 		if (string_match(prioritynames[i].c_name, level))
@@ -332,7 +332,7 @@ const char *__wdog_levellog(int log)
 	return NULL;
 }
 
-int wdog_set_loglevel(char *level)
+int wdog_set_loglevel(const char *level)
 {
 	int val;
 
@@ -363,12 +363,12 @@ int wdog_status(int *status)
 	return doit(WDOG_STATUS_CMD, 0, NULL, 0, (unsigned int *)status);
 }
 
-int wdog_failed(wdog_code_t code, int pid, char *label, unsigned int timeout)
+int wdog_failed(wdog_code_t code, int pid, const char *label, unsigned int timeout)
 {
 	return doit(code + WDOG_FAILED_BASE_CMD, pid, label, timeout, NULL);
 }
 
-int wdog_reset(pid_t pid, char *label)
+int wdog_reset(pid_t pid, const char *label)
 {
 	return doit(WDOG_RESET_CMD, pid, label, 0, NULL);
 }
@@ -391,7 +391,7 @@ int wdog_reset(pid_t pid, char *label)
  * the WDT.  If SIGTERM is received within timeout no warning is sent to
  * the log and watchdogd simply exits, pending for WDT reset.
  */
-int wdog_reset_timeout(pid_t pid, char *label, unsigned int timeout)
+int wdog_reset_timeout(pid_t pid, const char *label, unsigned int timeout)
 {
 	return doit(WDOG_RESET_CMD, pid, label, timeout, NULL);
 }

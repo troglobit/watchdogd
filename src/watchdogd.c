@@ -188,7 +188,7 @@ int wdt_debug(int enable)
 	return 0;
 }
 
-extern int __wdog_loglevel(char *level);
+extern int __wdog_loglevel(const char *level);
 
 int main(int argc, char *argv[])
 {
