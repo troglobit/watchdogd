@@ -57,7 +57,7 @@ jobs:
         run: |
           ./autogen.sh
           ./configure --with-generic --with-loadavg --with-filenr --with-fsmon \
-                      --with-meminfo --enable-examples --enable-compat
+                      --with-meminfo --with-pressure --enable-examples --enable-compat
       - name: Build
         run: |
           export PATH=`pwd`/coverity/bin:$PATH

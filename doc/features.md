@@ -81,6 +81,33 @@ The syslog output looks like this:
 
     watchdogd[2323]: Meminfo: 59452 kB, cached: 23912 kB, total: 234108 kB
 
+### Memory Pressure
+
+On Linux kernels with Pressure Stall Information (PSI) enabled, the memory
+pressure monitor reads `/proc/pressure/memory`.  `some` measures time when at
+least one task is stalled; `full` measures time when all non-idle tasks are
+stalled and is a useful signal for thrashing.  The `warning` and `critical`
+values use the same 0.0--1.0 percentage convention as the other monitors.
+
+The default scope is `full` and the default window is `avg10`:
+
+```
+pressure {
+    enabled  = true
+    interval = 60
+    logmark  = true
+    scope    = "full"    # "some" or "full"
+    window   = "avg10"   # "avg10", "avg60", or "avg300"
+    warning  = 0.10      # 0.10 percent
+    critical = 1.00      # 1.00 percent
+}
+```
+
+If the kernel does not expose the PSI file, the monitor logs the read error
+and skips that poll; it does not treat a missing metric as a critical event.
+As with every monitor, validate thresholds on the target workload before
+enabling a critical action.
+
 ### File Descriptor Usage
 
 File descriptor leak detector:

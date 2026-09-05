@@ -26,6 +26,9 @@ endif
 if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c
 endif
+if PRESSURE_PLUGIN
+watchdogd_SOURCES  += pressure.c pressure-parser.c pressure-parser.h
+endif
 if TEMPMON_PLUGIN
 watchdogd_SOURCES  += tempmon.c
 endif
@@ -48,3 +51,8 @@ libwdog_la_SOURCES  = wdog.c	wdog.h  compat.h
 libwdog_la_CFLAGS   = $(lite_CFLAGS) $(AM_CFLAGS)
 libwdog_la_LDFLAGS  = -version-info 3:0:0
 
+check_PROGRAMS      = pressure-test
+pressure_test_SOURCES = pressure-test.c pressure-parser.c pressure-parser.h
+pressure_test_CPPFLAGS = -D_GNU_SOURCE
+pressure_test_CFLAGS = $(AM_CFLAGS)
+TESTS               = $(check_PROGRAMS)
