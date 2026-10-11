@@ -95,6 +95,32 @@ static int generic_checker(uev_ctx_t *ctx, cfg_t *cfg)
 }
 #endif
 
+#if defined(PRESSURE_PLUGIN)
+static int pressure_checker(uev_ctx_t *ctx, cfg_t *cfg)
+{
+	cfg_t *sec;
+	int enabled, period, logmark;
+	float warn, crit;
+	char *script, *scope, *window;
+
+	sec = cfg_getnsec(cfg, "pressure", 0);
+	if (!sec)
+		return pressure_init(ctx, NULL, NULL, 0, 0, 0.0, 0.0, NULL);
+
+	enabled = cfg_getbool(sec, "enabled");
+	period  = cfg_getint(sec, "interval");
+	logmark = cfg_getbool(sec, "logmark");
+	warn    = cfg_getfloat(sec, "warning");
+	crit    = cfg_getfloat(sec, "critical");
+	scope   = cfg_getstr(sec, "scope");
+	window  = cfg_getstr(sec, "window");
+	script  = cfg_getstr(sec, "script");
+
+	return pressure_init(ctx, scope, window, enabled ? period : 0,
+			     logmark, warn, crit, script);
+}
+#endif
+
 static int wdt_checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect)
 {
 	unsigned int i;
@@ -246,6 +272,17 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_STR  ("script",         NULL, CFGF_NONE),
 		CFG_END()
 	};
+	cfg_opt_t pressure_opts[] = {
+		CFG_BOOL ("enabled",  cfg_false, CFGF_NONE),
+		CFG_INT  ("interval", 300,       CFGF_NONE),
+		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
+		CFG_STR  ("scope",    "full",   CFGF_NONE),
+		CFG_STR  ("window",   "avg10",  CFGF_NONE),
+		CFG_FLOAT("warning",  0.1,       CFGF_NONE),
+		CFG_FLOAT("critical", 0.0,       CFGF_NONE), /* Disabled by default */
+		CFG_STR  ("script",   NULL,      CFGF_NONE),
+		CFG_END()
+	};
 	cfg_opt_t opts[] = {
 		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
@@ -260,6 +297,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("generic",     generic_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
+		CFG_SEC ("pressure",    pressure_opts, CFGF_NONE),
 		CFG_SEC ("tempmon",     checker_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_END()
 	};
@@ -343,6 +381,9 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 #endif
 #ifdef MEMINFO_PLUGIN
 	checker(ctx, cfg, "meminfo", meminfo_init);
+#endif
+#ifdef PRESSURE_PLUGIN
+	pressure_checker(ctx, cfg);
 #endif
 #ifdef TEMPMON_PLUGIN
 	tempmon_mark();
