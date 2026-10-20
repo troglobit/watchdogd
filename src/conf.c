@@ -27,7 +27,7 @@
 
 static char *fn;
 
-#if defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN) || defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(TEMPMON_PLUGIN)
+#if defined(FILENR_PLUGIN) || defined(FSMON_PLUGIN) || defined(LOADAVG_PLUGIN) || defined(MEMINFO_PLUGIN) || defined(PRESSURE_PLUGIN) || defined(TEMPMON_PLUGIN)
 static int checker(uev_ctx_t *ctx, cfg_t *cfg, const char *sect,
 		   int (*init)(uev_ctx_t *, const char *, int, int, float, float, char *))
 {
@@ -190,6 +190,34 @@ static int validate_priority(cfg_t *cfg, cfg_opt_t *opt)
 	return 0;
 }
 
+static int parse_word(cfg_t *cfg, cfg_opt_t *opt, const char *value,
+		      void *result, const char *words[], size_t num)
+{
+	for (size_t i = 0; i < num; i++) {
+		if (!strcmp(value, words[i])) {
+			*(long int *)result = i;
+			return 0;
+		}
+	}
+
+	cfg_error(cfg, "invalid %s '%s'", opt->name, value);
+	return -1;
+}
+
+static int parse_scope(cfg_t *cfg, cfg_opt_t *opt, const char *value, void *result)
+{
+	const char *words[] = { "some", "full" };
+
+	return parse_word(cfg, opt, value, result, words, NELEMS(words));
+}
+
+static int parse_window(cfg_t *cfg, cfg_opt_t *opt, const char *value, void *result)
+{
+	const char *words[] = { "avg10", "avg60", "avg300" };
+
+	return parse_word(cfg, opt, value, result, words, NELEMS(words));
+}
+
 static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 {
 	char fmt[80];
@@ -246,6 +274,17 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_STR  ("script",         NULL, CFGF_NONE),
 		CFG_END()
 	};
+	cfg_opt_t pressure_opts[] = {
+		CFG_BOOL ("enabled",  cfg_false, CFGF_NONE),
+		CFG_INT  ("interval", 300,       CFGF_NONE),
+		CFG_BOOL ("logmark",  cfg_false, CFGF_NONE),
+		CFG_INT_CB("scope",   1,         CFGF_NONE, parse_scope),  /* full */
+		CFG_INT_CB("window",  0,         CFGF_NONE, parse_window), /* avg10 */
+		CFG_FLOAT("warning",  0.1,       CFGF_NONE),
+		CFG_FLOAT("critical", 0.0,       CFGF_NONE), /* Disabled by default */
+		CFG_STR  ("script",   NULL,      CFGF_NONE),
+		CFG_END()
+	};
 	cfg_opt_t opts[] = {
 		CFG_INT ("interval",    WDT_KICK_DEFAULT, CFGF_NONE),
 		CFG_INT ("timeout",     WDT_TIMEOUT_DEFAULT, CFGF_NONE),
@@ -260,6 +299,7 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 		CFG_SEC ("generic",     generic_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_SEC ("loadavg",     checker_opts, CFGF_NONE),
 		CFG_SEC ("meminfo",     checker_opts, CFGF_NONE),
+		CFG_SEC ("pressure",    pressure_opts, CFGF_NONE),
 		CFG_SEC ("tempmon",     checker_opts, CFGF_MULTI | CFGF_TITLE),
 		CFG_END()
 	};
@@ -343,6 +383,10 @@ int conf_parse_file(uev_ctx_t *ctx, char *file)
 #endif
 #ifdef MEMINFO_PLUGIN
 	checker(ctx, cfg, "meminfo", meminfo_init);
+#endif
+#ifdef PRESSURE_PLUGIN
+	pressure_select(cfg_getint(cfg, "pressure|scope"), cfg_getint(cfg, "pressure|window"));
+	checker(ctx, cfg, "pressure", pressure_init);
 #endif
 #ifdef TEMPMON_PLUGIN
 	tempmon_mark();

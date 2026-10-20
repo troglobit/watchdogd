@@ -85,6 +85,7 @@ aspects of the system, such as:
 - Generic script
 - Load average
 - Memory leaks
+- Memory pressure (Linux PSI)
 - Process live locks
 - Reset counter, e.g., for snmpEngineBoots (RFC 2574)
 - Temperature
