@@ -38,7 +38,7 @@ jobs:
         run: |
           ./autogen.sh
           ./configure --prefix=/tmp/wdog --sysconfdir=/etc \
-                      --localstatedir=/var --enable-examples
+                      --localstatedir=/var --enable-examples --with-pressure
       - name: Build
         run: |
           make V=1 distcheck

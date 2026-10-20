@@ -66,6 +66,10 @@ AC_ARG_WITH([meminfo],
 	[AS_HELP_STRING([--with-meminfo], [Enable memory leak monitor])],
 	[with_meminfo=$withval], [with_meminfo=no])
 
+AC_ARG_WITH([pressure],
+	[AS_HELP_STRING([--with-pressure], [Enable Linux PSI memory pressure monitor])],
+	[with_pressure=$withval], [with_pressure=no])
+
 AC_ARG_WITH([tempmon],
 	[AS_HELP_STRING([--with-tempmon], [Enable temperature monitor])],
 	[with_tempmon=$withval], [with_tempmon=no])
@@ -93,6 +97,10 @@ AS_IF([test "x$with_meminfo" != "xno"], [
 	with_meminfo=yes
 	AC_DEFINE_UNQUOTED(MEMINFO_PLUGIN, $with_meminfo, [Enable memory leak monitor])])
 
+AS_IF([test "x$with_pressure" != "xno"], [
+	with_pressure=yes
+	AC_DEFINE_UNQUOTED(PRESSURE_PLUGIN, $with_pressure, [Enable Linux PSI memory pressure monitor])])
+
 AS_IF([test "x$with_tempmon" != "xno"], [
 	with_tempmon=yes
 	AC_DEFINE_UNQUOTED(TEMPMON_PLUGIN, $with_tempmon, [Enable memory leak monitor])])
@@ -119,6 +127,7 @@ AM_CONDITIONAL(FSMON_PLUGIN,    [test "x$with_fsmon"    != "xno"])
 AM_CONDITIONAL(GENERIC_PLUGIN,  [test "x$with_generic"  != "xno"])
 AM_CONDITIONAL(LOADAVG_PLUGIN,  [test "x$with_loadavg"  != "xno"])
 AM_CONDITIONAL(MEMINFO_PLUGIN,  [test "x$with_meminfo"  != "xno"])
+AM_CONDITIONAL(PRESSURE_PLUGIN, [test "x$with_pressure" != "xno"])
 AM_CONDITIONAL(TEMPMON_PLUGIN,  [test "x$with_tempmon"  != "xno"])
 
 # Expand $sbindir early, into $SBINDIR, for systemd unit file
@@ -165,6 +174,7 @@ cat <<EOF
   file system ........: $with_fsmon
   load average .......: $with_loadavg
   memory leak ........: $with_meminfo
+  memory pressure ....: $with_pressure
   temperature ........: $with_tempmon
 
 ------------- Compiler version --------------

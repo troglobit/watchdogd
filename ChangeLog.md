@@ -4,6 +4,15 @@ ChangeLog
 All notable changes to the project are documented in this file.
 
 
+[UNRELEASED][]
+--------------
+
+### Changes
+
+- Add optional Linux PSI memory pressure monitor, with configurable scope,
+  averaging window, warning and critical thresholds
+
+
 [4.1][] - 2025-11-23
 --------------------
 

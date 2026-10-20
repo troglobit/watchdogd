@@ -26,6 +26,9 @@ endif
 if MEMINFO_PLUGIN
 watchdogd_SOURCES  += meminfo.c
 endif
+if PRESSURE_PLUGIN
+watchdogd_SOURCES  += pressure.c
+endif
 if TEMPMON_PLUGIN
 watchdogd_SOURCES  += tempmon.c
 endif
